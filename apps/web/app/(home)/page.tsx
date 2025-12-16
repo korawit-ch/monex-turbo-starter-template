@@ -1,4 +1,3 @@
-import { Button } from '@repo/ui/button';
 import Image from 'next/image';
 
 import { getLinks } from '../../services/links.service';
