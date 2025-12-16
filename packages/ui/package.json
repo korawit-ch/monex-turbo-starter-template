@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    "./*": "./src/*.tsx",
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -12,11 +13,13 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
+    "@repo/design-system": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
     "eslint": "^9.31.0",
+    "tailwindcss": "^4.1.11",
     "typescript": "5.8.2"
   },
   "dependencies": {
