@@ -1,6 +1,8 @@
 # monex-turbo-starter-template
 
-A full-stack monorepo example featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
+> **monex** = **mo**norepo + **n**ode + n**ex**t
+
+A full-stack monorepo template featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
 
 ## What's inside?
 
