@@ -21,10 +21,5 @@ interface ServerProviderProps {
 export async function ServerProvider({ children }: ServerProviderProps) {
   const config = await getServerConfig();
 
-  return (
-    <div data-server-config={JSON.stringify(config)}>
-      {children}
-    </div>
-  );
+  return <div data-server-config={JSON.stringify(config)}>{children}</div>;
 }
-

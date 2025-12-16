@@ -35,4 +35,3 @@ export async function getLink(id: number): Promise<Link | null> {
     return null;
   }
 }
-
