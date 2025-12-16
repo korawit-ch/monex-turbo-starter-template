@@ -60,6 +60,9 @@ This `Turborepo` includes:
 - [Prisma](https://www.prisma.io/) for database management
 - [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
 - [Docker Compose](https://docs.docker.com/compose/) for PostgreSQL database
+- [Husky](https://typicode.github.io/husky/) for Git hooks
+- [lint-staged](https://github.com/okonet/lint-staged) for pre-commit linting
+- [Commitlint](https://commitlint.js.org/) for conventional commit messages
 
 ## Getting Started
 
@@ -203,6 +206,37 @@ pnpm run lint
 # See `@repo/eslint-config/prettier-base.js` to customize the behavior.
 npm run format
 ```
+
+### Git Hooks & CI
+
+#### Pre-commit
+
+Automatically runs on every commit via Husky:
+
+- **ESLint** + **Prettier** on staged `.ts/.tsx` files
+- **Prettier** on staged `.json/.md/.css` files
+
+#### Commit Messages
+
+Uses [Conventional Commits](https://www.conventionalcommits.org/) format with required scope:
+
+```bash
+# Format: type(scope): message
+feat(web): add user authentication
+fix(api): resolve database connection issue
+docs(readme): update installation steps
+refactor(prisma): optimize query performance
+```
+
+**Allowed types:** `build`, `chore`, `docs`, `feat`, `fix`, `refactor`, `test`, `release`
+
+#### GitHub Actions
+
+Runs on all pushes and pull requests:
+
+- ESLint across all packages
+- Prettier format check
+- TypeScript type checking
 
 ## Project Structure
 
