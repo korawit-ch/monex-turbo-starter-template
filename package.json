@@ -35,7 +35,7 @@
     "turbo": "^2.6.3"
   },
   "engines": {
-    "node": ">=20.19 || >=22.12"
+    "node": ">=22.12"
   },
   "packageManager": "npm@10.2.3",
   "workspaces": [
