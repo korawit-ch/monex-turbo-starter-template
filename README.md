@@ -11,27 +11,42 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
-│   ├── admin                     # Next.js admin dashboard (port 3002)
-│   ├── api                       # NestJS app (https://nestjs.com) with Prisma integration
-│   ├── db                        # PostgreSQL database service (Docker Compose)
-│   └── web                       # Next.js app (https://nextjs.org) displaying database results
+│   ├── admin                     # Next.js 16 admin dashboard        → http://localhost:3002
+│   ├── api                       # NestJS 11 API with Prisma         → http://localhost:3000
+│   ├── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
+│   └── web                       # Next.js 16 frontend               → http://localhost:3001
 └── packages
-    ├── @repo/design-system       # Shared design system (Tailwind config, colors, global styles)
-    ├── @repo/eslint-config       # `eslint` configurations (includes `prettier`)
-    ├── @repo/jest-config         # `jest` configurations
-    ├── @repo/prisma              # Shared Prisma client, schema, and types
-    ├── @repo/typescript-config   # `tsconfig.json`s used throughout the monorepo
-    └── @repo/ui                  # Shareable React component library with Tailwind
+    ├── @repo/design-system       # Tailwind 4 config, colors, global styles
+    ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
+    ├── @repo/jest-config         # Jest configurations
+    ├── @repo/prisma              # Prisma 7 client, schema, and types
+    ├── @repo/typescript-config   # TypeScript configurations
+    └── @repo/ui                  # React 19 component library with Tailwind
 ```
 
 Each package and application are written in [TypeScript](https://www.typescriptlang.org/).
 
-### Tech Stack
+### Tech Stack & Versions
+
+| Component                          | Version            | Port |
+| ---------------------------------- | ------------------ | ---- |
+| **NestJS API** (`apps/api`)        | ^11.0.0            | 3000 |
+| **Next.js Web** (`apps/web`)       | ^16.0.7            | 3001 |
+| **Next.js Admin** (`apps/admin`)   | ^16.0.7            | 3002 |
+| **PostgreSQL** (`apps/db`)         | 16-alpine          | 5433 |
+| **Prisma ORM** (`packages/prisma`) | ^7.1.0             | -    |
+| **React**                          | ^19.1.0            | -    |
+| **Tailwind CSS**                   | ^4.1.11            | -    |
+| **TypeScript**                     | 5.5.4+             | -    |
+| **Node.js**                        | >=20.19 or >=22.12 | -    |
+
+**Core Technologies:**
 
 - **Backend**: [NestJS](https://nestjs.com/) - Progressive Node.js framework
 - **Frontend**: [Next.js](https://nextjs.org/) - React framework with App Router
 - **Database**: [PostgreSQL](https://www.postgresql.org/) - Relational database
-- **ORM**: [Prisma](https://www.prisma.io/) - Next-generation ORM
+- **ORM**: [Prisma](https://www.prisma.io/) - Next-generation ORM (v7)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (v4)
 - **Monorepo**: [Turborepo](https://turbo.build/repo) - High-performance build system
 
 ### Utilities
