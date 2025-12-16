@@ -11,13 +11,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/prisma": "*",
     "@repo/ui": "*",
     "next": "^16.0.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@repo/api": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.3",
