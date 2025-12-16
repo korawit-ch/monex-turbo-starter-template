@@ -1,14 +1,6 @@
-# Turborepo starter
+# Turborepo with NestJS, Next.js, and Prisma
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
-
-## Using this example
-
-Run the following command:
-
-```bash
-npx create-turbo@latest -e with-nestjs
-```
+A full-stack monorepo example featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
 
 ## What's inside?
 
@@ -19,36 +11,137 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
-│   ├── api                       # NestJS app (https://nestjs.com).
-│   └── web                       # Next.js app (https://nextjs.org).
+│   ├── api                       # NestJS app (https://nestjs.com) with Prisma integration
+│   ├── db                        # PostgreSQL database service (Docker Compose)
+│   └── web                       # Next.js app (https://nextjs.org) displaying database results
 └── packages
-    ├── @repo/api                 # Shared `NestJS` resources.
     ├── @repo/eslint-config       # `eslint` configurations (includes `prettier`)
     ├── @repo/jest-config         # `jest` configurations
+    ├── @repo/prisma              # Shared Prisma client, schema, and types
     ├── @repo/typescript-config   # `tsconfig.json`s used throughout the monorepo
-    └── @repo/ui                  # Shareable stub React component library.
+    └── @repo/ui                  # Shareable React component library
 ```
 
-Each package and application are mostly written in [TypeScript](https://www.typescriptlang.org/).
+Each package and application are written in [TypeScript](https://www.typescriptlang.org/).
+
+### Tech Stack
+
+- **Backend**: [NestJS](https://nestjs.com/) - Progressive Node.js framework
+- **Frontend**: [Next.js](https://nextjs.org/) - React framework with App Router
+- **Database**: [PostgreSQL](https://www.postgresql.org/) - Relational database
+- **ORM**: [Prisma](https://www.prisma.io/) - Next-generation ORM
+- **Monorepo**: [Turborepo](https://turbo.build/repo) - High-performance build system
 
 ### Utilities
 
-This `Turborepo` has some additional tools already set for you:
+This `Turborepo` includes:
 
 - [TypeScript](https://www.typescriptlang.org/) for static type-safety
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
-- [Jest](https://prettier.io) & [Playwright](https://playwright.dev/) for testing
+- [Jest](https://jestjs.io/) for testing
+- [Prisma](https://www.prisma.io/) for database management
+- [Docker Compose](https://docs.docker.com/compose/) for PostgreSQL database
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- Docker and Docker Compose (for PostgreSQL database)
+- npm, yarn, or pnpm
+
+### Setup
+
+1. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+   This will automatically:
+   - Create `.env` from `.env.example` if it doesn't exist
+   - Set up the environment configuration
+
+2. **Start PostgreSQL database**:
+
+   ```bash
+   npm run db:start
+   # or
+   npm run db:up
+   # or
+   cd apps/db && npm run dev
+   ```
+
+3. **Configure database connection** (if needed):
+
+   The `.env` file is automatically created from `.env.example` during `npm install`. If you need to update it, edit the root `.env` file:
+
+   ```env
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/nestjs_poc?schema=public"
+   ```
+
+   **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This ensures all parts of the monorepo use the same environment variables.
+
+4. **Generate Prisma client and push schema**:
+
+   ```bash
+   npm run db:generate
+   npm run db:push
+   npm run db:seed
+   ```
+
+5. **Start development servers**:
+
+   ```bash
+   # From the root directory
+   npm run dev
+   ```
+
+   This will:
+   - Automatically distribute the root `.env` file to all apps and packages
+   - Start all development servers:
+     - NestJS API on <http://localhost:3000>
+     - Next.js frontend on <http://localhost:3001>
 
 ### Commands
 
-This `Turborepo` already configured useful commands for all your apps and packages.
+This `Turborepo` includes useful commands for all apps and packages.
+
+#### Database Commands
+
+```bash
+# Start PostgreSQL database
+npm run db:start
+# or
+npm run db:up
+
+# Stop PostgreSQL database
+npm run db:stop
+# or
+npm run db:down
+
+# Generate Prisma client
+npm run db:generate
+
+# Push schema to database
+npm run db:push
+
+# Run migrations
+npm run db:migrate
+
+# Seed database
+npm run db:seed
+
+# Open Prisma Studio
+npm run db:studio
+```
 
 #### Build
 
 ```bash
 # Will build all the app & packages with the supported `build` script.
-pnpm run build
+npm run build
 
 # ℹ️ If you plan to only build apps individually,
 # Please make sure you've built the packages first.
@@ -58,8 +151,11 @@ pnpm run build
 
 ```bash
 # Will run the development server for all the app & packages with the supported `dev` script.
-pnpm run dev
+# This automatically distributes the root .env file to all apps and packages before starting.
+npm run dev
 ```
+
+**Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `jest-config`, `typescript-config`).
 
 #### test
 
@@ -86,8 +182,66 @@ pnpm run lint
 ```bash
 # Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
 # See `@repo/eslint-config/prettier-base.js` to customize the behavior.
-pnpm format
+npm run format
 ```
+
+## Project Structure
+
+### Database Setup
+
+The project uses PostgreSQL with Prisma ORM. The database service is located in `apps/db/`:
+
+- **Database**: PostgreSQL 16 (Alpine) running in Docker
+- **Configuration**: Managed via environment variables in root `.env` file
+- **Default Port**: 5433 (configurable via `DB_PORT`)
+- **Default Database Name**: `nestjs_poc` (configurable via `DB_NAME`)
+- **Default Credentials**: `postgres/postgres` (configurable via `DB_USER`/`DB_PASSWORD`)
+
+The Prisma schema is located in `packages/prisma/prisma/schema.prisma` and defines the `Link` model.
+
+**Database Environment Variables** (in root `.env`):
+
+- `DB_USER` - PostgreSQL username
+- `DB_PASSWORD` - PostgreSQL password
+- `DB_NAME` - Database name
+- `DB_PORT` - Host port mapping
+- `DB_CONTAINER_NAME` - Docker container name
+- `DATABASE_URL` - Full connection string for Prisma
+
+### API Endpoints
+
+The NestJS API provides the following endpoints:
+
+- `GET /links` - Get all links
+- `GET /links/:id` - Get a specific link
+- `POST /links` - Create a new link
+- `PATCH /links/:id` - Update a link
+- `DELETE /links/:id` - Delete a link
+
+### Frontend
+
+The Next.js app displays database results fetched from the NestJS API. The frontend:
+
+- Fetches links from the API on server-side
+- Displays them in a styled card layout
+- Shows link metadata (ID, URL, creation date)
+- Uses Prisma-generated TypeScript types for type safety
+
+### Shared Packages
+
+- **@repo/prisma**: Shared Prisma client and schema
+  - Exports singleton Prisma client instance
+  - Exports all Prisma types (`Prisma`, `Link`, etc.)
+  - Can be published as an npm package
+
+### Environment Variables
+
+The project uses a centralized `.env` file in the root directory:
+
+- **Automatic Setup**: `.env` is created from `.env.example` during `npm install`
+- **Automatic Distribution**: When running `npm run dev`, the root `.env` is distributed to all apps and packages via symlinks
+- **Excluded Packages**: Config packages (`eslint-config`, `jest-config`, `typescript-config`) don't receive `.env` files
+- **Single Source of Truth**: All environment variables are managed in the root `.env` file
 
 ### Remote Caching
 
@@ -110,15 +264,120 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 npx turbo link
 ```
 
+## Development Workflow
+
+1. **Start the database**: `npm run db:start`
+2. **Generate Prisma client**: `npm run db:generate`
+3. **Push schema**: `npm run db:push`
+4. **Seed data** (optional): `npm run db:seed`
+5. **Start dev servers**: `npm run dev`
+6. **View results**: Open <http://localhost:3001>
+
+## Testing the Database Connection
+
+You can test the API directly:
+
+```bash
+# Get all links
+curl http://localhost:3000/links
+
+# Create a new link
+curl -X POST http://localhost:3000/links \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test Link","url":"https://example.com","description":"A test link"}'
+```
+
+## Troubleshooting
+
+### Database Connection Issues
+
+- Ensure Docker is running
+- Check if the database container is up: `docker-compose -f apps/db/docker-compose.yml ps`
+- Verify the `DATABASE_URL` in the root `.env` file (copy from `.env.example` if needed)
+- Check database logs: `docker-compose -f apps/db/docker-compose.yml logs postgres`
+
+### Prisma Client Not Found
+
+- Run `npm run db:generate`
+- Ensure `@repo/prisma` package is built: `npm run build`
+
+### API Not Responding
+
+- Check if the API is running on port 3000
+- Verify CORS is enabled in `apps/api/src/main.ts`
+- Check API logs for errors
+
 ## Useful Links
 
-This example take some inspiration the [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) `Turbo` example and [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) `NestJs` sample.
+This example takes inspiration from:
 
-Learn more about the power of Turborepo:
+- [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) Turborepo example
+- [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) NestJS sample
+
+Learn more:
+
+**Turborepo:**
 
 - [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
 - [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
 - [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+**Prisma:**
+
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Prisma with NestJS](https://www.prisma.io/docs/guides/integration-guides/integrate-prisma-with-your-framework/nestjs)
+- [Prisma Client API Reference](https://www.prisma.io/docs/reference/api-reference/prisma-client-reference)
+
+**NestJS:**
+
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [NestJS Prisma Integration](https://docs.nestjs.com/recipes/prisma)
+
+## Architecture Philosophy
+
+This repository is designed with **flexibility** and **modularity** in mind. The frontend and backend are combined in a single Turborepo for convenience during development, but the architecture allows them to be **detached at any time** and run as separate repositories while maintaining the same structure and configurations.
+
+### Complementary Turborepo (Current State)
+
+In the current setup, frontend and backend coexist in a single monorepo, sharing configurations and packages:
+
+![Complementary Turborepo](./complementary-turborepo.png)
+
+**Benefits:**
+
+- Shared configurations (ESLint, TypeScript, Prettier)
+- Shared packages (`@repo/prisma`, `@repo/ui`)
+- Single `npm install` for all dependencies
+- Unified development workflow
+- Easy local development and testing
+
+### Interlocking Turborepos (Detached State)
+
+When needed, the frontend and backend can be split into separate Turborepos that communicate via published npm packages:
+
+![Interlocking Turborepos](./interlocking-turborepos.png)
+
+**How it works:**
+
+1. **Backend Turborepo**: Contains the NestJS API, database setup, and `@repo/prisma` package
+2. **Frontend Turborepo**: Contains the Next.js apps and `@repo/ui` package
+3. **Shared via NPM**: The `@repo/prisma` package is published to npm, allowing the frontend to consume Prisma types without direct dependency on the backend repo
+4. **Aligned Configurations**: Both repos maintain the same config packages (`eslint-config`, `typescript-config`) for consistency
+
+**When to detach:**
+
+- Different teams working on frontend vs backend
+- Different deployment cycles or CI/CD pipelines
+- Scaling concerns require separate infrastructure
+- Security requirements mandate repository separation
+
+**Reattaching:**
+
+The repos can be merged back together at any time since they share the same structure and configurations. Simply:
+
+1. Move apps and packages back into a single workspace
+2. Update `package.json` workspaces
+3. Remove npm package dependencies in favor of local workspace references
+
+This architecture provides the **best of both worlds**: rapid development in a unified repo, with the option to scale to separate repos when needed.

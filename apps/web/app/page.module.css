@@ -184,3 +184,137 @@ button.secondary {
     filter: invert();
   }
 }
+
+.databaseSection {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.linksContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.linkCard {
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .linkCard:hover {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+  }
+}
+
+.linkContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.linkTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.linkAnchor {
+  color: #2563eb;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .linkAnchor:hover {
+    text-decoration: underline;
+  }
+}
+
+.linkDescription {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.linkMetadata {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  flex-wrap: wrap;
+}
+
+.successMessage {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #dbeafe;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #1e40af;
+}
+
+.emptyState {
+  padding: 1.5rem;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.emptyTitle {
+  margin: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.emptyDescription {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .linkCard {
+    border-color: rgba(255, 255, 255, 0.145);
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .linkCard:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .linkAnchor {
+    color: #60a5fa;
+  }
+
+  .linkDescription {
+    color: #9ca3af;
+  }
+
+  .linkMetadata {
+    color: #6b7280;
+  }
+
+  .successMessage {
+    background-color: #1e3a8a;
+    color: #93c5fd;
+  }
+
+  .emptyState {
+    border-color: #f59e0b;
+    background-color: #78350f;
+    color: #fcd34d;
+  }
+}
