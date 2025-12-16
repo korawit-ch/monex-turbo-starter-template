@@ -11,15 +11,17 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
+│   ├── admin                     # Next.js admin dashboard (port 3002)
 │   ├── api                       # NestJS app (https://nestjs.com) with Prisma integration
 │   ├── db                        # PostgreSQL database service (Docker Compose)
 │   └── web                       # Next.js app (https://nextjs.org) displaying database results
 └── packages
+    ├── @repo/design-system       # Shared design system (Tailwind config, colors, global styles)
     ├── @repo/eslint-config       # `eslint` configurations (includes `prettier`)
     ├── @repo/jest-config         # `jest` configurations
     ├── @repo/prisma              # Shared Prisma client, schema, and types
     ├── @repo/typescript-config   # `tsconfig.json`s used throughout the monorepo
-    └── @repo/ui                  # Shareable React component library
+    └── @repo/ui                  # Shareable React component library with Tailwind
 ```
 
 Each package and application are written in [TypeScript](https://www.typescriptlang.org/).
@@ -41,6 +43,7 @@ This `Turborepo` includes:
 - [Prettier](https://prettier.io) for code formatting
 - [Jest](https://jestjs.io/) for testing
 - [Prisma](https://www.prisma.io/) for database management
+- [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
 - [Docker Compose](https://docs.docker.com/compose/) for PostgreSQL database
 
 ## Getting Started
@@ -103,6 +106,7 @@ This `Turborepo` includes:
    - Start all development servers:
      - NestJS API on <http://localhost:3000>
      - Next.js frontend on <http://localhost:3001>
+     - Admin dashboard on <http://localhost:3002>
 
 ### Commands
 

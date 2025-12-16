@@ -1,0 +1,19 @@
+{
+  "name": "@repo/design-system",
+  "version": "0.0.0",
+  "private": true,
+  "main": "tailwind.config.ts",
+  "types": "tailwind.config.ts",
+  "exports": {
+    ".": "./tailwind.config.ts",
+    "./colors": "./colors.ts",
+    "./globals.css": "./globals.css"
+  },
+  "dependencies": {
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "typescript": "5.5.4"
+  }
+}
