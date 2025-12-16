@@ -395,7 +395,7 @@ This repository is designed with **flexibility** and **modularity** in mind. The
 
 In the current setup, frontend and backend coexist in a single monorepo, sharing configurations and packages:
 
-![Complementary Turborepo](./complementary-turborepo.png)
+![Complementary Turborepo](./docs/images/complementary-turborepo.png)
 
 **Benefits:**
 
@@ -409,7 +409,7 @@ In the current setup, frontend and backend coexist in a single monorepo, sharing
 
 When needed, the frontend and backend can be split into separate Turborepos that communicate via published npm packages:
 
-![Interlocking Turborepos](./interlocking-turborepos.png)
+![Interlocking Turborepos](./docs/images/interlocking-turborepos.png)
 
 **How it works:**
 
