@@ -13,6 +13,7 @@
       "env": ["NEXT_PUBLIC_API_URL"]
     },
     "lint": {},
+    "check-types": {},
     "test": {},
     "test:e2e": {}
   }
