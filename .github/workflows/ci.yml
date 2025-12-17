@@ -1,4 +1,4 @@
-name: Lint
+name: Lint, Type Check & Build
 
 on:
   push:
