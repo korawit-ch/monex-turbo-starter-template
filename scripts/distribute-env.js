@@ -7,15 +7,13 @@ const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
 
 // Packages to exclude (config packages)
-const excludedPackages = [
-  'eslint-config',
-  'jest-config',
-  'typescript-config',
-];
+const excludedPackages = ['eslint-config', 'jest-config', 'typescript-config'];
 
 // Check if root .env exists
 if (!fs.existsSync(envPath)) {
-  console.error('❌ Root .env file not found. Please create it from .env.example');
+  console.error(
+    '❌ Root .env file not found. Please create it from .env.example',
+  );
   process.exit(1);
 }
 
@@ -27,9 +25,10 @@ const targets = [];
 
 // Add apps
 if (fs.existsSync(appsDir)) {
-  const apps = fs.readdirSync(appsDir, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => ({
+  const apps = fs
+    .readdirSync(appsDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => ({
       name: dirent.name,
       path: path.join(appsDir, dirent.name),
     }));
@@ -38,10 +37,11 @@ if (fs.existsSync(appsDir)) {
 
 // Add packages (excluding config packages)
 if (fs.existsSync(packagesDir)) {
-  const packages = fs.readdirSync(packagesDir, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .filter(dirent => !excludedPackages.includes(dirent.name))
-    .map(dirent => ({
+  const packages = fs
+    .readdirSync(packagesDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .filter((dirent) => !excludedPackages.includes(dirent.name))
+    .map((dirent) => ({
       name: dirent.name,
       path: path.join(packagesDir, dirent.name),
     }));
@@ -53,7 +53,7 @@ let distributed = 0;
 for (const target of targets) {
   const targetEnvPath = path.join(target.path, '.env');
   const relativePath = path.relative(rootDir, target.path);
-  
+
   // Create symlink to root .env
   try {
     // Remove existing .env if it's not a symlink
@@ -63,7 +63,7 @@ for (const target of targets) {
         fs.unlinkSync(targetEnvPath);
       }
     }
-    
+
     // Create symlink if it doesn't exist
     if (!fs.existsSync(targetEnvPath)) {
       const relativeEnvPath = path.relative(target.path, envPath);
@@ -74,7 +74,10 @@ for (const target of targets) {
       console.log(`⏭️  ${relativePath}/.env already exists (symlink)`);
     }
   } catch (error) {
-    console.error(`❌ Failed to create symlink for ${relativePath}:`, error.message);
+    console.error(
+      `❌ Failed to create symlink for ${relativePath}:`,
+      error.message,
+    );
   }
 }
 
@@ -83,6 +86,3 @@ if (distributed > 0) {
 } else {
   console.log('\n✨ All targets already have .env symlinks');
 }
-
-
-
