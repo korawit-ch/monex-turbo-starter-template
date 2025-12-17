@@ -16,8 +16,10 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return API info object', () => {
+      const result = appController.getInfo();
+      expect(result).toHaveProperty('name', 'NestJS API');
+      expect(result).toHaveProperty('docs', '/api');
     });
   });
 });
