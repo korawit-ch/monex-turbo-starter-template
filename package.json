@@ -48,11 +48,11 @@
     "packages/*"
   ],
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{ts,tsx,mjs}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,css}": [
+    "*.{json,md,css,yml,yaml,js}": [
       "prettier --write"
     ]
   }
