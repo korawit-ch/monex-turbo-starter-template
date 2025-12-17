@@ -22,6 +22,9 @@
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0"
   },
+  "dependencies": {
+    "@repo/prisma": "*"
+  },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
