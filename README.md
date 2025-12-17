@@ -31,35 +31,38 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 ### Tech Stack & Versions
 
-| Component                                                    | Version         | Port |
-| ------------------------------------------------------------ | --------------- | ---- |
-| [**NestJS API**](https://nestjs.com/) (`apps/api`)           | ^11.0.0         | 3000 |
-| [**Next.js**](https://nextjs.org/) Web (`apps/web`)          | ^16.0.7         | 3001 |
-| [**Next.js**](https://nextjs.org/) Admin (`apps/admin`)      | ^16.0.7         | 3002 |
-| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`)    | 16-alpine       | 5433 |
-| [**Prisma ORM**](https://www.prisma.io/) (`packages/prisma`) | ^7.1.0          | -    |
-| [**React**](https://react.dev/)                              | ^19.1.0         | -    |
-| [**Tailwind CSS**](https://tailwindcss.com/)                 | ^4.1.11         | -    |
-| [**TanStack Query**](https://tanstack.com/query)             | ^5.80.7         | -    |
-| [**TypeScript**](https://www.typescriptlang.org/)            | 5.5.4+          | -    |
-| **Node.js**                                                  | >=22.12         | -    |
-| **Swagger** (`/api`)                                         | @nestjs/swagger | 3000 |
-| [**Turborepo**](https://turbo.build/repo)                    | -               | -    |
+**Runtime & Apps**
 
-### Utilities
+| Component                                                 | Version         | Port |
+| --------------------------------------------------------- | --------------- | ---- |
+| **Node.js**                                               | >=22.12         | -    |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3000 |
+| [**Next.js**](https://nextjs.org/) Web (`apps/web`)       | ^16.0.7         | 3001 |
+| [**Next.js**](https://nextjs.org/) Admin (`apps/admin`)   | ^16.0.7         | 3002 |
+| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
+| **Swagger** (`/api`)                                      | @nestjs/swagger | 3000 |
 
-This `Turborepo` includes:
+**Core Libraries**
 
-- [TypeScript](https://www.typescriptlang.org/) for static type-safety
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-- [Jest](https://jestjs.io/) for testing
-- [Prisma](https://www.prisma.io/) for database management
-- [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
-- [Docker Compose](https://docs.docker.com/compose/) for PostgreSQL database
-- [Husky](https://typicode.github.io/husky/) for Git hooks
-- [lint-staged](https://github.com/okonet/lint-staged) for pre-commit linting
-- [Commitlint](https://commitlint.js.org/) for conventional commit messages
+| Library                                           | Version |
+| ------------------------------------------------- | ------- |
+| [**React**](https://react.dev/)                   | ^19.1.0 |
+| [**Prisma ORM**](https://www.prisma.io/)          | ^7.1.0  |
+| [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.11 |
+| [**TanStack Query**](https://tanstack.com/query)  | ^5.80.7 |
+| [**TypeScript**](https://www.typescriptlang.org/) | 5.5.4+  |
+
+**Tooling**
+
+| Tool                                                   | Purpose            |
+| ------------------------------------------------------ | ------------------ |
+| [**Turborepo**](https://turbo.build/repo)              | Monorepo build     |
+| [**ESLint**](https://eslint.org/)                      | Code linting       |
+| [**Prettier**](https://prettier.io)                    | Code formatting    |
+| [**Jest**](https://jestjs.io/)                         | Testing            |
+| [**Docker Compose**](https://docs.docker.com/compose/) | Database container |
+| [**Husky**](https://typicode.github.io/husky/)         | Git hooks          |
+| [**Commitlint**](https://commitlint.js.org/)           | Commit messages    |
 
 ## Getting Started
 
