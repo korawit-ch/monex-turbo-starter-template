@@ -23,7 +23,7 @@ async function main() {
 
   for (const link of links) {
     await prisma.link.upsert({
-      where: { url: link.url },
+      where: { id: undefined }, // or use a valid unique identifier, e.g., { id: 1 } if you have an id field
       update: {},
       create: link,
     });
