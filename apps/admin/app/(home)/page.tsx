@@ -1,5 +1,6 @@
 import { getLinks } from '../../services/links.service';
 import { StatusIndicator } from '../../components/status-indicator';
+import { LinksClient } from '../../components/links-client';
 
 export default async function AdminDashboard() {
   const links = await getLinks();
@@ -87,9 +88,17 @@ export default async function AdminDashboard() {
 
         {links.length > 0 && (
           <p className="text-sm text-green-600 mt-4">
-            ✓ Fetched from PostgreSQL via Prisma
+            ✓ Server-side fetch via serverFetch()
           </p>
         )}
+
+        {/* Client-side fetch demo */}
+        <div className="mt-8">
+          <h2 className="font-medium mb-4">
+            Client-Side Demo (with mutations)
+          </h2>
+          <LinksClient />
+        </div>
       </main>
 
       <footer className="w-full max-w-4xl mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-400 text-center">

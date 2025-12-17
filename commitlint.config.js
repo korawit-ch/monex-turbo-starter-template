@@ -12,5 +12,6 @@ module.exports = {
     'scope-case': [2, 'always', ['kebab-case', 'lower-case']],
     // Ensure scope is never empty
     'scope-empty': [2, 'never'],
+    'header-max-length': [2, 'always', 150],
   },
 };

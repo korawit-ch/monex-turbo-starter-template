@@ -2,6 +2,7 @@ import Image from 'next/image';
 
 import { getLinks } from '../../services/links.service';
 import { FeatureBadge } from '../../components/feature-badge';
+import { LinksClient } from '../../components/links-client';
 
 export default async function Home() {
   const links = await getLinks();
@@ -71,9 +72,15 @@ export default async function Home() {
 
           {links.length > 0 && (
             <p className="text-sm text-green-600 dark:text-green-400 mt-4">
-              ✓ Fetched from PostgreSQL via Prisma
+              ✓ Server-side fetch via serverFetch()
             </p>
           )}
+        </section>
+
+        {/* Client-side fetch demo */}
+        <section className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
+          <h2 className="text-xl font-semibold mb-4">Client-Side Demo</h2>
+          <LinksClient />
         </section>
       </main>
 
