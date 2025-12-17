@@ -25,7 +25,11 @@ interface ClientProviderProps {
 
 export function ClientProvider({ children }: ClientProviderProps) {
   // Mock user state
-  const [user, setUser] = useState<{ id: string; name: string; role: string } | null>({
+  const [user, setUser] = useState<{
+    id: string;
+    name: string;
+    role: string;
+  } | null>({
     id: '1',
     name: 'Admin User',
     role: 'admin',
@@ -52,4 +56,3 @@ export function ClientProvider({ children }: ClientProviderProps) {
     </ClientContext.Provider>
   );
 }
-
