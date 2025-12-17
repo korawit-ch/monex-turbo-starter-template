@@ -19,7 +19,10 @@ export function Card({
       target="_blank"
     >
       <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-primary-600">
-        {title} <span className="inline-block transition-transform group-hover:translate-x-1">-&gt;</span>
+        {title}{' '}
+        <span className="inline-block transition-transform group-hover:translate-x-1">
+          -&gt;
+        </span>
       </h2>
       <p className="text-gray-600 dark:text-gray-300">{children}</p>
     </a>

@@ -47,4 +47,3 @@ export function ClientProvider({ children }: ClientProviderProps) {
     </ClientContext.Provider>
   );
 }
-
