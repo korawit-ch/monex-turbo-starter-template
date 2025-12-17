@@ -449,6 +449,18 @@ When needed, the frontend and backend can be split into separate Turborepos that
 3. **Shared via NPM**: The `@repo/prisma` package is published to npm, allowing the frontend to consume Prisma types without direct dependency on the backend repo
 4. **Aligned Configurations**: Both repos maintain the same config packages (`eslint-config`, `typescript-config`) for consistency
 
+**Separation Scripts:**
+
+```bash
+# Separate into backend-only repo
+./scripts/separate-backend.sh
+# Prompts to rename @repo/prisma for npm publishing
+
+# Separate into frontend-only repo
+./scripts/separate-frontend.sh
+# Prompts to configure prisma package source (npm or local)
+```
+
 **Publishing `@repo/prisma`:**
 
 ```bash
