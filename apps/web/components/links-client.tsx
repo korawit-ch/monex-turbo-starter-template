@@ -77,7 +77,7 @@ export function LinksClient() {
         <p className="text-foreground/70">No links found</p>
       )}
 
-      <p className="text-xs text-success-400/70">
+      <p className="text-xs text-success-800/70">
         ✓ Fetched client-side with useLinksQuery()
       </p>
     </div>

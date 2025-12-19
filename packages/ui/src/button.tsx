@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { ArrowRight } from '@repo/icons';
 import { cn } from './utils';
 
 type ButtonSize = 'large' | 'small';
@@ -49,8 +50,8 @@ export const Button = ({
 }: ButtonProps) => {
   // Size styles
   const sizeStyles = {
-    large: 'h-12 text-desktop-body1',
-    small: 'h-10 text-desktop-body2',
+    large: 'h-12 text-base',
+    small: 'h-10 text-sm',
   };
 
   // Base styles
@@ -77,7 +78,7 @@ export const Button = ({
       bgHover: 'hover:bg-warning-500',
       borderHover: 'hover:border-warning-800',
       borderWidth: 'border-2',
-      text: 'text-darkest-grey',
+      text: 'text-darkest-gray',
       textLink: 'text-warning-500',
       textLinkHover: 'hover:text-warning-800',
     },
@@ -97,7 +98,7 @@ export const Button = ({
 
   // Disabled styles override
   const disabledColorStyles = disabled
-    ? 'bg-grey border-medium-grey border text-medium-grey hover:bg-grey hover:border-medium-grey cursor-not-allowed'
+    ? 'bg-gray border-medium-gray border text-medium-gray hover:bg-gray hover:border-medium-gray cursor-not-allowed'
     : '';
 
   // Variant styles
@@ -153,7 +154,11 @@ export const Button = ({
     <>
       {variant === 'primary-icon' && icon && <span>{icon}</span>}
       {children}
-      {variant === 'linked' && <span>→</span>}
+      {variant === 'linked' && (
+        <span>
+          <ArrowRight className="h-5" />
+        </span>
+      )}
     </>
   );
 

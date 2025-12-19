@@ -6,7 +6,7 @@
 @theme {
   --color-*: initial; /* Removes all default colors */
 
-  /* Primary Colors - Blue */
+  /* Primary Colors - Ocean Blue */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
@@ -18,43 +18,45 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
-  /* Status Colors - Success (Green) */
-  --color-success-100: #c6f6d5;
-  --color-success-500: #22c55e;
-  --color-success-800: #166534;
+  /* Status Colors - Success (Emerald) */
+  --color-success-100: #d1fae5;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-800: #065f46;
 
-  /* Status Colors - Error (Red) */
-  --color-error-300: #fca5a5;
-  --color-error-500: #ef4444;
-  --color-error-800: #991b1b;
+  /* Status Colors - Error (Rose) */
+  --color-error-300: #fda4af;
+  --color-error-400: #fb7185;
+  --color-error-500: #f43f5e;
+  --color-error-800: #9f1239;
 
-  /* Status Colors - Warning (Yellow) */
+  /* Status Colors - Warning (Amber) */
   --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
   --color-warning-500: #f59e0b;
   --color-warning-800: #92400e;
 
   --color-white: #ffffff;
-  --color-lightest-grey: #f3f4f6;
-  --color-light-grey: #e5e7eb;
-  --color-grey: #d1d5db;
-  --color-medium-grey: #9ca3af;
-  --color-dark-grey: #6b7280;
-  --color-bold-grey: #4b5563;
-  --color-darkest-grey: #1f2937;
+  --color-lightest-gray: #f8fafc;
+  --color-light-gray: #f1f5f9;
+  --color-gray: #e2e8f0;
+  --color-medium-gray: #94a3b8;
+  --color-dark-gray: #64748b;
+  --color-bold-gray: #475569;
+  --color-darkest-gray: #0f172a;
   --color-black: #000000;
 
   /* Default essential colors */
   --color-inherit: inherit;
   --color-transparent: transparent;
 
-  /* Font Families */
-  --font-roboto: 'Roboto', sans-serif;
+  --font-prompt: 'Prompt', sans-serif;
 
-  --background: #ededed;
-  --foreground: #0a0a0a;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 
-  --surface: rgba(255, 255, 255, 0.05);
-  --border: rgba(255, 255, 255, 0.15);
+  --surface: rgba(15, 23, 42, 0.05);
+  --border: rgba(15, 23, 42, 0.15);
 }
 
 html,
@@ -78,3 +80,13 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Custom Text Style Utilities - Using @utility for Tailwind v4
+ * 
+ * IMPORTANT: These custom utilities (text-desktop-*, text-mobile-*) must be
+ * registered in packages/ui/src/utils.ts tailwind-merge configuration.
+ * Without that registration, tailwind-merge will strip these classes when
+ * merging class names, causing them to not work in UI components.
+ */
+/* @utility {
+} */
