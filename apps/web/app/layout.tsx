@@ -6,7 +6,7 @@ import '@repo/ui/styles.css';
 import './globals.css';
 
 const roboto = Roboto({
-  variable: '--font-roboto',
+  variable: '--font-prompt',
   subsets: ['latin'],
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
 });
@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable}`}>
+      <body className={`${roboto.variable} font-roboto`}>
         <Providers>{children}</Providers>
       </body>
     </html>
