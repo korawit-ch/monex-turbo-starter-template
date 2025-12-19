@@ -13,7 +13,6 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
-│   ├── admin                     # Next.js 16 admin dashboard        → http://localhost:3002
 │   ├── api                       # NestJS 11 API with Prisma         → http://localhost:3000
 │   ├── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 │   └── web                       # Next.js 16 frontend               → http://localhost:3001
@@ -38,7 +37,6 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 | **Node.js**                                               | >=22.12         | -    |
 | [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3000 |
 | [**Next.js**](https://nextjs.org/) Web (`apps/web`)       | ^16.0.7         | 3001 |
-| [**Next.js**](https://nextjs.org/) Admin (`apps/admin`)   | ^16.0.7         | 3002 |
 | [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
 | **Swagger** (`/api`)                                      | @nestjs/swagger | 3000 |
 
@@ -119,7 +117,6 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    - Start all development servers:
      - NestJS API on <http://localhost:3000>
      - Next.js frontend on <http://localhost:3001>
-     - Admin dashboard on <http://localhost:3002>
 
 ### Commands
 
@@ -298,7 +295,7 @@ The Next.js app displays database results fetched from the NestJS API. The front
 - **@repo/design-system**: Shared styling foundation
   - Tailwind CSS configuration and color palette
   - Global CSS variables and styles
-  - Used by both `web` and `admin` frontends
+  - Used by all frontend apps
 
 - **@repo/ui**: Shared React component library
   - Reusable components (Button, Card, etc.)
@@ -309,7 +306,7 @@ The Next.js app displays database results fetched from the NestJS API. The front
 This template separates **API definitions** from **fetch logic** for maximum flexibility:
 
 ```
-@repo/api-client (shared)    apps/web or apps/admin (per-app)
+@repo/api-client (shared)    apps/web (per-app)
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
@@ -385,6 +382,48 @@ export function LinksClient() {
 - ✅ **Server vs client separation** - Different strategies for SSR and CSR
 - ✅ **Type safety** - Full TypeScript inference from endpoint to response
 - ✅ **Easy to test** - Mock endpoints without mocking fetch
+
+### Extending Apps
+
+> **💡 Simple Extension Pattern**: To add a new Next.js app, simply duplicate the `apps/web` directory and change its name!
+
+This monorepo template is designed to make adding new apps straightforward:
+
+1. **Duplicate the existing app**:
+
+   ```bash
+   cp -r apps/web apps/my-new-app
+   ```
+
+2. **Update the app name** in the following files:
+   - `apps/my-new-app/package.json` - Change `"name": "web"` to `"name": "my-new-app"`
+   - `apps/my-new-app/package.json` - Update the `"dev"` script port (e.g., `--port 3002`)
+   - `apps/my-new-app/next.config.ts` (if it exists) - Update any app-specific configurations
+
+3. **That's it!** The new app will:
+   - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-client`)
+   - ✅ Inherit all Tailwind configurations from the design system
+   - ✅ Use the same environment variables (via symlink distribution)
+   - ✅ Work with Turborepo's build and dev commands
+   - ✅ Share TypeScript, ESLint, and Prettier configurations
+
+**Example: Creating an admin dashboard**
+
+```bash
+# 1. Duplicate the web app
+cp -r apps/web apps/admin
+
+# 2. Update package.json
+cd apps/admin
+# Change "name": "web" → "name": "admin"
+# Change port from 3001 → 3002
+
+# 3. Start developing!
+npm run dev
+# Your new admin app will be available at http://localhost:3002
+```
+
+All shared packages, configurations, and utilities are automatically available to your new app. This makes it incredibly easy to spin up additional frontend applications while maintaining consistency across your monorepo.
 
 ### Environment Variables
 
