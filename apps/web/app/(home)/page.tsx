@@ -8,7 +8,6 @@ import { LinksClient } from '../../components/links-client';
 import { Button } from '@repo/ui/button';
 import {
   AddFile,
-  AddUser,
   ArrowLeft,
   ArrowRight,
   Calendar,
@@ -33,7 +32,6 @@ export default async function Home() {
 
   const icons = [
     { name: 'AddFile', component: AddFile },
-    { name: 'AddUser', component: AddUser },
     { name: 'ArrowLeft', component: ArrowLeft },
     { name: 'ArrowRight', component: ArrowRight },
     { name: 'Calendar', component: Calendar },
@@ -78,124 +76,15 @@ export default async function Home() {
           <FeatureBadge label="Local Component" highlight />
         </div>
 
-        {/* Button Variants Demo */}
+        {/* Button Demo */}
         <section className="mt-8 pt-8 border-t border-surface">
-          <h2 className="text-xl font-semibold mb-4">Button Variants</h2>
-
-          <div className="space-y-6">
-            {/* Primary Variants */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Primary</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="primary">Primary</Button>
-                <Button variant="primary" color={'yellow' as const}>
-                  Primary
-                </Button>
-                <Button variant="primary" color={'red' as const}>
-                  Primary
-                </Button>
-                <Button variant="primary" disabled>
-                  Primary
-                </Button>
-              </div>
-            </div>
-
-            {/* Primary with Icon */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Primary with Icon</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant={'primary-icon' as const}
-                  icon={<AddUser className="h-4 w-4 text-white" />}
-                >
-                  Primary Icon
-                </Button>
-                <Button
-                  variant={'primary-icon' as const}
-                  color={'yellow' as const}
-                  icon={<AddUser className="h-4 text-darkest-gray" />}
-                >
-                  Primary Icon
-                </Button>
-                <Button
-                  variant={'primary-icon' as const}
-                  color={'red' as const}
-                  icon={<AddUser className="h-4 text-white" />}
-                >
-                  Primary Icon
-                </Button>
-              </div>
-            </div>
-
-            {/* Secondary Variants */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Secondary</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="secondary">Secondary</Button>
-                <Button variant="secondary" color={'yellow' as const}>
-                  Secondary
-                </Button>
-                <Button variant="secondary" color={'red' as const}>
-                  Secondary
-                </Button>
-                <Button variant="secondary" disabled>
-                  Secondary
-                </Button>
-              </div>
-            </div>
-
-            {/* Linked Variants */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Linked</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button variant={'linked' as const}>Linked</Button>
-                <Button variant={'linked' as const} color={'yellow' as const}>
-                  Linked
-                </Button>
-                <Button variant={'linked' as const} color={'red' as const}>
-                  Linked
-                </Button>
-                <Button variant="linked" disabled>
-                  Linked
-                </Button>
-              </div>
-            </div>
-
-            {/* Text Link Variants */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Text Link</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button variant={'textlink' as const}>Text Link</Button>
-                <Button variant={'textlink' as const} color={'yellow' as const}>
-                  Text Link
-                </Button>
-                <Button variant={'textlink' as const} color={'red' as const}>
-                  Text Link
-                </Button>
-                <Button variant="textlink" disabled>
-                  Text Link
-                </Button>
-              </div>
-            </div>
-
-            {/* Size Variants */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Sizes</h3>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary" size={'large' as const}>
-                  Large
-                </Button>
-                <Button variant="primary" size={'small' as const}>
-                  Small
-                </Button>
-                <Button variant="secondary" size={'large' as const}>
-                  Large
-                </Button>
-                <Button variant="secondary" size={'small' as const}>
-                  Small
-                </Button>
-              </div>
-            </div>
+          <h2 className="text-xl font-semibold mb-4">Button</h2>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => alert('Clicked!')}>Click me</Button>
+            <Button disabled>Disabled</Button>
+            <Button className="bg-warning-500 hover:bg-warning-600">
+              Custom Style
+            </Button>
           </div>
         </section>
 
