@@ -49,6 +49,8 @@ export const Button = ({
   href,
 }: ButtonProps) => {
   // Size styles
+  // NOTE: Custom text utilities (text-desktop-body1, text-desktop-body2) are preserved
+  // by tailwind-merge because they're registered in utils.ts configuration
   const sizeStyles = {
     large: 'h-12 text-base',
     small: 'h-10 text-sm',

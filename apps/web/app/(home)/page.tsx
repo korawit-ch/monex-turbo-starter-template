@@ -87,15 +87,15 @@ export default async function Home() {
             <div>
               <h3 className="text-lg font-medium mb-3">Primary</h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant="primary">Primary</Button>
+                <Button variant="primary">กรอกผลคะแนน</Button>
                 <Button variant="primary" color={'yellow' as const}>
-                  Primary
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="primary" color={'red' as const}>
-                  Primary
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="primary" disabled>
-                  Primary
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
@@ -108,21 +108,21 @@ export default async function Home() {
                   variant={'primary-icon' as const}
                   icon={<AddUser className="h-4 w-4 text-white" />}
                 >
-                  Primary Icon
+                  กรอกผลคะแนน
                 </Button>
                 <Button
                   variant={'primary-icon' as const}
                   color={'yellow' as const}
                   icon={<AddUser className="h-4 text-darkest-gray" />}
                 >
-                  Primary Icon
+                  กรอกผลคะแนน
                 </Button>
                 <Button
                   variant={'primary-icon' as const}
                   color={'red' as const}
                   icon={<AddUser className="h-4 text-white" />}
                 >
-                  Primary Icon
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
@@ -131,15 +131,15 @@ export default async function Home() {
             <div>
               <h3 className="text-lg font-medium mb-3">Secondary</h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant="secondary">Secondary</Button>
+                <Button variant="secondary">กรอกผลคะแนน</Button>
                 <Button variant="secondary" color={'yellow' as const}>
-                  Secondary
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="secondary" color={'red' as const}>
-                  Secondary
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="secondary" disabled>
-                  Secondary
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
@@ -148,15 +148,15 @@ export default async function Home() {
             <div>
               <h3 className="text-lg font-medium mb-3">Linked</h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant={'linked' as const}>Linked</Button>
+                <Button variant={'linked' as const}>กรอกผลคะแนน</Button>
                 <Button variant={'linked' as const} color={'yellow' as const}>
-                  Linked
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant={'linked' as const} color={'red' as const}>
-                  Linked
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="linked" disabled>
-                  Linked
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
@@ -165,15 +165,15 @@ export default async function Home() {
             <div>
               <h3 className="text-lg font-medium mb-3">Text Link</h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant={'textlink' as const}>Text Link</Button>
+                <Button variant={'textlink' as const}>กรอกผลคะแนน</Button>
                 <Button variant={'textlink' as const} color={'yellow' as const}>
-                  Text Link
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant={'textlink' as const} color={'red' as const}>
-                  Text Link
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="textlink" disabled>
-                  Text Link
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
@@ -183,16 +183,16 @@ export default async function Home() {
               <h3 className="text-lg font-medium mb-3">Sizes</h3>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary" size={'large' as const}>
-                  Large
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="primary" size={'small' as const}>
-                  Small
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="secondary" size={'large' as const}>
-                  Large
+                  กรอกผลคะแนน
                 </Button>
                 <Button variant="secondary" size={'small' as const}>
-                  Small
+                  กรอกผลคะแนน
                 </Button>
               </div>
             </div>
