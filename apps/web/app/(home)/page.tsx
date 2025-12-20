@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { getLinks } from '../../services/links.service';
 import { FeatureBadge } from '../../components/feature-badge';
 import { LinksClient } from '../../components/links-client';
-import { ButtonDemo } from '../../components/button-demo';
+import { Button } from '@repo/ui/button';
 import {
   AddFile,
   ArrowLeft,
@@ -77,7 +77,16 @@ export default async function Home() {
         </div>
 
         {/* Button Demo */}
-        <ButtonDemo />
+        <section className="mt-8 pt-8 border-t border-surface">
+          <h2 className="text-xl font-semibold mb-4">Button</h2>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => alert('Clicked!')}>Click me</Button>
+            <Button disabled>Disabled</Button>
+            <Button className="bg-warning-500 hover:bg-warning-600">
+              Custom Style
+            </Button>
+          </div>
+        </section>
 
         {/* Icon Showcase */}
         <section className="mt-8 pt-8 border-t border-surface">
