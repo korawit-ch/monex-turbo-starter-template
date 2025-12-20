@@ -21,9 +21,7 @@ export function LinksClient() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">Client-Side Fetch (TanStack Query)</h3>
-          <Button variant="primary" onClick={refetch}>
-            Refetch
-          </Button>
+          <Button onClick={refetch}>Refetch</Button>
         </div>
         <div className="p-5 border border-surface rounded-xl">
           <div className="flex items-center gap-3">
@@ -47,7 +45,7 @@ export function LinksClient() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Client-Side Fetch (TanStack Query)</h3>
-        <Button variant="primary" onClick={refetch} disabled={isFetching}>
+        <Button onClick={refetch} disabled={isFetching}>
           {isFetching ? 'Refetching...' : 'Refetch'}
         </Button>
       </div>
