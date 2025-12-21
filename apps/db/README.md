@@ -28,9 +28,9 @@ The database configuration is read from the root `.env` file:
 
 - `DB_USER` - PostgreSQL username (default: postgres)
 - `DB_PASSWORD` - PostgreSQL password (default: postgres)
-- `DB_NAME` - Database name (default: bdi-db)
+- `DB_NAME` - Database name (default: monex-root-template-v2-db)
 - `DB_PORT` - Host port mapping (default: 5433)
-- `DB_CONTAINER_NAME` - Docker container name (default: bdi-db)
+- `DB_CONTAINER_NAME` - Docker container name (default: monex-root-template-v2-db)
 - `DATABASE_URL` - Full connection string for Prisma
 
 ## Connection
@@ -39,6 +39,6 @@ The database is accessible at:
 
 - **Host**: localhost
 - **Port**: ${DB_PORT:-5433}
-- **Database**: ${DB_NAME:-bdi-db}
+- **Database**: ${DB_NAME:-monex-root-template-v2-db}
 - **User**: ${DB_USER:-postgres}
 - **Password**: ${DB_PASSWORD:-postgres}
