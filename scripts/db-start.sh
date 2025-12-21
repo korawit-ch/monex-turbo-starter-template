@@ -14,7 +14,7 @@ fi
 # Set defaults if not set
 export DB_USER=${DB_USER:-postgres}
 export DB_PASSWORD=${DB_PASSWORD:-postgres}
-export DB_NAME=${DB_NAME:-nestjs_poc}
+export DB_NAME=${DB_NAME:-bdi-db}
 export DB_PORT=${DB_PORT:-5433}
 export DB_CONTAINER_NAME=${DB_CONTAINER_NAME:-nestjs-poc-db}
 

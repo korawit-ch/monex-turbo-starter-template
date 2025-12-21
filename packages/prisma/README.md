@@ -32,7 +32,7 @@ pnpm add @repo/prisma
    The `.env` file in the root directory should contain:
 
    ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/nestjs_poc?schema=public"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/bdi-db?schema=public"
    ```
 
    **How Prisma loads environment variables:**

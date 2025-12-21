@@ -1,8 +1,8 @@
-# cric-monex-root-template-v2
+# BDI
 
-> **monex** = **mo**norepo + **n**ode + n**ex**t
+> **BDI** - Full-stack monorepo project
 
-A full-stack monorepo template featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
+A full-stack monorepo featuring NestJS APIs, Next.js frontends, and Prisma ORM with PostgreSQL.
 
 ## What's inside?
 
@@ -13,9 +13,11 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
-│   ├── api                       # NestJS 11 API with Prisma         → http://localhost:3000
-│   ├── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
-│   └── web                       # Next.js 16 frontend               → http://localhost:3001
+│   ├── voting-web                # Next.js 16 Voting Frontend         → http://localhost:3000
+│   ├── voting-api                # NestJS 11 Voting API              → http://localhost:3001
+│   ├── registry-web              # Next.js 16 Registry Frontend      → http://localhost:3002
+│   ├── registry-api              # NestJS 11 Registry API            → http://localhost:3003
+│   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
     ├── @repo/api-client          # Frontend API definitions & types (no fetch)
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
@@ -33,13 +35,15 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 **Runtime & Apps**
 
-| Component                                                 | Version         | Port |
-| --------------------------------------------------------- | --------------- | ---- |
-| **Node.js**                                               | >=22.12         | -    |
-| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3000 |
-| [**Next.js**](https://nextjs.org/) Web (`apps/web`)       | ^16.0.7         | 3001 |
-| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
-| **Swagger** (`/api`)                                      | @nestjs/swagger | 3000 |
+| Component                                                            | Version         | Port       |
+| -------------------------------------------------------------------- | --------------- | ---------- |
+| **Node.js**                                                          | >=22.12         | -          |
+| [**Next.js Voting**](https://nextjs.org/) (`apps/voting-web`)        | ^16.0.7         | 3000       |
+| [**NestJS Voting API**](https://nestjs.com/) (`apps/voting-api`)     | ^11.0.0         | 3001       |
+| [**Next.js Registry**](https://nextjs.org/) (`apps/registry-web`)    | ^16.0.7         | 3002       |
+| [**NestJS Registry API**](https://nestjs.com/) (`apps/registry-api`) | ^11.0.0         | 3003       |
+| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`)            | 16-alpine       | 5433       |
+| **Swagger** (`/api`)                                                 | @nestjs/swagger | 3001, 3003 |
 
 **Core Libraries**
 
@@ -95,7 +99,7 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    The `.env` file is automatically created from `.env.example` during `npm install`. If you need to update it, edit the root `.env` file:
 
    ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/nestjs_poc?schema=public"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/bdi-db?schema=public"
    ```
 
    **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This ensures all parts of the monorepo use the same environment variables.
@@ -117,8 +121,10 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    This will:
    - Automatically distribute the root `.env` file to all apps and packages
    - Start all development servers:
-     - NestJS API on <http://localhost:3000>
-     - Next.js frontend on <http://localhost:3001>
+     - Voting Web on <http://localhost:3000>
+     - Voting API on <http://localhost:3001>
+     - Registry Web on <http://localhost:3002>
+     - Registry API on <http://localhost:3003>
 
 ### Commands
 
@@ -236,7 +242,10 @@ Runs on all pushes and pull requests:
 
 ### API Endpoints
 
-The NestJS API provides the following endpoints with **Swagger documentation** at `http://localhost:3000/api`:
+The NestJS APIs provide the following endpoints with **Swagger documentation**:
+
+- Voting API: `http://localhost:3001/api`
+- Registry API: `http://localhost:3003/api`
 
 - `GET /links` - Get all links
 - `GET /links/:id` - Get a specific link
@@ -249,7 +258,7 @@ The NestJS API provides the following endpoints with **Swagger documentation** a
 DTOs implement Prisma types to ensure type alignment:
 
 ```typescript
-// apps/api/src/links/dto/create-link.dto.ts
+// apps/registry-api/src/links/dto/create-link.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import type { Prisma } from '@repo/prisma';
 
@@ -274,7 +283,7 @@ export class CreateLinkDto implements Prisma.LinkCreateInput {
 
 ### Frontend
 
-The Next.js app displays database results fetched from the NestJS API. The frontend:
+The Next.js apps display database results fetched from their respective NestJS APIs. The frontends:
 
 - Fetches links from the API on server-side
 - Displays them in a styled card layout
@@ -335,7 +344,7 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
    ```tsx
    import { ArrowRight, AddUser } from '@repo/icons';
 
-   <ArrowRight className="w-5 h-5 text-primary-600" />;
+   <ArrowRight className="text-primary-600 h-5 w-5" />;
    ```
 
 **SVGR Configuration** (`.svgrrc.js`):
@@ -353,10 +362,10 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 
 ### Data Fetching Architecture
 
-This template separates **API definitions** from **fetch logic** for maximum flexibility:
+This project separates **API definitions** from **fetch logic** for maximum flexibility:
 
 ```
-@repo/api-client (shared)    apps/web (per-app)
+@repo/api-client (shared)    apps/*-web (per-app)
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
@@ -380,7 +389,7 @@ export const linksApi = {
 2. **Each app** has its own fetch utilities that consume these definitions:
 
 ```typescript
-// apps/web/lib/fetch/server.ts - Server-side fetch
+// apps/registry-web/lib/fetch/server.ts - Server-side fetch
 export async function serverFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint.url}`, {
     method: endpoint.method,
@@ -390,7 +399,7 @@ export async function serverFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
   return response.json();
 }
 
-// apps/web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
+// apps/registry-web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
 export async function clientFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
   // Same logic, but TanStack Query handles caching
 }
@@ -401,7 +410,7 @@ export async function clientFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
 **Server Components** use `serverFetch()` directly:
 
 ```typescript
-// app/page.tsx (Server Component)
+// apps/registry-web/app/page.tsx (Server Component)
 import { linksApi } from '@repo/api-client';
 import { serverFetch } from '@/lib/fetch/server';
 
@@ -414,7 +423,7 @@ export default async function Page() {
 **Client Components** use TanStack Query hooks:
 
 ```typescript
-// components/links-client.tsx
+// apps/registry-web/components/links-client.tsx
 'use client';
 import { useLinksQuery } from '@/queries/links';
 
@@ -435,20 +444,20 @@ export function LinksClient() {
 
 ### Extending Apps
 
-> **💡 Simple Extension Pattern**: To add a new Next.js app, simply duplicate the `apps/web` directory and change its name!
+> **💡 Simple Extension Pattern**: To add a new Next.js app, simply duplicate an existing app directory and change its name!
 
-This monorepo template is designed to make adding new apps straightforward:
+This monorepo is designed to make adding new apps straightforward:
 
-1. **Duplicate the existing app**:
+1. **Duplicate an existing app**:
 
    ```bash
-   cp -r apps/web apps/my-new-app
+   cp -r apps/registry-web apps/my-new-app
    ```
 
 2. **Update the app name** in the following files:
-   - `apps/my-new-app/package.json` - Change `"name": "web"` to `"name": "my-new-app"`
-   - `apps/my-new-app/package.json` - Update the `"dev"` script port (e.g., `--port 3002`)
-   - `apps/my-new-app/next.config.ts` (if it exists) - Update any app-specific configurations
+   - `apps/my-new-app/package.json` - Change the name to `"my-new-app"`
+   - `apps/my-new-app/package.json` - Update the `"dev"` script port (e.g., `--port 3004`)
+   - `apps/my-new-app/next.config.js` (if it exists) - Update any app-specific configurations
 
 3. **That's it!** The new app will:
    - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-client`)
@@ -460,17 +469,17 @@ This monorepo template is designed to make adding new apps straightforward:
 **Example: Creating an admin dashboard**
 
 ```bash
-# 1. Duplicate the web app
-cp -r apps/web apps/admin
+# 1. Duplicate an existing app
+cp -r apps/registry-web apps/admin
 
 # 2. Update package.json
 cd apps/admin
-# Change "name": "web" → "name": "admin"
-# Change port from 3001 → 3002
+# Change "name": "registry-web" → "name": "admin"
+# Change port from 3001 → 3004
 
 # 3. Start developing!
 npm run dev
-# Your new admin app will be available at http://localhost:3002
+# Your new admin app will be available at http://localhost:3004
 ```
 
 All shared packages, configurations, and utilities are automatically available to your new app. This makes it incredibly easy to spin up additional frontend applications while maintaining consistency across your monorepo.
@@ -504,79 +513,3 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 ```bash
 npx turbo link
 ```
-
-## Architecture Philosophy
-
-This repository is designed with **flexibility** and **modularity** in mind. The frontend and backend are combined in a single Turborepo for convenience during development, but the architecture allows them to be **detached at any time** and run as separate repositories while maintaining the same structure and configurations.
-
-> **🚀 Ready to Detach**: The `@repo/prisma` package is **npm-ready** with proper `exports`, `types`, and `prepublishOnly` scripts. When you need to separate frontend from backend, simply publish `@repo/prisma` to npm and update the frontend's dependency from `"@repo/prisma": "*"` to `"@repo/prisma": "^1.0.0"` (or your private registry).
-
-### Complementary Turborepo (Current State)
-
-In the current setup, frontend and backend coexist in a single monorepo, sharing configurations and packages:
-
-![Complementary Turborepo](./docs/images/complementary-turborepo.png)
-
-**Benefits:**
-
-- Shared configurations (ESLint, TypeScript, Prettier)
-- Shared packages (`@repo/prisma`, `@repo/ui`)
-- Single `npm install` for all dependencies
-- Unified development workflow
-- Easy local development and testing
-
-### Interlocking Turborepos (Detached State)
-
-When needed, the frontend and backend can be split into separate Turborepos that communicate via published npm packages:
-
-![Interlocking Turborepos](./docs/images/interlocking-turborepos.png)
-
-**How it works:**
-
-1. **Backend Turborepo**: Contains the NestJS API, database setup, and `@repo/prisma` package
-2. **Frontend Turborepo**: Contains the Next.js apps, `@repo/ui`, and `@repo/design-system` packages
-3. **Shared via NPM**: The `@repo/prisma` package is published to npm, allowing the frontend to consume Prisma types without direct dependency on the backend repo
-4. **Aligned Configurations**: Both repos maintain the same config packages (`eslint-config`, `typescript-config`) for consistency
-
-**Separation Scripts:**
-
-```bash
-# Separate into backend-only repo
-./scripts/separate-backend.sh
-# Prompts to rename @repo/prisma for npm publishing
-
-# Separate into frontend-only repo
-./scripts/separate-frontend.sh
-# Prompts to configure prisma package source (npm or local)
-```
-
-**Publishing `@repo/prisma`:**
-
-```bash
-cd packages/prisma
-npm run build        # Generates Prisma client and compiles TypeScript
-npm publish          # Publishes to npm (or your private registry)
-```
-
-The package exports:
-
-- `prisma` - Singleton Prisma client instance
-- `Link`, `Prisma` - All Prisma-generated types
-- Full TypeScript support with `.d.ts` files
-
-**When to detach:**
-
-- Different teams working on frontend vs backend
-- Different deployment cycles or CI/CD pipelines
-- Scaling concerns require separate infrastructure
-- Security requirements mandate repository separation
-
-**Reattaching:**
-
-The repos can be merged back together at any time since they share the same structure and configurations. Simply:
-
-1. Move apps and packages back into a single workspace
-2. Update `package.json` workspaces
-3. Remove npm package dependencies in favor of local workspace references
-
-This architecture provides the **best of both worlds**: rapid development in a unified repo, with the option to scale to separate repos when needed.

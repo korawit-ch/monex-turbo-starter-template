@@ -12,13 +12,18 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
       "env": ["NEXT_PUBLIC_API_URL"]
     },
+    "db:generate": {
+      "cache": false
+    },
     "build:components": {
       "dependsOn": ["^build"]
     },
     "build:styles": {
       "dependsOn": ["^build"]
     },
-    "lint": {},
+    "lint": {
+      "dependsOn": ["^build"]
+    },
     "check-types": {
       "dependsOn": ["^build"]
     },

@@ -8,7 +8,7 @@ config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const databaseUrl =
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5433/nestjs_poc?schema=public';
+  'postgresql://postgres:postgres@localhost:5433/bdi-db?schema=public';
 
 export default defineConfig({
   earlyAccess: true,

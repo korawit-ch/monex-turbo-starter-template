@@ -5,7 +5,7 @@ import pg from 'pg';
 const prismaClientSingleton = () => {
   const connectionString =
     process.env.DATABASE_URL ||
-    'postgresql://postgres:postgres@localhost:5433/nestjs_poc?schema=public';
+    'postgresql://postgres:postgres@localhost:5433/bdi-db?schema=public';
 
   const pool = new pg.Pool({ connectionString });
   const adapter = new PrismaPg(pool);

@@ -28,6 +28,7 @@ export const config = [
       // Code quality
       'no-console': ['warn', { allow: ['error', 'info', 'warn'] }],
       'no-debugger': 'error',
+      'no-nested-ternary': 'warn',
       eqeqeq: ['error', 'always'],
     },
   },
