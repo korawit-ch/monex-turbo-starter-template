@@ -13,10 +13,8 @@ This Turborepo includes the following packages & apps:
 ```shell
 .
 ├── apps
-│   ├── voting-web                # Next.js 16 Voting Frontend         → http://localhost:3000
-│   ├── voting-api                # NestJS 11 Voting API              → http://localhost:3001
-│   ├── registry-web              # Next.js 16 Registry Frontend      → http://localhost:3002
-│   ├── registry-api              # NestJS 11 Registry API            → http://localhost:3003
+│   ├── web                # Next.js 16 Frontend         → http://localhost:3000
+│   ├── api                # NestJS 11 API              → http://localhost:3001
 │   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
     ├── @repo/api-client          # Frontend API definitions & types (no fetch)
@@ -35,15 +33,13 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 **Runtime & Apps**
 
-| Component                                                            | Version         | Port       |
-| -------------------------------------------------------------------- | --------------- | ---------- |
-| **Node.js**                                                          | >=22.12         | -          |
-| [**Next.js Voting**](https://nextjs.org/) (`apps/voting-web`)        | ^16.0.7         | 3000       |
-| [**NestJS Voting API**](https://nestjs.com/) (`apps/voting-api`)     | ^11.0.0         | 3001       |
-| [**Next.js Registry**](https://nextjs.org/) (`apps/registry-web`)    | ^16.0.7         | 3002       |
-| [**NestJS Registry API**](https://nestjs.com/) (`apps/registry-api`) | ^11.0.0         | 3003       |
-| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`)            | 16-alpine       | 5433       |
-| **Swagger** (`/api`)                                                 | @nestjs/swagger | 3001, 3003 |
+| Component                                                 | Version         | Port       |
+| --------------------------------------------------------- | --------------- | ---------- |
+| **Node.js**                                               | >=22.12         | -          |
+| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.0.7         | 3000       |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3001       |
+| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433       |
+| **Swagger** (`/api`)                                      | @nestjs/swagger | 3001, 3003 |
 
 **Core Libraries**
 
@@ -121,10 +117,8 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    This will:
    - Automatically distribute the root `.env` file to all apps and packages
    - Start all development servers:
-     - Voting Web on <http://localhost:3000>
-     - Voting API on <http://localhost:3001>
-     - Registry Web on <http://localhost:3002>
-     - Registry API on <http://localhost:3003>
+     - Web on <http://localhost:3000>
+     - API on <http://localhost:3001>
 
 ### Commands
 
@@ -244,8 +238,8 @@ Runs on all pushes and pull requests:
 
 The NestJS APIs provide the following endpoints with **Swagger documentation**:
 
-- Voting API: `http://localhost:3001/api`
-- Registry API: `http://localhost:3003/api`
+- API: `http://localhost:3001/api`
+- API: `http://localhost:3003/api`
 
 - `GET /links` - Get all links
 - `GET /links/:id` - Get a specific link
