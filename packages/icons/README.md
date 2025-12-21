@@ -18,7 +18,7 @@ import { ExampleIcon } from '@repo/icons';
 function MyComponent() {
   return (
     <div>
-      <ExampleIcon className="w-6 h-6 text-blue-500" />
+      <ExampleIcon className="h-6 w-6 text-blue-500" />
     </div>
   );
 }

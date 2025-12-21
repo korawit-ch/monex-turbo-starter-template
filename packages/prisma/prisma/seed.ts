@@ -21,13 +21,11 @@ async function main() {
     },
   ];
 
-  for (const link of links) {
-    await prisma.link.upsert({
-      where: { id: undefined }, // or use a valid unique identifier, e.g., { id: 1 } if you have an id field
-      update: {},
-      create: link,
-    });
-  }
+  // Use createMany with skipDuplicates to avoid errors if records already exist
+  await prisma.link.createMany({
+    data: links,
+    skipDuplicates: true,
+  });
 
   console.log('Seed completed successfully!');
 }

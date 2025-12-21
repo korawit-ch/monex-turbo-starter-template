@@ -16,6 +16,7 @@
     "url": ""
   },
   "scripts": {
+    "prebuild": "prisma generate",
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "db:generate": "prisma generate",
