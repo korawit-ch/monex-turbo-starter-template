@@ -1,6 +1,8 @@
 # monex-turbo-starter-template
 
-A full-stack monorepo example featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
+> **monex** = **mo**norepo + **n**ode + n**ex**t
+
+A full-stack monorepo template featuring NestJS API, Next.js frontend, and Prisma ORM with PostgreSQL.
 
 ## What's inside?
 
@@ -285,7 +287,15 @@ The Next.js app displays database results fetched from the NestJS API. The front
 - **@repo/prisma**: Shared Prisma client and schema
   - Exports singleton Prisma client instance
   - Exports all Prisma types (`Prisma`, `Link`, etc.)
-  - Can be published as an npm package
+  - **Ready to publish as an npm package** (see [Architecture Philosophy](#architecture-philosophy))
+- **@repo/design-system**: Shared styling foundation
+  - Tailwind CSS configuration and color palette
+  - Global CSS variables and styles
+  - Used by both `web` and `admin` frontends
+
+- **@repo/ui**: Shared React component library
+  - Reusable components (Button, Card, etc.)
+  - Built with Tailwind CSS from `@repo/design-system`
 
 ### Environment Variables
 
@@ -391,6 +401,8 @@ Learn more:
 
 This repository is designed with **flexibility** and **modularity** in mind. The frontend and backend are combined in a single Turborepo for convenience during development, but the architecture allows them to be **detached at any time** and run as separate repositories while maintaining the same structure and configurations.
 
+> **🚀 Ready to Detach**: The `@repo/prisma` package is **npm-ready** with proper `exports`, `types`, and `prepublishOnly` scripts. When you need to separate frontend from backend, simply publish `@repo/prisma` to npm and update the frontend's dependency from `"@repo/prisma": "*"` to `"@repo/prisma": "^1.0.0"` (or your private registry).
+
 ### Complementary Turborepo (Current State)
 
 In the current setup, frontend and backend coexist in a single monorepo, sharing configurations and packages:
@@ -414,9 +426,23 @@ When needed, the frontend and backend can be split into separate Turborepos that
 **How it works:**
 
 1. **Backend Turborepo**: Contains the NestJS API, database setup, and `@repo/prisma` package
-2. **Frontend Turborepo**: Contains the Next.js apps and `@repo/ui` package
+2. **Frontend Turborepo**: Contains the Next.js apps, `@repo/ui`, and `@repo/design-system` packages
 3. **Shared via NPM**: The `@repo/prisma` package is published to npm, allowing the frontend to consume Prisma types without direct dependency on the backend repo
 4. **Aligned Configurations**: Both repos maintain the same config packages (`eslint-config`, `typescript-config`) for consistency
+
+**Publishing `@repo/prisma`:**
+
+```bash
+cd packages/prisma
+npm run build        # Generates Prisma client and compiles TypeScript
+npm publish          # Publishes to npm (or your private registry)
+```
+
+The package exports:
+
+- `prisma` - Singleton Prisma client instance
+- `Link`, `Prisma` - All Prisma-generated types
+- Full TypeScript support with `.d.ts` files
 
 **When to detach:**
 
