@@ -38,12 +38,12 @@ pnpm add @repo/prisma
    **How Prisma loads environment variables:**
 
    A symlink is created in `packages/prisma/.env` that points to the root `.env` file. This ensures:
-
    - The root `.env` file is the single source of truth
    - Prisma commands work correctly from the `packages/prisma` directory
    - The `env("DATABASE_URL")` in `schema.prisma` reads from the root `.env` file
 
    **Note**: If the symlink doesn't exist, create it with:
+
    ```bash
    cd packages/prisma && ln -sf ../../.env .env
    ```

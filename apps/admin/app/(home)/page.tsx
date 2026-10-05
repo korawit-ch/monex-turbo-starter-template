@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getLinks } from '../../services/links.service';
 import { StatusIndicator } from '../../components/status-indicator';
 import { LinksClient } from '../../components/links-client';

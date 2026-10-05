@@ -1,4 +1,4 @@
-name: Lint
+name: Lint, Type Check & Build
 
 on:
   push:
@@ -29,3 +29,5 @@ jobs:
       - name: Type check
         run: npx turbo run check-types
 
+      - name: Build
+        run: npx turbo run build

@@ -5,6 +5,7 @@ import {
   linksApi,
   type CreateLinkDto,
   type UpdateLinkDto,
+  type Link,
 } from '@repo/api-client';
 import { clientFetch } from '../lib/fetch/client';
 
@@ -17,7 +18,7 @@ export const linkKeys = {
  * Hook to fetch all links (client-side with TanStack Query)
  */
 export function useLinksQuery() {
-  return useQuery({
+  return useQuery<Link[]>({
     queryKey: linkKeys.all,
     queryFn: () => clientFetch(linksApi.list()),
   });
@@ -27,7 +28,7 @@ export function useLinksQuery() {
  * Hook to fetch a single link
  */
 export function useLinkQuery(id: number) {
-  return useQuery({
+  return useQuery<Link>({
     queryKey: linkKeys.detail(id),
     queryFn: () => clientFetch(linksApi.detail(id)),
     enabled: !!id,
