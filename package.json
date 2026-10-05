@@ -26,11 +26,16 @@
     "db:seed": "cd packages/prisma && npm run db:seed",
     "db:studio": "cd packages/prisma && npm run db:studio",
     "env:setup": "node scripts/setup-env.js",
-    "env:distribute": "node scripts/distribute-env.js"
+    "env:distribute": "node scripts/distribute-env.js",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.2.5",
     "turbo": "^2.6.3"
   },
@@ -41,5 +46,14 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  }
 }

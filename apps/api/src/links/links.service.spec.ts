@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('LinksService', () => {
   let service: LinksService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prismaService: PrismaService;
 
   beforeEach(async () => {
