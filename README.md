@@ -31,18 +31,19 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 ### Tech Stack & Versions
 
-| Component                          | Version   | Port |
-| ---------------------------------- | --------- | ---- |
-| **NestJS API** (`apps/api`)        | ^11.0.0   | 3000 |
-| **Next.js Web** (`apps/web`)       | ^16.0.7   | 3001 |
-| **Next.js Admin** (`apps/admin`)   | ^16.0.7   | 3002 |
-| **PostgreSQL** (`apps/db`)         | 16-alpine | 5433 |
-| **Prisma ORM** (`packages/prisma`) | ^7.1.0    | -    |
-| **React**                          | ^19.1.0   | -    |
-| **Tailwind CSS**                   | ^4.1.11   | -    |
-| **TanStack Query**                 | ^5.80.7   | -    |
-| **TypeScript**                     | 5.5.4+    | -    |
-| **Node.js**                        | >=22.12   | -    |
+| Component                          | Version         | Port |
+| ---------------------------------- | --------------- | ---- |
+| **NestJS API** (`apps/api`)        | ^11.0.0         | 3000 |
+| **Next.js Web** (`apps/web`)       | ^16.0.7         | 3001 |
+| **Next.js Admin** (`apps/admin`)   | ^16.0.7         | 3002 |
+| **PostgreSQL** (`apps/db`)         | 16-alpine       | 5433 |
+| **Prisma ORM** (`packages/prisma`) | ^7.1.0          | -    |
+| **React**                          | ^19.1.0         | -    |
+| **Tailwind CSS**                   | ^4.1.11         | -    |
+| **TanStack Query**                 | ^5.80.7         | -    |
+| **TypeScript**                     | 5.5.4+          | -    |
+| **Node.js**                        | >=22.12         | -    |
+| **Swagger** (`/api`)               | @nestjs/swagger | 3000 |
 
 **Core Technologies:**
 
@@ -267,13 +268,41 @@ The Prisma schema is located in `packages/prisma/prisma/schema.prisma` and defin
 
 ### API Endpoints
 
-The NestJS API provides the following endpoints:
+The NestJS API provides the following endpoints with **Swagger documentation** at `http://localhost:3000/api`:
 
 - `GET /links` - Get all links
 - `GET /links/:id` - Get a specific link
 - `POST /links` - Create a new link
 - `PATCH /links/:id` - Update a link
 - `DELETE /links/:id` - Delete a link
+
+#### DTOs & Swagger
+
+DTOs implement Prisma types to ensure type alignment:
+
+```typescript
+// apps/api/src/links/dto/create-link.dto.ts
+import { ApiProperty } from '@nestjs/swagger';
+import type { Prisma } from '@repo/prisma';
+
+export class CreateLinkDto implements Prisma.LinkCreateInput {
+  @ApiProperty({ example: 'https://google.com' })
+  url: string;
+
+  @ApiProperty({ example: 'Google' })
+  title: string;
+
+  @ApiProperty({ example: 'Search engine', required: false })
+  description?: string;
+}
+```
+
+**Why this pattern?**
+
+- ✅ `implements Prisma.LinkCreateInput` - TypeScript enforces DTO ↔ Prisma alignment
+- ✅ `@ApiProperty()` - Swagger gets proper documentation with examples
+- ✅ Single source of truth - Prisma schema defines the data model
+- ✅ Compile-time errors if DTO drifts from schema
 
 ### Frontend
 

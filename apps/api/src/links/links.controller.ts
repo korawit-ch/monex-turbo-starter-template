@@ -7,16 +7,17 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import type { Prisma } from '@repo/prisma';
 
 import { LinksService } from './links.service';
+import { CreateLinkDto } from './dto/create-link.dto';
+import { UpdateLinkDto } from './dto/update-link.dto';
 
 @Controller('links')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
   @Post()
-  create(@Body() data: Prisma.LinkCreateInput) {
+  create(@Body() data: CreateLinkDto) {
     return this.linksService.create(data);
   }
 
@@ -31,7 +32,7 @@ export class LinksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Prisma.LinkUpdateInput) {
+  update(@Param('id') id: string, @Body() data: UpdateLinkDto) {
     return this.linksService.update(+id, data);
   }
 
