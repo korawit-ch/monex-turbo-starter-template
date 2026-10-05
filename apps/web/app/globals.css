@@ -1,1 +1,2 @@
-@import '@repo/design-system/globals.css';
+@import 'tailwindcss';
+@import '@repo/design-system';

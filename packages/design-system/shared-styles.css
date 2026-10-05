@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+/* Design System Global Styles */
+/* These styles are shared across all frontend applications */
+
+@theme {
+  --color-*: initial; /* Removes all default colors */
+
+  /* Primary Colors - Ocean Blue */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Status Colors - Success (Emerald) */
+  --color-success-100: #d1fae5;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-800: #065f46;
+
+  /* Status Colors - Error (Rose) */
+  --color-error-300: #fda4af;
+  --color-error-400: #fb7185;
+  --color-error-500: #f43f5e;
+  --color-error-800: #9f1239;
+
+  /* Status Colors - Warning (Amber) */
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-800: #92400e;
+
+  --color-white: #ffffff;
+  --color-lightest-gray: #f8fafc;
+  --color-light-gray: #f1f5f9;
+  --color-gray: #e2e8f0;
+  --color-medium-gray: #94a3b8;
+  --color-dark-gray: #64748b;
+  --color-bold-gray: #475569;
+  --color-darkest-gray: #0f172a;
+  --color-black: #000000;
+
+  /* Default essential colors */
+  --color-inherit: inherit;
+  --color-transparent: transparent;
+
+  --font-prompt: 'Prompt', sans-serif;
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+
+  --surface: rgba(15, 23, 42, 0.05);
+  --border: rgba(15, 23, 42, 0.15);
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom Text Style Utilities - Using @utility for Tailwind v4
+ * 
+ * IMPORTANT: These custom utilities (text-desktop-*, text-mobile-*) must be
+ * registered in packages/ui/src/utils.ts tailwind-merge configuration.
+ * Without that registration, tailwind-merge will strip these classes when
+ * merging class names, causing them to not work in UI components.
+ */
+/* @utility {
+} */

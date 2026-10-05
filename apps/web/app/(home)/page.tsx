@@ -5,9 +5,52 @@ import Image from 'next/image';
 import { getLinks } from '../../services/links.service';
 import { FeatureBadge } from '../../components/feature-badge';
 import { LinksClient } from '../../components/links-client';
+import { Button } from '@repo/ui/button';
+import {
+  AddFile,
+  AddUser,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Check,
+  Clear,
+  Download,
+  Edit,
+  Error,
+  FullArrowLeft,
+  FullArrowRight,
+  HamburgerMenu,
+  Loading,
+  MapPin,
+  PhoneCall,
+  Search,
+  Send,
+  Trash,
+} from '@repo/icons';
 
 export default async function Home() {
   const links = await getLinks();
+
+  const icons = [
+    { name: 'AddFile', component: AddFile },
+    { name: 'AddUser', component: AddUser },
+    { name: 'ArrowLeft', component: ArrowLeft },
+    { name: 'ArrowRight', component: ArrowRight },
+    { name: 'Calendar', component: Calendar },
+    { name: 'Check', component: Check },
+    { name: 'Clear', component: Clear },
+    { name: 'Download', component: Download },
+    { name: 'Edit', component: Edit },
+    { name: 'Error', component: Error },
+    { name: 'FullArrowLeft', component: FullArrowLeft },
+    { name: 'FullArrowRight', component: FullArrowRight },
+    { name: 'HamburgerMenu', component: HamburgerMenu },
+    { name: 'MapPin', component: MapPin },
+    { name: 'PhoneCall', component: PhoneCall },
+    { name: 'Search', component: Search },
+    { name: 'Send', component: Send },
+    { name: 'Trash', component: Trash },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -18,13 +61,13 @@ export default async function Home() {
           alt="Turborepo"
           width={160}
           height={34}
-          className="mb-8 dark:invert"
+          className="mb-8"
           priority
         />
 
         {/* Intro */}
         <h1 className="text-3xl font-bold mb-4">Turborepo + Prisma Demo</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
+        <p className="text-primary-500 mb-8">
           Fetching data from PostgreSQL via NestJS API and Prisma ORM.
         </p>
 
@@ -35,31 +78,177 @@ export default async function Home() {
           <FeatureBadge label="Local Component" highlight />
         </div>
 
+        {/* Button Variants Demo */}
+        <section className="mt-8 pt-8 border-t border-surface">
+          <h2 className="text-xl font-semibold mb-4">Button Variants</h2>
+
+          <div className="space-y-6">
+            {/* Primary Variants */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Primary</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="primary">Primary</Button>
+                <Button variant="primary" color={'yellow' as const}>
+                  Primary
+                </Button>
+                <Button variant="primary" color={'red' as const}>
+                  Primary
+                </Button>
+                <Button variant="primary" disabled>
+                  Primary
+                </Button>
+              </div>
+            </div>
+
+            {/* Primary with Icon */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Primary with Icon</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant={'primary-icon' as const}
+                  icon={<AddUser className="h-4 w-4 text-white" />}
+                >
+                  Primary Icon
+                </Button>
+                <Button
+                  variant={'primary-icon' as const}
+                  color={'yellow' as const}
+                  icon={<AddUser className="h-4 text-darkest-gray" />}
+                >
+                  Primary Icon
+                </Button>
+                <Button
+                  variant={'primary-icon' as const}
+                  color={'red' as const}
+                  icon={<AddUser className="h-4 text-white" />}
+                >
+                  Primary Icon
+                </Button>
+              </div>
+            </div>
+
+            {/* Secondary Variants */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Secondary</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="secondary" color={'yellow' as const}>
+                  Secondary
+                </Button>
+                <Button variant="secondary" color={'red' as const}>
+                  Secondary
+                </Button>
+                <Button variant="secondary" disabled>
+                  Secondary
+                </Button>
+              </div>
+            </div>
+
+            {/* Linked Variants */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Linked</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant={'linked' as const}>Linked</Button>
+                <Button variant={'linked' as const} color={'yellow' as const}>
+                  Linked
+                </Button>
+                <Button variant={'linked' as const} color={'red' as const}>
+                  Linked
+                </Button>
+                <Button variant="linked" disabled>
+                  Linked
+                </Button>
+              </div>
+            </div>
+
+            {/* Text Link Variants */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Text Link</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant={'textlink' as const}>Text Link</Button>
+                <Button variant={'textlink' as const} color={'yellow' as const}>
+                  Text Link
+                </Button>
+                <Button variant={'textlink' as const} color={'red' as const}>
+                  Text Link
+                </Button>
+                <Button variant="textlink" disabled>
+                  Text Link
+                </Button>
+              </div>
+            </div>
+
+            {/* Size Variants */}
+            <div>
+              <h3 className="text-lg font-medium mb-3">Sizes</h3>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button variant="primary" size={'large' as const}>
+                  Large
+                </Button>
+                <Button variant="primary" size={'small' as const}>
+                  Small
+                </Button>
+                <Button variant="secondary" size={'large' as const}>
+                  Large
+                </Button>
+                <Button variant="secondary" size={'small' as const}>
+                  Small
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Icon Showcase */}
+        <section className="mt-8 pt-8 border-t border-surface">
+          <h2 className="text-xl font-semibold mb-4">Icon Showcase</h2>
+          <p className="text-sm text-foreground/70 mb-6">
+            All available icons from @repo/icons package
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {icons.map(({ name, component: Icon }) => (
+              <div
+                key={name}
+                className="flex flex-col items-center p-4 rounded-lg transition-colors"
+              >
+                <Icon className="h-5 text-primary-600 mb-2" />
+                <span className="text-desktop-caption text-center">{name}</span>
+              </div>
+            ))}
+            <div className="flex flex-col items-center p-4 rounded-lg transition-colors">
+              <Loading className="h-5 text-primary-600 mb-2 animate-spin" />
+              <span className="text-desktop-caption text-center">Loading</span>
+            </div>
+          </div>
+        </section>
+
         {/* Data */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Links ({links.length})</h2>
+        <section className="mt-8 pt-8 border-t border-surface">
+          <h2 className="text-xl font-semibold mb-4">
+            Server-Side Demo: Fetched Links ({links.length})
+          </h2>
 
           {links.length > 0 ? (
             <ul className="space-y-3">
               {links.map((link) => (
                 <li
                   key={link.id}
-                  className="p-5 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-gray-300 dark:hover:border-gray-700 transition-colors"
+                  className="p-5 border border-surface rounded-xl hover:border-border transition-colors"
                 >
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="font-medium text-primary-500 hover:underline"
                   >
                     {link.title}
                   </a>
                   {link.description && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-foreground/70 mt-1">
                       {link.description}
                     </p>
                   )}
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-foreground/50 mt-2">
                     ID: {link.id} •{' '}
                     {new Date(link.createdAt).toLocaleDateString()}
                   </p>
@@ -67,26 +256,26 @@ export default async function Home() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">
+            <p className="text-foreground/70">
               No links. Start the API on port 3000.
             </p>
           )}
 
           {links.length > 0 && (
-            <p className="text-sm text-green-600 dark:text-green-400 mt-4">
+            <p className="text-sm text-success-800/70 mt-4">
               ✓ Server-side fetch via serverFetch()
             </p>
           )}
         </section>
 
         {/* Client-side fetch demo */}
-        <section className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
+        <section className="mt-8 pt-8 border-t border-surface">
           <h2 className="text-xl font-semibold mb-4">Client-Side Demo</h2>
           <LinksClient />
         </section>
       </main>
 
-      <footer className="w-full max-w-3xl mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-400 text-center">
+      <footer className="w-full max-w-3xl mt-16 pt-8 border-t border-surface text-sm text-foreground/50 text-center">
         Web • Port 3001 • @repo/design-system
       </footer>
     </div>

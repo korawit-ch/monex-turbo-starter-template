@@ -15,12 +15,20 @@ export const linkKeys = {
 };
 
 /**
+ * Helper to add a delay to async operations
+ */
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
  * Hook to fetch all links (client-side with TanStack Query)
  */
 export function useLinksQuery() {
   return useQuery<Link[]>({
     queryKey: linkKeys.all,
-    queryFn: () => clientFetch(linksApi.list()),
+    queryFn: async () => {
+      await delay(800);
+      return clientFetch(linksApi.list());
+    },
   });
 }
 
@@ -30,7 +38,10 @@ export function useLinksQuery() {
 export function useLinkQuery(id: number) {
   return useQuery<Link>({
     queryKey: linkKeys.detail(id),
-    queryFn: () => clientFetch(linksApi.detail(id)),
+    queryFn: async () => {
+      await delay(600);
+      return clientFetch(linksApi.detail(id));
+    },
     enabled: !!id,
   });
 }

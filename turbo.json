@@ -12,6 +12,12 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
       "env": ["NEXT_PUBLIC_API_URL"]
     },
+    "build:components": {
+      "dependsOn": ["^build"]
+    },
+    "build:styles": {
+      "dependsOn": ["^build"]
+    },
     "lint": {},
     "check-types": {
       "dependsOn": ["^build"]
