@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Prompt } from 'next/font/google';
+
+import { Providers } from '../providers';
+import '@repo/ui/styles.css';
 import './globals.css';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-});
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
+const prompt = Prompt({
+  variable: '--font-prompt',
+  subsets: ['latin'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
 });
 
 export const metadata: Metadata = {
@@ -23,8 +23,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+      <body className={`${prompt.variable} font-prompt`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
