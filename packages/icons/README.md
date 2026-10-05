@@ -13,12 +13,12 @@ npm install
 ## Usage
 
 ```tsx
-import { ExampleIcon } from '@repo/icons';
+import { ArrowRight } from '@repo/icons';
 
 function MyComponent() {
   return (
     <div>
-      <ExampleIcon className="h-6 w-6 text-blue-500" />
+      <ArrowRight className="h-6 w-6 text-blue-500" />
     </div>
   );
 }
@@ -28,22 +28,24 @@ Icons accept all standard SVG props and React props, including:
 
 - `className` - for styling with Tailwind or CSS
 - `width` and `height` - for sizing
-- `fill` and `stroke` - for colors (defaults to `currentColor`)
+- `fill` and `stroke` - for colors (only `#000`/`#000000` are replaced with `currentColor`; other source colors remain)
 
 ## Adding New Icons
 
 1. Add your SVG file to `src/icons/` (e.g., `my-icon.svg`)
-2. Run `npm run build:index` to regenerate the index file (or manually add the export)
+2. Run `npm run build:index` to regenerate the index file; do not edit generated exports manually
 3. Run `npm run build` to generate React components
 4. The icon will be available as `MyIcon` (kebab-case to PascalCase conversion)
 
 **Example:**
 
 - File: `src/icons/arrow-right.svg`
-- Export: `export { default as ArrowRight } from '../dist/arrow-right';`
+- Export: `export { default as ArrowRight } from '../dist/ArrowRight';`
 - Usage: `import { ArrowRight } from '@repo/icons';`
 
 ## Development
+
+Run these scripts inside `packages/icons`, or add `--workspace=@repo/icons` from the root.
 
 - `npm run build` - Build all icons and generate index
 - `npm run build:icons` - Build icons only (SVGR conversion)
@@ -71,7 +73,7 @@ packages/icons/
 │   └── index.ts        # Main export file
 ├── dist/               # Generated React components (gitignored)
 ├── scripts/
-│   └── generate-index.js  # Auto-generates index.ts
+│   └── generate-index.mjs  # Auto-generates index.ts
 ├── .svgrrc.js         # SVGR configuration
 └── package.json
 ```
@@ -89,3 +91,10 @@ This package can be used in any app in the monorepo:
 ```
 
 Make sure to run `npm run build` in the icons package before using icons in your app, or add it as a dependency in your app's build pipeline.
+
+## Improvements
+
+- **IMPORTANT:** The wildcard export in `package.json` targets `dist/*.js`, while the build emits `.tsx` without compiling it to JavaScript. Existing root named imports work through source exports; repair/verify packaging before exposing wildcard imports or publishing.
+- **SUGGESTION:** Inspect `app-thai-id.svg` before treating it like a small UI glyph. Generation reports a source exceeding 500 KB; measure its consumer/bundle impact and consider a more suitable representation.
+
+See [local agent instructions](AGENTS.md).
