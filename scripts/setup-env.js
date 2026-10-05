@@ -10,10 +10,10 @@ const envPath = path.join(rootDir, '.env');
 // Create .env from .env.example if it doesn't exist
 if (!fs.existsSync(envPath) && fs.existsSync(envExamplePath)) {
   console.log('📝 Creating .env from .env.example...');
-  
+
   // Read .env.example and process variable substitution
   let envContent = fs.readFileSync(envExamplePath, 'utf8');
-  
+
   // Replace ${VAR} with actual values or defaults
   const defaults = {
     DB_USER: 'postgres',
@@ -22,12 +22,15 @@ if (!fs.existsSync(envPath) && fs.existsSync(envExamplePath)) {
     DB_PORT: '5433',
     DB_CONTAINER_NAME: 'monex-turbo-starter-template-db',
   };
-  
+
   // Replace ${VAR} with default values
-  envContent = envContent.replace(/\$\{(\w+)(?::-([^}]+))?\}/g, (match, varName, defaultValue) => {
-    return defaultValue || defaults[varName] || match;
-  });
-  
+  envContent = envContent.replace(
+    /\$\{(\w+)(?::-([^}]+))?\}/g,
+    (match, varName, defaultValue) => {
+      return defaultValue || defaults[varName] || match;
+    },
+  );
+
   fs.writeFileSync(envPath, envContent);
   console.log('✅ .env file created successfully');
 } else if (fs.existsSync(envPath)) {
@@ -35,4 +38,3 @@ if (!fs.existsSync(envPath) && fs.existsSync(envExamplePath)) {
 } else {
   console.warn('⚠️  .env.example not found, skipping .env creation');
 }
-
