@@ -31,43 +31,38 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 ### Tech Stack & Versions
 
-| Component                          | Version         | Port |
-| ---------------------------------- | --------------- | ---- |
-| **NestJS API** (`apps/api`)        | ^11.0.0         | 3000 |
-| **Next.js Web** (`apps/web`)       | ^16.0.7         | 3001 |
-| **Next.js Admin** (`apps/admin`)   | ^16.0.7         | 3002 |
-| **PostgreSQL** (`apps/db`)         | 16-alpine       | 5433 |
-| **Prisma ORM** (`packages/prisma`) | ^7.1.0          | -    |
-| **React**                          | ^19.1.0         | -    |
-| **Tailwind CSS**                   | ^4.1.11         | -    |
-| **TanStack Query**                 | ^5.80.7         | -    |
-| **TypeScript**                     | 5.5.4+          | -    |
-| **Node.js**                        | >=22.12         | -    |
-| **Swagger** (`/api`)               | @nestjs/swagger | 3000 |
+**Runtime & Apps**
 
-**Core Technologies:**
+| Component                                                 | Version         | Port |
+| --------------------------------------------------------- | --------------- | ---- |
+| **Node.js**                                               | >=22.12         | -    |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3000 |
+| [**Next.js**](https://nextjs.org/) Web (`apps/web`)       | ^16.0.7         | 3001 |
+| [**Next.js**](https://nextjs.org/) Admin (`apps/admin`)   | ^16.0.7         | 3002 |
+| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
+| **Swagger** (`/api`)                                      | @nestjs/swagger | 3000 |
 
-- **Backend**: [NestJS](https://nestjs.com/) - Progressive Node.js framework
-- **Frontend**: [Next.js](https://nextjs.org/) - React framework with App Router
-- **Database**: [PostgreSQL](https://www.postgresql.org/) - Relational database
-- **ORM**: [Prisma](https://www.prisma.io/) - Next-generation ORM (v7)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework (v4)
-- **Monorepo**: [Turborepo](https://turbo.build/repo) - High-performance build system
+**Core Libraries**
 
-### Utilities
+| Library                                           | Version |
+| ------------------------------------------------- | ------- |
+| [**React**](https://react.dev/)                   | ^19.1.0 |
+| [**Prisma ORM**](https://www.prisma.io/)          | ^7.1.0  |
+| [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.11 |
+| [**TanStack Query**](https://tanstack.com/query)  | ^5.80.7 |
+| [**TypeScript**](https://www.typescriptlang.org/) | 5.5.4+  |
 
-This `Turborepo` includes:
+**Tooling**
 
-- [TypeScript](https://www.typescriptlang.org/) for static type-safety
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-- [Jest](https://jestjs.io/) for testing
-- [Prisma](https://www.prisma.io/) for database management
-- [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
-- [Docker Compose](https://docs.docker.com/compose/) for PostgreSQL database
-- [Husky](https://typicode.github.io/husky/) for Git hooks
-- [lint-staged](https://github.com/okonet/lint-staged) for pre-commit linting
-- [Commitlint](https://commitlint.js.org/) for conventional commit messages
+| Tool                                                   | Purpose            |
+| ------------------------------------------------------ | ------------------ |
+| [**Turborepo**](https://turbo.build/repo)              | Monorepo build     |
+| [**ESLint**](https://eslint.org/)                      | Code linting       |
+| [**Prettier**](https://prettier.io)                    | Code formatting    |
+| [**Jest**](https://jestjs.io/)                         | Testing            |
+| [**Docker Compose**](https://docs.docker.com/compose/) | Database container |
+| [**Husky**](https://typicode.github.io/husky/)         | Git hooks          |
+| [**Commitlint**](https://commitlint.js.org/)           | Commit messages    |
 
 ## Getting Started
 
@@ -93,10 +88,6 @@ This `Turborepo` includes:
 
    ```bash
    npm run db:start
-   # or
-   npm run db:up
-   # or
-   cd apps/db && npm run dev
    ```
 
 3. **Configure database connection** (if needed):
@@ -120,7 +111,6 @@ This `Turborepo` includes:
 5. **Start development servers**:
 
    ```bash
-   # From the root directory
    npm run dev
    ```
 
@@ -244,27 +234,6 @@ Runs on all pushes and pull requests:
 - TypeScript type checking
 
 ## Project Structure
-
-### Database Setup
-
-The project uses PostgreSQL with Prisma ORM. The database service is located in `apps/db/`:
-
-- **Database**: PostgreSQL 16 (Alpine) running in Docker
-- **Configuration**: Managed via environment variables in root `.env` file
-- **Default Port**: 5433 (configurable via `DB_PORT`)
-- **Default Database Name**: `monex-turbo-starter-template-db` (configurable via `DB_NAME`)
-- **Default Credentials**: `postgres/postgres` (configurable via `DB_USER`/`DB_PASSWORD`)
-
-The Prisma schema is located in `packages/prisma/prisma/schema.prisma` and defines the `Link` model.
-
-**Database Environment Variables** (in root `.env`):
-
-- `DB_USER` - PostgreSQL username
-- `DB_PASSWORD` - PostgreSQL password
-- `DB_NAME` - Database name
-- `DB_PORT` - Host port mapping
-- `DB_CONTAINER_NAME` - Docker container name
-- `DATABASE_URL` - Full connection string for Prisma
 
 ### API Endpoints
 
@@ -446,76 +415,6 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 ```bash
 npx turbo link
 ```
-
-## Development Workflow
-
-1. **Start the database**: `npm run db:start`
-2. **Generate Prisma client**: `npm run db:generate`
-3. **Push schema**: `npm run db:push`
-4. **Seed data** (optional): `npm run db:seed`
-5. **Start dev servers**: `npm run dev`
-6. **View results**: Open <http://localhost:3001>
-
-## Testing the Database Connection
-
-You can test the API directly:
-
-```bash
-# Get all links
-curl http://localhost:3000/links
-
-# Create a new link
-curl -X POST http://localhost:3000/links \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Test Link","url":"https://example.com","description":"A test link"}'
-```
-
-## Troubleshooting
-
-### Database Connection Issues
-
-- Ensure Docker is running
-- Check if the database container is up: `docker-compose -f apps/db/docker-compose.yml ps`
-- Verify the `DATABASE_URL` in the root `.env` file (copy from `.env.example` if needed)
-- Check database logs: `docker-compose -f apps/db/docker-compose.yml logs postgres`
-
-### Prisma Client Not Found
-
-- Run `npm run db:generate`
-- Ensure `@repo/prisma` package is built: `npm run build`
-
-### API Not Responding
-
-- Check if the API is running on port 3000
-- Verify CORS is enabled in `apps/api/src/main.ts`
-- Check API logs for errors
-
-## Useful Links
-
-This example takes inspiration from:
-
-- [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) Turborepo example
-- [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) NestJS sample
-
-Learn more:
-
-**Turborepo:**
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-
-**Prisma:**
-
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Prisma with NestJS](https://www.prisma.io/docs/guides/integration-guides/integrate-prisma-with-your-framework/nestjs)
-- [Prisma Client API Reference](https://www.prisma.io/docs/reference/api-reference/prisma-client-reference)
-
-**NestJS:**
-
-- [NestJS Documentation](https://docs.nestjs.com/)
-- [NestJS Prisma Integration](https://docs.nestjs.com/recipes/prisma)
 
 ## Architecture Philosophy
 
