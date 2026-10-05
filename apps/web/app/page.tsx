@@ -1,4 +1,4 @@
-import type { Link } from '@repo/api';
+import type { Link } from '@repo/prisma';
 import { Button } from '@repo/ui/button';
 import Image, { type ImageProps } from 'next/image';
 
@@ -89,27 +89,57 @@ export default async function Home() {
           Open alert
         </Button>
 
-        {links.length > 0 ? (
-          <div className={styles.ctas}>
-            {links.map((link) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={link.description}
-                className={styles.secondary}
-              >
-                {link.title}
-              </a>
-            ))}
-          </div>
-        ) : (
-          <div style={{ color: '#666' }}>
-            No links available. Make sure the NestJS API is running on port
-            3000.
-          </div>
-        )}
+        <div className={styles.databaseSection}>
+          <h2 className={styles.sectionTitle}>
+            Database Links (from Prisma)
+          </h2>
+          {links.length > 0 ? (
+            <div className={styles.linksContainer}>
+              {links.map((link) => (
+                <div key={link.id} className={styles.linkCard}>
+                  <div className={styles.linkContent}>
+                    <h3 className={styles.linkTitle}>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.linkAnchor}
+                      >
+                        {link.title}
+                      </a>
+                    </h3>
+                    {link.description && (
+                      <p className={styles.linkDescription}>
+                        {link.description}
+                      </p>
+                    )}
+                    <div className={styles.linkMetadata}>
+                      <span>ID: {link.id}</span>
+                      <span>•</span>
+                      <span>URL: {link.url}</span>
+                      <span>•</span>
+                      <span>
+                        Created: {new Date(link.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className={styles.successMessage}>
+                ✅ Successfully fetched {links.length} link{links.length !== 1 ? 's' : ''} from PostgreSQL database using Prisma!
+              </div>
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyTitle}>
+                No links available
+              </p>
+              <p className={styles.emptyDescription}>
+                Make sure the NestJS API is running on port 3000 and the database is seeded.
+              </p>
+            </div>
+          )}
+        </div>
       </main>
 
       <footer className={styles.footer}>
