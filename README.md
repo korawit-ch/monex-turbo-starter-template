@@ -18,6 +18,7 @@ This Turborepo includes the following packages & apps:
 │   ├── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 │   └── web                       # Next.js 16 frontend               → http://localhost:3001
 └── packages
+    ├── @repo/api-client          # Frontend API definitions & types (no fetch)
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/jest-config         # Jest configurations
@@ -30,17 +31,18 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 ### Tech Stack & Versions
 
-| Component                          | Version            | Port |
-| ---------------------------------- | ------------------ | ---- |
-| **NestJS API** (`apps/api`)        | ^11.0.0            | 3000 |
-| **Next.js Web** (`apps/web`)       | ^16.0.7            | 3001 |
-| **Next.js Admin** (`apps/admin`)   | ^16.0.7            | 3002 |
-| **PostgreSQL** (`apps/db`)         | 16-alpine          | 5433 |
-| **Prisma ORM** (`packages/prisma`) | ^7.1.0             | -    |
-| **React**                          | ^19.1.0            | -    |
-| **Tailwind CSS**                   | ^4.1.11            | -    |
-| **TypeScript**                     | 5.5.4+             | -    |
-| **Node.js**                        | >=20.19 or >=22.12 | -    |
+| Component                          | Version   | Port |
+| ---------------------------------- | --------- | ---- |
+| **NestJS API** (`apps/api`)        | ^11.0.0   | 3000 |
+| **Next.js Web** (`apps/web`)       | ^16.0.7   | 3001 |
+| **Next.js Admin** (`apps/admin`)   | ^16.0.7   | 3002 |
+| **PostgreSQL** (`apps/db`)         | 16-alpine | 5433 |
+| **Prisma ORM** (`packages/prisma`) | ^7.1.0    | -    |
+| **React**                          | ^19.1.0   | -    |
+| **Tailwind CSS**                   | ^4.1.11   | -    |
+| **TanStack Query**                 | ^5.80.7   | -    |
+| **TypeScript**                     | 5.5.4+    | -    |
+| **Node.js**                        | >=22.12   | -    |
 
 **Core Technologies:**
 
@@ -70,9 +72,9 @@ This `Turborepo` includes:
 
 ### Prerequisites
 
-- Node.js >= 18
+- Node.js >= 22.12 (required for Prisma 7)
 - Docker and Docker Compose (for PostgreSQL database)
-- npm, yarn, or pnpm
+- npm (recommended)
 
 ### Setup
 
@@ -284,10 +286,17 @@ The Next.js app displays database results fetched from the NestJS API. The front
 
 ### Shared Packages
 
+- **@repo/api-client**: Frontend API definitions (no fetch, no React, no Next.js)
+  - Endpoint definitions with typed request/response
+  - Shared DTOs (`CreateLinkDto`, `UpdateLinkDto`)
+  - Runtime-agnostic - works on server and client components
+  - **Shared across all frontend apps only**
+
 - **@repo/prisma**: Shared Prisma client and schema
   - Exports singleton Prisma client instance
   - Exports all Prisma types (`Prisma`, `Link`, etc.)
   - **Ready to publish as an npm package** (see [Architecture Philosophy](#architecture-philosophy))
+
 - **@repo/design-system**: Shared styling foundation
   - Tailwind CSS configuration and color palette
   - Global CSS variables and styles
@@ -296,6 +305,88 @@ The Next.js app displays database results fetched from the NestJS API. The front
 - **@repo/ui**: Shared React component library
   - Reusable components (Button, Card, etc.)
   - Built with Tailwind CSS from `@repo/design-system`
+
+### Data Fetching Architecture
+
+This template separates **API definitions** from **fetch logic** for maximum flexibility:
+
+```
+@repo/api-client (shared)    apps/web or apps/admin (per-app)
+┌─────────────────────┐      ┌─────────────────────────────────┐
+│ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
+│ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
+│ linksApi.create()   │      │ queries/links.ts (TanStack)     │
+└─────────────────────┘      └─────────────────────────────────┘
+```
+
+**How it works:**
+
+1. **`@repo/api-client`** defines endpoints as pure data (no fetch):
+
+```typescript
+// packages/api-client/src/links.ts
+export const linksApi = {
+  list: () => ({ url: '/links', method: 'GET' }),
+  detail: (id: number) => ({ url: `/links/${id}`, method: 'GET' }),
+  create: (data) => ({ url: '/links', method: 'POST', body: data }),
+};
+```
+
+2. **Each app** has its own fetch utilities that consume these definitions:
+
+```typescript
+// apps/web/lib/fetch/server.ts - Server-side fetch
+export async function serverFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${endpoint.url}`, {
+    method: endpoint.method,
+    body: endpoint.body ? JSON.stringify(endpoint.body) : undefined,
+    cache: 'no-store', // Server controls caching
+  });
+  return response.json();
+}
+
+// apps/web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
+export async function clientFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
+  // Same logic, but TanStack Query handles caching
+}
+```
+
+3. **Usage** differs by component type:
+
+**Server Components** use `serverFetch()` directly:
+
+```typescript
+// app/page.tsx (Server Component)
+import { linksApi } from '@repo/api-client';
+import { serverFetch } from '@/lib/fetch/server';
+
+export default async function Page() {
+  const links = await serverFetch(linksApi.list());
+  return <LinksList links={links} />;
+}
+```
+
+**Client Components** use TanStack Query hooks:
+
+```typescript
+// components/links-client.tsx
+'use client';
+import { useLinksQuery } from '@/queries/links';
+
+export function LinksClient() {
+  const { data: links, isLoading } = useLinksQuery();
+  if (isLoading) return <Loading />;
+  return <LinksList links={links} />;
+}
+```
+
+**Why this pattern?**
+
+- ✅ **Share definitions, not fetch** - `@repo/api-client` has no fetch, no React, no Next.js
+- ✅ **Per-app control** - Each app manages caching, headers, error handling
+- ✅ **Server vs client separation** - Different strategies for SSR and CSR
+- ✅ **Type safety** - Full TypeScript inference from endpoint to response
+- ✅ **Easy to test** - Mock endpoints without mocking fetch
 
 ### Environment Variables
 

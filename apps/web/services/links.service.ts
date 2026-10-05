@@ -1,37 +1,24 @@
-import type { Link } from '@repo/prisma';
+import { linksApi } from '@repo/api-client';
+import { serverFetch } from '../lib/fetch/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-export async function getLinks(): Promise<Link[]> {
+/**
+ * Server-side service for fetching links
+ * Use in Server Components and Route Handlers
+ */
+export async function getLinks() {
   try {
-    const res = await fetch(`${API_BASE_URL}/links`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch links');
-    }
-
-    return res.json();
+    return await serverFetch(linksApi.list());
   } catch (error) {
     console.error('Error fetching links:', error);
     return [];
   }
 }
 
-export async function getLink(id: number): Promise<Link | null> {
+export async function getLink(id: number) {
   try {
-    const res = await fetch(`${API_BASE_URL}/links/${id}`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      return null;
-    }
-
-    return res.json();
+    return await serverFetch(linksApi.detail(id));
   } catch (error) {
-    console.error('Error fetching link:', error);
+    console.error(`Error fetching link ${id}:`, error);
     return null;
   }
 }

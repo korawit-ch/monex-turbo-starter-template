@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { ServerProvider } from './server-provider';
 import { ClientProvider } from './client-provider';
+import { QueryProvider } from '../lib/query';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -9,8 +10,9 @@ interface ProvidersProps {
 export async function Providers({ children }: ProvidersProps) {
   return (
     <ServerProvider>
-      <ClientProvider>{children}</ClientProvider>
+      <QueryProvider>
+        <ClientProvider>{children}</ClientProvider>
+      </QueryProvider>
     </ServerProvider>
   );
 }
-
