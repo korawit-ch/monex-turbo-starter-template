@@ -1,7 +1,5 @@
 # monex-turbo-starter-template
 
-> **monex-turbo-starter-template** - Full-stack monorepo project
-
 A full-stack monorepo featuring NestJS APIs, Next.js frontends, and Prisma ORM with PostgreSQL.
 
 ## What's inside?
@@ -27,19 +25,19 @@ This Turborepo includes the following packages & apps:
     └── @repo/ui                  # React 19 component library with Tailwind
 ```
 
-Each package and application are written in [TypeScript](https://www.typescriptlang.org/).
+Applications and runtime packages use [TypeScript](https://www.typescriptlang.org/); database infrastructure, styles, and tooling also use YAML, CSS, JavaScript, and shell scripts.
 
 ### Tech Stack & Versions
 
 **Runtime & Apps**
 
-| Component                                                 | Version         | Port       |
-| --------------------------------------------------------- | --------------- | ---------- |
-| **Node.js**                                               | >=22.12         | -          |
-| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.0.7         | 3000       |
-| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3001       |
-| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433       |
-| **Swagger** (`/api`)                                      | @nestjs/swagger | 3001, 3003 |
+| Component                                                 | Version         | Port |
+| --------------------------------------------------------- | --------------- | ---- |
+| **Node.js**                                               | >=22.12         | -    |
+| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.0.7         | 3000 |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3001 |
+| [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
+| **Swagger** (`/api`)                                      | @nestjs/swagger | 3001 |
 
 **Core Libraries**
 
@@ -47,7 +45,7 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 | ------------------------------------------------- | ------- |
 | [**React**](https://react.dev/)                   | ^19.1.0 |
 | [**Prisma ORM**](https://www.prisma.io/)          | ^7.1.0  |
-| [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.11 |
+| [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.5  |
 | [**TanStack Query**](https://tanstack.com/query)  | ^5.80.7 |
 | [**TypeScript**](https://www.typescriptlang.org/) | 5.5.4+  |
 | [**SVGR**](https://react-svgr.com/)               | ^8.1.0  |
@@ -70,7 +68,7 @@ Each package and application are written in [TypeScript](https://www.typescriptl
 
 - Node.js >= 22.12 (required for Prisma 7)
 - Docker and Docker Compose (for PostgreSQL database)
-- npm (recommended)
+- npm (the root manifest declares npm 10.2.3; use the root npm lockfile)
 
 ### Setup
 
@@ -84,13 +82,14 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    - Create `.env` from `.env.example` if it doesn't exist
    - Set up the environment configuration
 
-2. **Start PostgreSQL database**:
+2. **Start PostgreSQL database** (review root `.env` and preserve any workspace `.env` values before distribution):
 
    ```bash
-   npm run db:start
+   npm run env:distribute
+   docker-compose --env-file .env -f apps/db/docker-compose.yml up -d --wait postgres
    ```
 
-3. **Configure database connection** (if needed):
+3. **Verify database connection configuration**:
 
    The `.env` file is automatically created from `.env.example` during `npm install`. If you need to update it, edit the root `.env` file:
 
@@ -98,19 +97,21 @@ Each package and application are written in [TypeScript](https://www.typescriptl
    DATABASE_URL="postgresql://postgres:postgres@localhost:5433/monex-turbo-starter-template-db?schema=public"
    ```
 
-   **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This ensures all parts of the monorepo use the same environment variables.
+   **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This makes the root configuration available to those workspaces; API bootstrap and the seed runtime still need explicit process environment loading.
 
 4. **Generate Prisma client and push schema**:
 
    ```bash
    npm run db:generate
    npm run db:push
-   npm run db:seed
+   # Optional seed, with root environment loaded explicitly:
+   node --env-file=.env --import=tsx packages/prisma/prisma/seed.ts
    ```
 
-5. **Start development servers**:
+5. **Build shared packages and start development servers**:
 
    ```bash
+   npx turbo run build --filter='./packages/*'
    npm run dev
    ```
 
@@ -153,6 +154,10 @@ npm run db:seed
 npm run db:studio
 ```
 
+`db:push` changes the selected database schema; `db:migrate` creates/applies development migrations, not production deployments. No migration history is checked in. The seed can insert duplicates on reruns because URLs are not unique. `db:seed` needs `DATABASE_URL` exported; the setup example above loads it explicitly.
+
+The `db:start` helper prints credentials and can wait indefinitely; prefer the direct Compose startup shown in setup. Compose shortcuts use the linked `apps/db/.env`. See [database operations](apps/db/README.md).
+
 #### Build
 
 ```bash
@@ -173,30 +178,40 @@ npm run dev
 
 **Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `jest-config`, `typescript-config`).
 
-#### test
+#### Test
 
 ```bash
 # Will launch a test suites for all the app & packages with the supported `test` script.
-pnpm run test
+npm run test
 
 # You can launch e2e testes with `test:e2e`
-pnpm run test:e2e
+npm run test:e2e
 
 # See `@repo/jest-config` to customize the behavior.
 ```
+
+Build shared packages before tests. API unit tests use the shared Nest Jest preset; web uses its own Jest configuration. API e2e tests need a reachable test database and do not start it automatically.
+
+#### Type Check
+
+```bash
+npx turbo run check-types
+```
+
+This runs scripts in web, UI, and icons. API and other TypeScript packages are checked through builds.
 
 #### Lint
 
 ```bash
 # Will lint all the app & packages with the supported `lint` script.
 # See `@repo/eslint-config` to customize the behavior.
-pnpm run lint
+npm run lint
 ```
 
 #### Format
 
 ```bash
-# Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
+# Formats `.ts`, `.tsx`, `.json`, and `.md` files across the repository.
 # See `@repo/eslint-config/prettier-base.js` to customize the behavior.
 npm run format
 ```
@@ -207,8 +222,9 @@ npm run format
 
 Automatically runs on every commit via Husky:
 
-- **ESLint** + **Prettier** on staged `.ts/.tsx` files
-- **Prettier** on staged `.json/.md/.css` files
+- **ESLint** + **Prettier** on staged `.ts/.tsx/.mjs` files
+- **Prettier** on staged `.json/.md/.css/.yml/.yaml/.js` files
+- **Turbo type checks** after lint-staged
 
 #### Commit Messages
 
@@ -224,6 +240,14 @@ refactor(prisma): optimize query performance
 
 **Allowed types:** `build`, `chore`, `docs`, `feat`, `fix`, `refactor`, `test`, `release`
 
+#### Branch and release workflow
+
+Normal work starts from `develop` on a `feature/*`, `fix/*`, `docs/*`, `refactor/*`, or `chore/*` branch and merges back into `develop`. Keep topic merge boundaries so the integration history remains readable.
+
+Prepare releases on `release/vX.Y.Z` from `develop`, then merge verified releases into `main` and synchronize back to `develop`. Production hotfixes start from `main` on `hotfix/*` and must also reach `develop` and any affected active release branch.
+
+The repository has no configured release/tag/publishing automation. Inspect existing tags, version metadata, CI, and remote state before releasing; a merge does not itself publish or deploy the project.
+
 #### GitHub Actions
 
 Runs on all pushes and pull requests:
@@ -231,6 +255,9 @@ Runs on all pushes and pull requests:
 - ESLint across all packages
 - Prettier format check
 - TypeScript type checking
+- Prisma generation and package/application builds
+
+CI does not currently run unit or e2e tests. See `.github/workflows/ci.yml`.
 
 ## Project Structure
 
@@ -239,7 +266,6 @@ Runs on all pushes and pull requests:
 The NestJS APIs provide the following endpoints with **Swagger documentation**:
 
 - API: `http://localhost:3001/api`
-- API: `http://localhost:3003/api`
 
 - `GET /links` - Get all links
 - `GET /links/:id` - Get a specific link
@@ -252,7 +278,7 @@ The NestJS APIs provide the following endpoints with **Swagger documentation**:
 DTOs implement Prisma types to ensure type alignment:
 
 ```typescript
-// apps/registry-api/src/links/dto/create-link.dto.ts
+// apps/api/src/links/dto/create-link.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import type { Prisma } from '@repo/prisma';
 
@@ -275,6 +301,8 @@ export class CreateLinkDto implements Prisma.LinkCreateInput {
 - ✅ Single source of truth - Prisma schema defines the data model
 - ✅ Compile-time errors if DTO drifts from schema
 
+Swagger decorators and Prisma interface implementation do not provide runtime request validation. The API currently has no validation pipe or authentication/authorization layer. Frontend DTOs are maintained separately in `@repo/api-client`.
+
 ### Frontend
 
 The Next.js apps display database results fetched from their respective NestJS APIs. The frontends:
@@ -295,7 +323,7 @@ The Next.js apps display database results fetched from their respective NestJS A
 - **@repo/prisma**: Shared Prisma client and schema
   - Exports singleton Prisma client instance
   - Exports all Prisma types (`Prisma`, `Link`, etc.)
-  - **Ready to publish as an npm package** (see [Architecture Philosophy](#architecture-philosophy))
+  - Includes publishing metadata/hooks; see [Prisma publishing prerequisites](packages/prisma/README.md#publishing) before publishing
 
 - **@repo/design-system**: Shared styling foundation
   - Tailwind CSS configuration and color palette
@@ -309,7 +337,7 @@ The Next.js apps display database results fetched from their respective NestJS A
   - See [@repo/icons README](./packages/icons/README.md) for usage
 
 - **@repo/ui**: Shared React component library
-  - Reusable components (Button, Card, etc.)
+  - Reusable Button, Input, Textarea, and React Hook Form/Zod adapters
   - Built with Tailwind CSS from `@repo/design-system`
 
 ### Icon System with SVGR
@@ -323,7 +351,7 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 2. **Build Process**: SVGR transforms SVGs into React components:
 
    ```bash
-   npm run build:icons  # Converts SVG → React components in dist/
+   npm run build:icons --workspace=@repo/icons  # Converts SVG → React components in dist/
    ```
 
 3. **Auto-Generated Index**: The build process creates TypeScript exports:
@@ -348,7 +376,7 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 - **Color Replacement**: `#000` and `#000000` → `currentColor` for styling flexibility
 - **Icon Mode**: Optimized for icon usage (removes dimensions, preserves viewBox)
 
-**Development Workflow**:
+**Development Workflow** (run these commands inside `packages/icons`):
 
 - `npm run build` - Build all icons and regenerate index
 - `npm run dev` - Watch mode (auto-rebuilds on SVG changes)
@@ -359,13 +387,15 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 This project separates **API definitions** from **fetch logic** for maximum flexibility:
 
 ```
-@repo/api-client (shared)    apps/*-web (per-app)
+@repo/api-client (shared)    apps/web (per-app)
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
 │ linksApi.create()   │      │ queries/links.ts (TanStack)     │
 └─────────────────────┘      └─────────────────────────────────┘
 ```
+
+The following snippets illustrate the pattern; actual fetch helpers also set headers, check HTTP status, and handle empty responses. Demo rendering components in the snippets are illustrative.
 
 **How it works:**
 
@@ -383,8 +413,10 @@ export const linksApi = {
 2. **Each app** has its own fetch utilities that consume these definitions:
 
 ```typescript
-// apps/registry-web/lib/fetch/server.ts - Server-side fetch
-export async function serverFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
+// apps/web/lib/fetch/server.ts - Server-side fetch
+export async function serverFetch<T>(
+  endpoint: ApiEndpointWithBody<unknown, T>,
+): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint.url}`, {
     method: endpoint.method,
     body: endpoint.body ? JSON.stringify(endpoint.body) : undefined,
@@ -393,8 +425,10 @@ export async function serverFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
   return response.json();
 }
 
-// apps/registry-web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
-export async function clientFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
+// apps/web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
+export async function clientFetch<T>(
+  endpoint: ApiEndpointWithBody<unknown, T>,
+): Promise<T> {
   // Same logic, but TanStack Query handles caching
 }
 ```
@@ -404,7 +438,7 @@ export async function clientFetch<T>(endpoint: ApiEndpoint<T>): Promise<T> {
 **Server Components** use `serverFetch()` directly:
 
 ```typescript
-// apps/registry-web/app/page.tsx (Server Component)
+// Server Component usage example (home entry: apps/web/app/(home)/page.tsx)
 import { linksApi } from '@repo/api-client';
 import { serverFetch } from '@/lib/fetch/server';
 
@@ -417,7 +451,7 @@ export default async function Page() {
 **Client Components** use TanStack Query hooks:
 
 ```typescript
-// apps/registry-web/components/links-client.tsx
+// apps/web/components/links-client.tsx
 'use client';
 import { useLinksQuery } from '@/queries/links';
 
@@ -438,14 +472,14 @@ export function LinksClient() {
 
 ### Extending Apps
 
-> **💡 Simple Extension Pattern**: To add a new Next.js app, simply duplicate an existing app directory and change its name!
+> **Extension pattern**: Use the existing web app as a starting point, then update its identity, configuration, and verification.
 
 This monorepo is designed to make adding new apps straightforward:
 
 1. **Duplicate an existing app**:
 
    ```bash
-   cp -r apps/registry-web apps/my-new-app
+   rsync -a --exclude=node_modules --exclude=.next --exclude=.turbo --exclude=.env apps/web/ apps/my-new-app/
    ```
 
 2. **Update the app name** in the following files:
@@ -453,7 +487,7 @@ This monorepo is designed to make adding new apps straightforward:
    - `apps/my-new-app/package.json` - Update the `"dev"` script port (e.g., `--port 3004`)
    - `apps/my-new-app/next.config.js` (if it exists) - Update any app-specific configurations
 
-3. **That's it!** The new app will:
+3. **Verify the new workspace**: update its package name/port, retain the needed workspace dependencies, and build/test it. It will:
    - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-client`)
    - ✅ Inherit all Tailwind configurations from the design system
    - ✅ Use the same environment variables (via symlink distribution)
@@ -464,12 +498,12 @@ This monorepo is designed to make adding new apps straightforward:
 
 ```bash
 # 1. Duplicate an existing app
-cp -r apps/registry-web apps/admin
+rsync -a --exclude=node_modules --exclude=.next --exclude=.turbo --exclude=.env apps/web/ apps/admin/
 
 # 2. Update package.json
 cd apps/admin
-# Change "name": "registry-web" → "name": "admin"
-# Change port from 3001 → 3004
+# Change "name": "web" → "name": "admin"
+# Change port from 3000 → 3004
 
 # 3. Start developing!
 npm run dev
@@ -487,10 +521,18 @@ The project uses a centralized `.env` file in the root directory:
 - **Excluded Packages**: Config packages (`eslint-config`, `jest-config`, `typescript-config`) don't receive `.env` files
 - **Single Source of Truth**: All environment variables are managed in the root `.env` file
 
+#### Configuration details
+
+- Set `NEXT_PUBLIC_API_URL` for web; `.env.example` currently uses the unconsumed name `NEXT_PUBLIC_API`.
+- Setup substitutes fixed defaults when first creating `.env`; later edits to `DB_*` do not recalculate `DATABASE_URL`.
+- `env:distribute` replaces existing regular workspace `.env` files with symlinks. Preserve any local values before running it.
+- API bootstrap and the seed client do not explicitly load dotenv. Turbo strict mode also lacks some API/database environment declarations. For custom settings, launch the API directly with exported variables; see [API startup](apps/api/README.md#development).
+- `NEXT_PUBLIC_*` values and the web server-provider DOM attribute are public; never put secrets there.
+
 ### Remote Caching
 
 > [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+> Optional remote caching is available through Vercel. Check current availability and terms at [vercel.com](https://vercel.com/).
 
 Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
 
@@ -507,3 +549,21 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 ```bash
 npx turbo link
 ```
+
+## Improvement priorities
+
+These are current implementation gaps, not features supplied by this documentation:
+
+1. **IMPORTANT — API boundary validation and access policy.** Body DTOs have Swagger annotations but no validation decorators/global pipe; IDs are coerced with `+id`. CRUD routes have no authentication/authorization, and CORS is unrestricted. Validate accepted fields/URLs/IDs and define server access policy before using the template for protected data. [API details](apps/api/README.md#improvements).
+2. **IMPORTANT — Startup and data integrity.** Unify environment loading/name conventions and declare Turbo runtime variables; remove credential logging and bound database readiness waits. Define seed identity and migration workflow before repeatable deployments. [DB details](apps/db/README.md#improvements), [Prisma details](packages/prisma/README.md#improvements).
+3. **IMPORTANT — Shared form behavior.** FormInput/FormTextarea destructure missing context before their fallback; inputs without IDs lose label associations and reuse `undefined-helper`. Correct these contracts and add behavior/accessibility tests. [UI details](packages/ui/README.md#improvements).
+4. **IMPORTANT — HTTP contracts and failures.** Represent JSON timestamp strings accurately, align DELETE's response type, map database write races, and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-client/README.md#improvements), [web details](apps/web/README.md#improvements).
+5. **IMPORTANT — Verification coverage.** Repair badge tests that expect obsolete colors, add CRUD/failure-path coverage, close e2e Nest apps, and run tests in CI. Current links unit tests only check construction.
+6. **IMPORTANT — Destructive helper scripts.** `scripts/separate-frontend.sh` and `scripts/separate-backend.sh` delete workspaces before copying nonexistent `docs/*` templates. Do not run them; repair/preflight the workflow before offering repository separation.
+7. **SUGGESTION — Production adaptation.** Remove artificial query delays, decide whether independent server/client demo reads are needed, introduce bounded link listing when needed, and investigate the oversized `app-thai-id.svg` asset. No production deployment or bundle-performance validation is implied.
+
+## Agent guidance
+
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database](apps/db/AGENTS.md), [Prisma](packages/prisma/AGENTS.md), [contracts](packages/api-client/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+
+Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.

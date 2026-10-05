@@ -4,17 +4,17 @@ Shared Prisma client and schema package with PostgreSQL support. This package pr
 
 ## Installation
 
+Install workspace dependencies from the repository root:
+
 ```bash
-npm install @repo/prisma
-# or
-yarn add @repo/prisma
-# or
-pnpm add @repo/prisma
+npm install
 ```
+
+For use outside this repository, first configure and verify publishing under your own package scope; see [Publishing](#publishing).
 
 ## Prerequisites
 
-- Node.js >= 18
+- Node.js >= 22.12
 - PostgreSQL database
 - `DATABASE_URL` environment variable set
 
@@ -22,11 +22,11 @@ pnpm add @repo/prisma
 
 1. **Set up your database connection string**:
 
-   Copy the example environment file from the root:
+   Create the root environment file if missing:
 
    ```bash
    # From the root of the monorepo
-   cp .env.example .env
+   npm run env:setup
    ```
 
    The `.env` file in the root directory should contain:
@@ -40,7 +40,7 @@ pnpm add @repo/prisma
    A symlink is created in `packages/prisma/.env` that points to the root `.env` file. This ensures:
    - The root `.env` file is the single source of truth
    - Prisma commands work correctly from the `packages/prisma` directory
-   - The `env("DATABASE_URL")` in `schema.prisma` reads from the root `.env` file
+   - `prisma.config.ts` explicitly loads package/root `.env` for CLI commands; the runtime client separately reads process variables
 
    **Note**: If the symlink doesn't exist, create it with:
 
@@ -56,7 +56,7 @@ pnpm add @repo/prisma
 npx prisma db push
 ```
 
-Or use migrations for production:
+Or create and apply development migrations (run Prisma CLI commands from this package):
 
 ```bash
 npx prisma migrate dev
@@ -66,7 +66,7 @@ npx prisma migrate dev
 
 ### Direct Import
 
-You can import the Prisma client directly:
+Server code can import the Prisma client directly. Browser consumers must use type-only imports:
 
 ```typescript
 import prisma from '@repo/prisma';
@@ -104,6 +104,18 @@ export class MyService {
 }
 ```
 
+## Seeding and migration notes
+
+No migration history is checked in; `prisma migrate dev` is not a production deployment command. Establish a reviewed migration/deployment workflow for persistent data.
+
+The seed does not explicitly load dotenv. With root configuration reviewed, run from the repository root:
+
+```bash
+node --env-file=.env --import=tsx packages/prisma/prisma/seed.ts
+```
+
+Reruns can insert duplicate URLs. Use `npm run db:seed` only with the correct `DATABASE_URL` already exported.
+
 ## Scripts
 
 - `db:generate` - Generate Prisma Client
@@ -129,6 +141,8 @@ const createData: Prisma.LinkCreateInput = {
 
 ## Publishing
 
+Publishing is a separate operation, not part of local setup. Configure a scope you own, verify the packed artifacts and consumer compatibility, and establish release/versioning ownership first. The repository has no configured publishing automation. Run the commands below from this package only when intentionally publishing.
+
 To publish this package to npm:
 
 ```bash
@@ -140,3 +154,27 @@ npm publish
 ```
 
 The `prepublishOnly` script will automatically build the package before publishing.
+
+## Sources and runtime
+
+- `prisma/schema.prisma`: `Link`, mapped to table `links`, with integer auto-increment ID, URL, title, nullable description, and created/updated timestamps. Only ID is unique.
+- `prisma.config.ts`: Prisma CLI schema location and datasource URL. It explicitly loads package/root `.env` files and falls back to the local template database URL.
+- `src/index.ts`: separate runtime client setup using `pg.Pool` and `PrismaPg`. It reads the process `DATABASE_URL` and has a local fallback, but does not explicitly load dotenv. The singleton is cached globally outside production.
+- `prisma/seed.ts`: inserts three example links and disconnects the client.
+
+The API wraps this client in its Nest `PrismaService` lifecycle. Server code can import the default client; frontend/contracts code must use type-only imports so the runtime entry never reaches browser bundles:
+
+```typescript
+import type { Link, Prisma } from '@repo/prisma';
+```
+
+These are database types. JSON transport timestamps require separate representation or conversion; TypeScript model alignment is not request validation.
+
+## Improvements
+
+- **IMPORTANT:** Make seeding retry-safe. `skipDuplicates: true` does not deduplicate URLs because URL is not unique and every insertion receives a fresh ID. Reruns currently add duplicate examples.
+- **IMPORTANT:** Establish reviewed migration history and a deployment command for persistent environments. Review existing data before adding uniqueness, required fields, or destructive schema changes.
+- **IMPORTANT:** Unify CLI/runtime environment loading and handle missing production configuration explicitly rather than silently selecting a local fallback. Keep pool/client lifecycle coordinated with the API.
+- **IMPORTANT:** Update both API DTOs and frontend contracts on model changes. The schema is authoritative for persistence, while transport dates, accepted fields, and error behavior need explicit contracts.
+
+See [local agent instructions](AGENTS.md).
