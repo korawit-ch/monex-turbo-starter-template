@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Separate Backend from Monorepo
-# Removes: apps/web, apps/admin, packages/api-client, packages/design-system, packages/ui
+# Removes: apps/web, apps/admin, packages/design-system, and packages/ui
 
 set -e
 
@@ -23,7 +23,6 @@ rm -rf apps/admin
 
 # Remove frontend packages
 echo "📦 Removing frontend packages..."
-rm -rf packages/api-client
 rm -rf packages/design-system
 rm -rf packages/ui
 
@@ -72,6 +71,7 @@ echo "├── apps"
 echo "│   ├── api     # NestJS API"
 echo "│   └── db      # PostgreSQL"
 echo "└── packages"
+echo "    ├── api-contract # Shared API contracts"
 echo "    ├── eslint-config"
 echo "    ├── jest-config"
 echo "    ├── prisma   # Ready to publish to npm"
