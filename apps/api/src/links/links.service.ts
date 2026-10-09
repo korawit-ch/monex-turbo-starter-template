@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type {
-  CreateLinkRequest,
-  UpdateLinkRequest,
-} from '@repo/api-contract';
+import type { CreateLinkRequest, UpdateLinkRequest } from '@repo/api-contract';
 
 import { PrismaService } from '../prisma/prisma.service';
 
