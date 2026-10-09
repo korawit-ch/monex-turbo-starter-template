@@ -35,7 +35,17 @@ Learn more about `NestJs` with following resources:
 - `PATCH /links/:id`: update and return a link.
 - `DELETE /links/:id`: delete and return the deleted link.
 
-`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The schema is [packages/prisma/prisma/schema.prisma](../../packages/prisma/prisma/schema.prisma); request DTOs live in `src/links/dto`, response mapping lives in `src/links/links.mapper.ts`, and shared API contracts live in `packages/api-contract`.
+`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The API owns its [Prisma schema](prisma/schema.prisma), CLI configuration, seed, generated client dependency, and runtime client. Request DTOs live in `src/links/dto`, response mapping lives in `src/links/links.mapper.ts`, and shared API contracts live in `packages/api-contract`.
+
+## Persistence ownership
+
+- `prisma/schema.prisma` defines the database model.
+- `prisma.config.ts` locates the schema and loads the API/root environment for CLI commands.
+- `src/prisma/prisma.client.ts` creates the PostgreSQL adapter, pool, and singleton Prisma client.
+- `src/prisma/prisma.service.ts` owns connection and disconnection through Nest lifecycle hooks.
+- `prisma/seed.ts` inserts example links and disconnects the client.
+
+Run database commands from the repository root with `npm run db:generate`, `db:push`, `db:migrate`, `db:studio`, or `db:seed`. These delegate to the API workspace. No migration history is currently checked in; `db:migrate` is a development command. Seed reruns can insert duplicate URLs because URLs are not unique.
 
 ## Development
 
@@ -57,7 +67,7 @@ Database connection failure prevents normal startup. There is no readiness endpo
 
 ## Verification
 
-After shared builds, run from the root:
+After shared contract/UI builds, run from the root:
 
 ```bash
 npm run lint --workspace=api

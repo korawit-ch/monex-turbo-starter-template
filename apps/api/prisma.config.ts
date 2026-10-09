@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { defineConfig } from '@prisma/config';
+import { defineConfig } from 'prisma/config';
 import { config } from 'dotenv';
 
 // Load .env from package directory or root
@@ -11,12 +11,8 @@ const databaseUrl =
   'postgresql://postgres:postgres@localhost:5433/monex-turbo-starter-template-db?schema=public';
 
 export default defineConfig({
-  earlyAccess: true,
   schema: path.join(__dirname, 'prisma', 'schema.prisma'),
   datasource: {
-    url: databaseUrl,
-  },
-  migrate: {
     url: databaseUrl,
   },
 });

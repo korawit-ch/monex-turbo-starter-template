@@ -33,24 +33,6 @@ cp docs/turbo-backend.json turbo.json
 cp docs/README-backend.md README.md
 cp docs/env-backend.example .env.example
 
-# Prompt for Prisma package rename
-echo ""
-echo "📦 Prisma Package Configuration"
-echo "Current name: @repo/prisma"
-read -p "Enter new package name for npm publishing (or press Enter to keep @repo/prisma): " NEW_PRISMA_NAME
-
-if [[ -n "$NEW_PRISMA_NAME" ]]; then
-    echo "Renaming @repo/prisma to $NEW_PRISMA_NAME..."
-    sed -i.bak "s/\"name\": \"@repo\/prisma\"/\"name\": \"$NEW_PRISMA_NAME\"/" packages/prisma/package.json
-    rm -f packages/prisma/package.json.bak
-    
-    # Update imports in api
-    find apps/api -name "*.ts" -exec sed -i.bak "s/@repo\/prisma/$NEW_PRISMA_NAME/g" {} \;
-    find apps/api -name "*.bak" -delete
-    
-    echo "✅ Renamed to $NEW_PRISMA_NAME"
-fi
-
 # Clean up docs folder
 echo "📦 Cleaning up..."
 rm -rf docs/
@@ -74,9 +56,8 @@ echo "└── packages"
 echo "    ├── api-contract # Shared API contracts"
 echo "    ├── eslint-config"
 echo "    ├── jest-config"
-echo "    ├── prisma   # Ready to publish to npm"
 echo "    └── typescript-config"
 echo ""
 echo "Next steps:"
 echo "1. Run: npm install"
-echo "2. Publish prisma package: cd packages/prisma && npm publish"
+echo "2. Configure DATABASE_URL and run: npm run db:generate"

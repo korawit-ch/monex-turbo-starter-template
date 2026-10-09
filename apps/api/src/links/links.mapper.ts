@@ -1,5 +1,5 @@
 import type { LinkResponse } from '@repo/api-contract';
-import type { Link as PrismaLink } from '@repo/prisma';
+import type { Link as PrismaLink } from '@prisma/client';
 
 /** Converts the persistence model into the JSON-safe public API contract. */
 export function toLinkResponse(link: PrismaLink): LinkResponse {
