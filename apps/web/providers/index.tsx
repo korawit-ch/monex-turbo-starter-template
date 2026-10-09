@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { QueryProvider } from '../lib/query';
+import { QueryProvider } from '../lib/tanstack-query';
 
 interface ProvidersProps {
   children: ReactNode;

@@ -34,10 +34,11 @@ The repository has no configured application deployment workflow. A deployment m
 - `app/layout.tsx` loads Prompt through `next/font/google`, shared UI CSS, app CSS, and providers.
 - `app/(protected)/layout.tsx` verifies the HttpOnly access JWT and passes only sanitized authorization context to `AuthProvider`.
 - `app/(protected)/(home)/page.tsx` is a protected dynamic Server Component displaying links and template demonstrations.
+- `app/(protected)/(home)/_components/*` contains UI owned only by the home route; app-wide authentication components live under `components/auth`.
 - `app/api/auth/*` handles login, renewal, logout, and all-session logout; `app/api/links/*` is the protected browser BFF.
-- `services/links.service.ts` wraps `lib/fetch/server.ts` for server reads with `cache: 'no-store'`.
-- `queries/links.ts` owns query keys, client reads, and mutation invalidation through `lib/fetch/client.ts`.
-- `lib/query/provider.tsx` creates one query client per provider instance, with 60-second stale time and no focus refetching.
+- `data-access/links.server.ts` wraps `lib/fetch/server.ts` for server reads with `cache: 'no-store'`.
+- `data-access/links.client.ts` owns query keys, client reads, and mutation invalidation through `lib/fetch/client.ts`.
+- `lib/tanstack-query/provider.tsx` creates one query client per provider instance, with 60-second stale time and no focus refetching.
 - `providers/auth-provider.tsx` exposes sanitized identity/scope and shared `can()` for UX decisions; it never receives a token.
 
 Both fetch helpers consume JSON-safe contracts from `@repo/api-contract`. Browser fetch uses same-origin BFF routes and renews once after 401; server fetch verifies the cookie and calls internal Nest with the bearer token. The BFF verifies named permissions, requires trusted mutation origin, and never forwards browser cookies to link endpoints. Nest verifies and scopes again. See [authentication architecture](../../docs/authentication.md).
