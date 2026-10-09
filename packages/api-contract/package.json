@@ -1,8 +1,10 @@
 {
-  "name": "@repo/api-client",
+  "name": "@repo/api-contract",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,9 +23,6 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0"
-  },
-  "dependencies": {
-    "@repo/prisma": "*"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

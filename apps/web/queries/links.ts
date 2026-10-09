@@ -3,10 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   linksApi,
-  type CreateLinkDto,
-  type UpdateLinkDto,
-  type Link,
-} from '@repo/api-client';
+  type CreateLinkRequest,
+  type LinkResponse,
+  type UpdateLinkRequest,
+} from '@repo/api-contract';
 import { clientFetch } from '../lib/fetch/client';
 
 export const linkKeys = {
@@ -23,7 +23,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * Hook to fetch all links (client-side with TanStack Query)
  */
 export function useLinksQuery() {
-  return useQuery<Link[]>({
+  return useQuery<LinkResponse[]>({
     queryKey: linkKeys.all,
     queryFn: async () => {
       await delay(800);
@@ -36,7 +36,7 @@ export function useLinksQuery() {
  * Hook to fetch a single link
  */
 export function useLinkQuery(id: number) {
-  return useQuery<Link>({
+  return useQuery<LinkResponse>({
     queryKey: linkKeys.detail(id),
     queryFn: async () => {
       await delay(600);
@@ -53,7 +53,7 @@ export function useCreateLinkMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateLinkDto) => clientFetch(linksApi.create(data)),
+    mutationFn: (data: CreateLinkRequest) => clientFetch(linksApi.create(data)),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: linkKeys.all });
     },
@@ -67,7 +67,7 @@ export function useUpdateLinkMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateLinkDto }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateLinkRequest }) =>
       clientFetch(linksApi.update(id, data)),
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: linkKeys.all });

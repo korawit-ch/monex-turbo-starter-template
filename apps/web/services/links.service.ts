@@ -1,12 +1,11 @@
-import { linksApi } from '@repo/api-client';
-import type { Link } from '@repo/prisma';
+import { linksApi, type LinkResponse } from '@repo/api-contract';
 import { serverFetch } from '../lib/fetch/server';
 
 /**
  * Server-side service for fetching links
  * Use in Server Components and Route Handlers
  */
-export async function getLinks(): Promise<Link[]> {
+export async function getLinks(): Promise<LinkResponse[]> {
   try {
     return await serverFetch(linksApi.list());
   } catch (error) {
@@ -15,7 +14,7 @@ export async function getLinks(): Promise<Link[]> {
   }
 }
 
-export async function getLink(id: number): Promise<Link | null> {
+export async function getLink(id: number): Promise<LinkResponse | null> {
   try {
     return await serverFetch(linksApi.detail(id));
   } catch (error) {

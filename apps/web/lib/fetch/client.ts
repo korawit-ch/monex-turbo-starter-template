@@ -1,19 +1,13 @@
-import type { ApiEndpointWithBody } from '@repo/api-client';
+import type { ApiEndpoint } from '@repo/api-contract';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-/**
- * Helper type that represents either an endpoint with or without a body
- * Since ApiEndpointWithBody extends ApiEndpoint, we can use it for both cases
- */
-type FetchEndpoint<TResponse> = ApiEndpointWithBody<unknown, TResponse>;
 
 /**
  * Client-side fetch utility for use with TanStack Query
  * No caching here - TanStack Query handles that
  */
-export async function clientFetch<TResponse>(
-  endpoint: FetchEndpoint<TResponse>,
+export async function clientFetch<TResponse, TBody = never>(
+  endpoint: ApiEndpoint<TResponse, TBody>,
 ): Promise<TResponse> {
   const { url, method } = endpoint;
   const body = 'body' in endpoint ? endpoint.body : undefined;
