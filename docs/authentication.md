@@ -173,3 +173,11 @@ npm run test --workspace=web -- --runInBand
 npm run build --workspace=api
 npm run check-types --workspace=web
 ```
+
+## Removal and rollback
+
+Preview removal with `npm run auth:remove`. Apply it with `npm run auth:remove -- --apply`. The script refuses a dirty working tree and reads its operation manifest plus authenticated/without-auth file versions from `scripts/auth-removal`.
+
+Shared integration files are transformed with a three-way merge: the current workspace supplies later edits, while the stored versions describe the authentication delta to remove. Compatible changes made after authentication are preserved. A conflict, an unexpected file in an auth-owned directory, or a changed auth-owned file stops the preflight before source files are modified. Deleted pre-auth providers are restored, auth-owned files are removed, and `npm install` reconciles the lockfile and workspaces. The removal script and its version assets delete themselves only after successful verification and dependency installation.
+
+The script does not alter PostgreSQL data or schema. If the auth schema was applied, create and review a separate database migration before dropping tables or columns. When authentication itself changes, update both stored versions and the manifest, then exercise dry-run, compatible-change, conflict, and full-removal cases before committing.
