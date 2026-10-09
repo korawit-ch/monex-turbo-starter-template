@@ -20,6 +20,7 @@ This Turborepo includes the following packages & apps:
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/icons               # SVG icon components (SVGR-generated)
     ├── @repo/jest-config         # Jest configurations
+    ├── @repo/prisma              # Server-only Prisma schema, client, and DB types
     ├── @repo/typescript-config   # TypeScript configurations
     └── @repo/ui                  # React 19 component library with Tailwind
 ```
@@ -140,6 +141,9 @@ npm run db:down
 # Generate Prisma client
 npm run db:generate
 
+# Validate Prisma schema without changing the database
+npm run db:validate
+
 # Push schema to database
 npm run db:push
 
@@ -154,6 +158,8 @@ npm run db:studio
 ```
 
 `db:push` changes the selected database schema; `db:migrate` creates/applies development migrations, not production deployments. No migration history is checked in. The seed can insert duplicates on reruns because URLs are not unique. `db:seed` needs `DATABASE_URL` exported; the setup example above loads it explicitly.
+
+`@repo/prisma` centralizes server-side schema/client ownership for this monorepo; it is not an API contract and frontend code must not consume it. If the API needs to become independently owned, run `npm run prisma:localize:api` for a dry run and `npm run prisma:localize:api -- --apply` to move Prisma into `apps/api`. The migration is guarded against other workspace consumers and does not modify database data.
 
 The `db:start` helper prints credentials and can wait indefinitely; prefer the direct Compose startup shown in setup. Compose shortcuts use the linked `apps/db/.env`. See [database operations](apps/db/README.md).
 
@@ -556,6 +562,6 @@ These are current implementation gaps, not features supplied by this documentati
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API and persistence](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [Prisma persistence](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.

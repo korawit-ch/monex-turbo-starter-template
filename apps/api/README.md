@@ -35,17 +35,19 @@ Learn more about `NestJs` with following resources:
 - `PATCH /links/:id`: update and return a link.
 - `DELETE /links/:id`: delete and return the deleted link.
 
-`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The API owns its [Prisma schema](prisma/schema.prisma), CLI configuration, seed, generated client dependency, and runtime client. Request DTOs live in `src/links/dto`, response mapping lives in `src/links/links.mapper.ts`, and shared API contracts live in `packages/api-contract`.
+`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The server-only [`@repo/prisma`](../../packages/prisma) package owns the schema, CLI configuration, seed, generated database types, and runtime client. Request DTOs live in `src/links/dto`, response mapping lives in `src/links/links.mapper.ts`, and shared API contracts live in `packages/api-contract`.
 
 ## Persistence ownership
 
-- `prisma/schema.prisma` defines the database model.
-- `prisma.config.ts` locates the schema and loads the API/root environment for CLI commands.
-- `src/prisma/prisma.client.ts` creates the PostgreSQL adapter, pool, and singleton Prisma client.
+- `packages/prisma/prisma/schema.prisma` defines the database model.
+- `packages/prisma/prisma.config.ts` locates the schema and loads package/root environments for CLI commands.
+- `packages/prisma/src/index.ts` creates the PostgreSQL adapter, pool, and singleton Prisma client and exports generated database types.
 - `src/prisma/prisma.service.ts` owns connection and disconnection through Nest lifecycle hooks.
-- `prisma/seed.ts` inserts example links and disconnects the client.
+- `packages/prisma/prisma/seed.ts` inserts example links and disconnects the client.
 
-Run database commands from the repository root with `npm run db:generate`, `db:push`, `db:migrate`, `db:studio`, or `db:seed`. These delegate to the API workspace. No migration history is currently checked in; `db:migrate` is a development command. Seed reruns can insert duplicate URLs because URLs are not unique.
+Run database commands from the repository root with `npm run db:generate`, `db:validate`, `db:push`, `db:migrate`, `db:studio`, or `db:seed`. These delegate to `@repo/prisma`. No migration history is currently checked in; `db:migrate` is a development command. Seed reruns can insert duplicate URLs because URLs are not unique.
+
+If a deployment or extracted backend should own Prisma locally, first run `npm run prisma:localize:api` to check the migration, then `npm run prisma:localize:api -- --apply`. The apply command moves the package into this app, rewrites imports and scripts, and removes `packages/prisma`; it refuses to run while another workspace consumes the package. It does not change database data.
 
 ## Development
 
