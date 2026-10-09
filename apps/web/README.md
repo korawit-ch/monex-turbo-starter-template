@@ -35,8 +35,8 @@ The repository has no configured application deployment workflow. A deployment m
 - `app/(protected)/layout.tsx` verifies the HttpOnly access JWT and passes only sanitized authorization context to `AuthProvider`.
 - `app/(protected)/(home)/page.tsx` is a protected dynamic Server Component displaying links and template demonstrations.
 - `app/api/auth/*` handles login, renewal, logout, and all-session logout; `app/api/links/*` is the protected browser BFF.
-- `services/links.service.ts` wraps `lib/fetch/server.ts` for server reads with `cache: 'no-store'`.
-- `queries/links.ts` owns query keys, client reads, and mutation invalidation through `lib/fetch/client.ts`.
+- `features/links/data-access/server.ts` wraps `lib/fetch/server.ts` for server reads with `cache: 'no-store'`.
+- `features/links/data-access/client.ts` owns query keys, client reads, and mutation invalidation through `lib/fetch/client.ts`.
 - `lib/query/provider.tsx` creates one query client per provider instance, with 60-second stale time and no focus refetching.
 - `providers/auth-provider.tsx` exposes sanitized identity/scope and shared `can()` for UX decisions; it never receives a token.
 

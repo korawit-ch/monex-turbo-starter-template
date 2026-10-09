@@ -1,14 +1,14 @@
 # Web Instructions
 
-- Use the existing App Router structure. The home page is `app/(home)/page.tsx`; `app/layout.tsx` loads Prompt, shared UI CSS, global CSS, and providers. See [README.md](README.md).
+- Use the existing App Router structure. The protected home page is `app/(protected)/(home)/page.tsx`; `app/layout.tsx` loads Prompt, shared UI CSS, global CSS, and providers. See [README.md](README.md).
 - Keep pages/layouts server-rendered where possible. Interactive controls, query hooks, form hooks, and context state use client components.
-- Server reads go through `services/links.service.ts` → `lib/fetch/server.ts`; client reads/mutations go through `queries/links.ts` → `lib/fetch/client.ts`. Both consume `@repo/api-contract` descriptions; keep transport policy in the app.
+- Link data access is feature-owned under `features/links/data-access`: `server.ts` wraps `lib/fetch/server.ts` for Server Components, while `client.ts` owns TanStack Query hooks over `lib/fetch/client.ts`. Both consume `@repo/api-contract` descriptions; keep transport policy in the app.
 - Protected browser requests must use same-origin `app/api/*` BFF handlers and server-only `API_INTERNAL_URL`. Never restore a `NEXT_PUBLIC_*` backend URL for protected traffic.
 - The protected server layout verifies the HttpOnly access JWT and passes only `AuthorizationContext` to `AuthProvider`. Client `can()` controls UX only; BFF checks, Nest guards, and scoped database queries enforce access.
 - Do not import Prisma models. Consume JSON-safe response contracts from `@repo/api-contract`; timestamp fields are ISO strings and must be converted explicitly when a `Date` instance is needed.
-- Keep query keys in `queries/links.ts`. `linkKeys.all` is a prefix covering list/detail queries; account for that when invalidating mutations. The provider uses a 60-second stale time and disables focus refetching.
+- Keep link query keys in `features/links/data-access/client.ts`. `linkKeys.all` is a prefix covering list/detail queries; account for that when invalidating mutations. The provider uses a 60-second stale time and disables focus refetching.
 - The home page intentionally demonstrates independent server and client fetches. There is no hydration/prefetch handoff. When adapting this demo, decide deliberately whether both reads are still needed.
-- Server link helpers currently log errors and return empty/null results. Do not mistake these values for verified empty/not-found responses when adding features.
+- Server link data access propagates authentication, authorization, transport, and API failures. Handle those states explicitly at the route or component boundary rather than presenting them as empty data.
 - Never expose raw access/session tokens through props, context, storage, readable cookies, or logs. Configuration failures must not be converted into ordinary login redirects.
 - Reuse `@repo/ui` primitives/form adapters and `@repo/icons`; feature schemas and submission behavior stay in the app. Supply stable field IDs for current label/helper associations and use form adapters inside `FormWrapper`.
 - Mutating BFF handlers require the configured `WEB_ORIGIN`; they forward only business input and the server-verified bearer token. Client fetch may renew once after 401, never after 403/409.

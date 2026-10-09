@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
 
-import { getLinks } from '../../../services/links.service';
+import { getLinks } from '../../../features/links/data-access/server';
 import { FeatureBadge } from '../../../components/feature-badge';
 import { LinksClient } from '../../../components/links-client';
 import { LogoutButton } from '../../../components/logout-button';

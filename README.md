@@ -397,7 +397,7 @@ This project separates **API definitions** from **fetch logic** for maximum flex
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
-│ linksApi.create()   │      │ queries/links.ts (TanStack)     │
+│ linksApi.create()   │      │ features/links/data-access/     │
 └─────────────────────┘      └─────────────────────────────────┘
 ```
 
@@ -441,15 +441,14 @@ export async function clientFetch<TResponse, TBody = never>(
 
 3. **Usage** differs by component type:
 
-**Server Components** use `serverFetch()` directly:
+**Server Components** use feature-owned server data access:
 
 ```typescript
-// Server Component usage example (home entry: apps/web/app/(home)/page.tsx)
-import { linksApi } from '@repo/api-contract';
-import { serverFetch } from '@/lib/fetch/server';
+// Server Component usage example
+import { getLinks } from '@/features/links/data-access/server';
 
 export default async function Page() {
-  const links = await serverFetch(linksApi.list());
+  const links = await getLinks();
   return <LinksList links={links} />;
 }
 ```
@@ -459,7 +458,7 @@ export default async function Page() {
 ```typescript
 // apps/web/components/links-client.tsx
 'use client';
-import { useLinksQuery } from '@/queries/links';
+import { useLinksQuery } from '@/features/links/data-access/client';
 
 export function LinksClient() {
   const { data: links, isLoading } = useLinksQuery();
