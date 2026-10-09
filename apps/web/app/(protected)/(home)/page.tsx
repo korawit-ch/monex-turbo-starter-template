@@ -2,13 +2,14 @@ export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
 
-import { getLinks } from '../../services/links.service';
-import { FeatureBadge } from '../../components/feature-badge';
-import { LinksClient } from '../../components/links-client';
-import { ButtonDemo } from '../../components/button-demo';
-import { InputDemo } from '../../components/input-demo';
-import { TextareaDemo } from '../../components/textarea-demo';
-import { FormDemo } from '../../components/form-demo';
+import { getLinks } from '../../../services/links.service';
+import { FeatureBadge } from '../../../components/feature-badge';
+import { LinksClient } from '../../../components/links-client';
+import { LogoutButton } from '../../../components/logout-button';
+import { ButtonDemo } from '../../../components/button-demo';
+import { InputDemo } from '../../../components/input-demo';
+import { TextareaDemo } from '../../../components/textarea-demo';
+import { FormDemo } from '../../../components/form-demo';
 import {
   AddFile,
   AddUser,
@@ -81,6 +82,7 @@ export default async function Home() {
         <p className="text-primary-500 mb-8">
           Fetching data from PostgreSQL via NestJS API and Prisma ORM.
         </p>
+        <LogoutButton />
 
         {/* Badges */}
         <div className="mb-8 flex flex-wrap gap-2">

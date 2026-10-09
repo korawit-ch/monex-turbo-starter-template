@@ -22,13 +22,14 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * Hook to fetch all links (client-side with TanStack Query)
  */
-export function useLinksQuery() {
+export function useLinksQuery(enabled = true) {
   return useQuery<LinkResponse[]>({
     queryKey: linkKeys.all,
     queryFn: async () => {
       await delay(800);
       return clientFetch(linksApi.list());
     },
+    enabled,
   });
 }
 

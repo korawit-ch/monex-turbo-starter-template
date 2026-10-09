@@ -4,10 +4,12 @@
 
 - This is an npm-workspaces/Turborepo template: `apps/web` (Next.js App Router), `apps/api` (NestJS), and `apps/db` (local PostgreSQL Compose service). See [README.md](README.md) for setup and known gaps.
 - Runtime data flows from web services/query hooks through `@repo/api-contract` endpoint descriptions to API controllers, services, `PrismaService`, and PostgreSQL. Keep database access in the server runtime.
+- Protected browser traffic flows through same-origin Next.js BFF handlers. Both Next and Nest verify the access JWT and use `@repo/authorization`; Nest guards and tenant-scoped Prisma queries are the authoritative security boundaries. See [docs/authentication.md](docs/authentication.md).
 - `packages/prisma/prisma/schema.prisma` owns the database model. `packages/prisma/prisma.config.ts` configures CLI connection/schema discovery, and `packages/prisma/src/index.ts` constructs the runtime client and exposes generated database types. This package is server-only persistence infrastructure.
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
 - `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG sources. App feature behavior stays in the app.
 - Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
+- `@repo/authorization` is framework-independent and owns only stable permission vocabulary, claim parsing, sanitized context, and pure evaluation. Dynamic business rules remain in API services.
 
 ## Tooling and generated output
 
@@ -33,8 +35,8 @@
 
 - Root `.env` is the intended local configuration source. `env:setup` creates it if missing; `env:distribute` links it into apps and non-config packages. Distribution removes existing regular target `.env` files; inspect before running it on an existing checkout.
 - A symlink does not ensure a runtime loads variables. Next.js and Prisma CLI have loading paths; API bootstrap and the seed client do not explicitly load dotenv. The Prisma CLI config checks the package and root environment paths. Preserve explicit runtime environment handling when changing startup.
-- Browser code reads `NEXT_PUBLIC_API_URL`. `.env.example` currently names `NEXT_PUBLIC_API`; account for this mismatch rather than copying it into new code.
-- `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Seeding is not idempotent under the current schema. Never use database reset/volume removal as routine verification.
+- Protected browser traffic uses same-origin BFF routes; `API_INTERNAL_URL` is server-only. Never expose auth secrets or the internal API URL through `NEXT_PUBLIC_*` variables.
+- `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Auth seeding is repeatable by stable identities but rotates the seeded password hash. Never use database reset/volume removal as routine verification.
 - `scripts/separate-*.sh` delete workspaces before copying missing `docs/*` templates. Do not use them as a setup workflow.
 
 ## Verification and documentation

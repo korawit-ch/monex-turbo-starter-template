@@ -2,19 +2,30 @@
 
 import { Button } from '@repo/ui/button';
 import { useLinksQuery } from '../queries/links';
+import { useAuth } from '../providers/auth-provider';
 
 /**
  * Client-side links component using TanStack Query
  * Demonstrates clientFetch pattern with automatic caching & refetching
  */
 export function LinksClient() {
+  const { can } = useAuth();
+  const mayReadLinks = can('link.read');
   const {
     data: links,
     isLoading,
     isFetching,
     error,
     refetch,
-  } = useLinksQuery();
+  } = useLinksQuery(mayReadLinks);
+
+  if (!mayReadLinks) {
+    return (
+      <p className="text-foreground/70">
+        You do not have permission to view links.
+      </p>
+    );
+  }
 
   if (isLoading) {
     return (
