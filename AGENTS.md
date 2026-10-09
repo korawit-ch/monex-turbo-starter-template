@@ -6,14 +6,14 @@
 - Runtime data flows from web services/query hooks through `@repo/api-contract` endpoint descriptions to API controllers, services, `PrismaService`, and PostgreSQL. Keep database access in the server runtime.
 - `apps/api/prisma/schema.prisma` owns the database model. `apps/api/prisma.config.ts` configures CLI connection/schema discovery; `apps/api/src/prisma/prisma.client.ts` constructs the runtime client separately. The API owns persistence end to end.
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
-- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG component sources; `@repo/assets` owns raw visual files reused by multiple apps. App feature behavior and app-only assets stay in the app.
+- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/assets` owns cross-app raw visual files and SVGR-generated icon components. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Web may import Prisma types only; the package's value entry creates a database client.
 
 ## Tooling and generated output
 
 - Use npm and the root `package-lock.json`. The root manifest requires Node >=22.12; `.nvmrc` selects Node 22. Do not introduce another lockfile.
 - Build shared dependencies before running app commands directly: `npx turbo run build --filter='./packages/*'`. Some packages export `dist`; `@repo/ui` has separate component/style tasks coordinated by `packages/ui/turbo.json`, without a package-level `build` script.
-- Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/icons/src/index.ts`; use their generators. Review tracked changes after generation.
+- Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/assets/src/icons/index.ts`; use their generators. Review tracked changes after generation.
 - ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Jest presets in `packages/jest-config`. The web app currently uses its own Jest config; API unit tests consume the shared Nest preset.
 - Preserve existing ESM/CommonJS boundaries. `api-contract` uses ESM with `.js` import specifiers; API uses CommonJS compilation. Check consumers before changing package exports or compiler settings.
 - Commit messages require a scope, as defined in `commitlint.config.js`; Husky runs lint-staged and Turbo type checks on commit.

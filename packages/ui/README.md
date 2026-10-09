@@ -1,6 +1,6 @@
 # @repo/ui
 
-Shared React 19 controls styled with Tailwind 4 and `@repo/design-system`, using `@repo/icons`. The package contains Button, Input, Textarea, and React Hook Form/Zod adapters. It has no API access or application state.
+Shared React 19 controls styled with Tailwind 4 and `@repo/design-system`, using icons from `@repo/assets/icons`. The package contains Button, Input, Textarea, and React Hook Form/Zod adapters. It has no API access or application state.
 
 Import components by subpath (`@repo/ui/button`, `@repo/ui/input`, `@repo/ui/textarea`, `@repo/ui/form/form-wrapper`, and other `form/*` modules). Import `@repo/ui/styles.css` once at the app layout. `@repo/ui/utils` exposes `cn`, whose custom font-size groups match shared design-system typography.
 
