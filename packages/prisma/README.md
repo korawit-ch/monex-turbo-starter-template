@@ -7,7 +7,7 @@ This package is not an API contract. Backend code must map Prisma records to the
 ## Structure
 
 - `prisma/schema.prisma`: authoritative PostgreSQL model.
-- `prisma/seed.ts`: non-idempotent example data seed.
+- `prisma/seed.ts`: repeatable development tenant, administrator, and example-link seed.
 - `prisma.config.ts`: schema discovery and database URL loading for Prisma CLI.
 - `src/index.ts`: PostgreSQL adapter, singleton Prisma client, and generated type exports.
 
@@ -26,7 +26,7 @@ npm run db:studio
 npm run db:seed
 ```
 
-`db:push`, `db:migrate`, and `db:seed` change persistent state. The seed is not idempotent, and there is currently no checked-in migration history.
+`db:push`, `db:migrate`, and `db:seed` change persistent state. The seed upserts stable identities but rotates the seeded administrator's password hash. There is currently no checked-in migration history.
 
 Build the runtime entry point with:
 

@@ -16,6 +16,7 @@ This Turborepo includes the following packages & apps:
 │   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
     ├── @repo/api-contract        # Shared API request/response contracts
+    ├── @repo/authorization       # Shared permission vocabulary and evaluator
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/icons               # SVG icon components (SVGR-generated)
@@ -99,6 +100,8 @@ Applications and runtime packages use [TypeScript](https://www.typescriptlang.or
 
    **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This makes the root configuration available to those workspaces; API bootstrap and the seed runtime still need explicit process environment loading.
 
+   Replace both authentication secrets in `.env` with independent values of at least 32 random bytes. Keep `API_INTERNAL_URL` server-only and set `WEB_ORIGIN` to the browser-visible Next origin. See [authentication environment details](docs/authentication.md#environment).
+
 4. **Generate Prisma client and push schema**:
 
    ```bash
@@ -157,7 +160,7 @@ npm run db:seed
 npm run db:studio
 ```
 
-`db:push` changes the selected database schema; `db:migrate` creates/applies development migrations, not production deployments. No migration history is checked in. The seed can insert duplicates on reruns because URLs are not unique. `db:seed` needs `DATABASE_URL` exported; the setup example above loads it explicitly.
+`db:push` changes the selected database schema; `db:migrate` creates/applies development migrations, not production deployments. No migration history is checked in. The seed upserts a development tenant, administrator, and tenant-unique links; rerunning it rotates the seeded password hash. `db:seed` needs `DATABASE_URL` exported.
 
 `@repo/prisma` centralizes server-side schema/client ownership for this monorepo; it is not an API contract and frontend code must not consume it. If the API needs to become independently owned, run `npm run prisma:localize:api` for a dry run and `npm run prisma:localize:api -- --apply` to move Prisma into `apps/api`. The migration is guarded against other workspace consumers and does not modify database data.
 
@@ -303,7 +306,7 @@ Controllers map Prisma records to `LinkResponse`, converting database `Date`
 instances to ISO strings. This keeps the database model internal while
 `@repo/api-contract` remains the source of truth for the wire format.
 
-Swagger decorators and TypeScript interface implementation do not provide runtime request validation. The API currently has no validation pipe or authentication/authorization layer. Shared request contracts are maintained in `@repo/api-contract`.
+The global validation pipe rejects unknown or malformed input using class-validator decorators. Global JWT and permission guards protect link routes, and services scope Prisma operations to the authenticated tenant. Shared request contracts remain in `@repo/api-contract`; the complete security flow is documented in [Authentication and authorization](docs/authentication.md).
 
 ### Frontend
 
@@ -322,6 +325,11 @@ The Next.js apps display database results fetched from their respective NestJS A
   - JSON-safe responses (`LinkResponse`)
   - Runtime-agnostic - works on server and client components
   - **Shared by frontend and backend**
+
+- **@repo/authorization**: Shared authorization vocabulary and pure evaluator
+  - Validates decoded access-token claim types and permission names
+  - Produces a sanitized `AuthorizationContext`
+  - Contains no JWT library, cookies, framework, network, or database code
 
 - **@repo/design-system**: Shared styling foundation
   - Tailwind CSS configuration and color palette
@@ -519,11 +527,11 @@ The project uses a centralized `.env` file in the root directory:
 
 #### Configuration details
 
-- Set `NEXT_PUBLIC_API_URL` for web; `.env.example` currently uses the unconsumed name `NEXT_PUBLIC_API`.
+- Protected browser calls use same-origin Next.js BFF routes. Configure server-only `API_INTERNAL_URL`; do not expose it with a `NEXT_PUBLIC_*` prefix.
 - Setup substitutes fixed defaults when first creating `.env`; later edits to `DB_*` do not recalculate `DATABASE_URL`.
 - `env:distribute` replaces existing regular workspace `.env` files with symlinks. Preserve any local values before running it.
-- API bootstrap and the seed client do not explicitly load dotenv. Turbo strict mode also lacks some API/database environment declarations. For custom settings, launch the API directly with exported variables; see [API startup](apps/api/README.md#development).
-- `NEXT_PUBLIC_*` values and the web server-provider DOM attribute are public; never put secrets there.
+- API bootstrap does not explicitly load dotenv. For direct startup, export the required database/auth variables or use `node --env-file=.env`; see [API startup](apps/api/README.md#development).
+- Both auth secrets are server-only. Never put credentials, tokens, internal URLs, or authorization claims in public environment variables or DOM attributes.
 
 ### Remote Caching
 
@@ -550,16 +558,16 @@ npx turbo link
 
 These are current implementation gaps, not features supplied by this documentation:
 
-1. **IMPORTANT — API boundary validation and access policy.** Body DTOs have Swagger annotations but no validation decorators/global pipe; IDs are coerced with `+id`. CRUD routes have no authentication/authorization, and CORS is unrestricted. Validate accepted fields/URLs/IDs and define server access policy before using the template for protected data. [API details](apps/api/README.md#improvements).
-2. **IMPORTANT — Startup and data integrity.** Unify environment loading/name conventions and declare Turbo runtime variables; remove credential logging and bound database readiness waits. Define seed identity and migration workflow before repeatable deployments. [DB details](apps/db/README.md#improvements), [API persistence details](apps/api/README.md#persistence-ownership).
+1. **IMPORTANT — Production identity and key management.** Replace seeded credential login with the intended identity provider, add rate limiting/abuse controls, and move from shared HS256 signing material to asymmetric keys. [Authentication details](docs/authentication.md).
+2. **IMPORTANT — Schema rollout and operations.** Create reviewed production migrations/backfills for required tenant ownership, configure private API/database networking, and bound database readiness waits. [DB details](apps/db/README.md#improvements), [API persistence details](apps/api/README.md#persistence-ownership).
 3. **IMPORTANT — Shared form behavior.** FormInput/FormTextarea destructure missing context before their fallback; inputs without IDs lose label associations and reuse `undefined-helper`. Correct these contracts and add behavior/accessibility tests. [UI details](packages/ui/README.md#improvements).
-4. **IMPORTANT — HTTP failures and concurrency.** Shared contracts now represent JSON timestamps and DELETE responses explicitly. Still map database write races and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-contract/README.md), [web details](apps/web/README.md#improvements).
-5. **IMPORTANT — Verification coverage.** Repair badge tests that expect obsolete colors, add CRUD/failure-path coverage, close e2e Nest apps, and run tests in CI. Current links unit tests only check construction.
+4. **IMPORTANT — HTTP failures and concurrency.** Scoped update/delete races return 409, but unique-link conflicts and other Prisma failures still need explicit HTTP mapping. [Contracts](packages/api-contract/README.md), [web details](apps/web/README.md#improvements).
+5. **IMPORTANT — Verification coverage.** Add database-backed auth/BFF integration coverage, close e2e Nest apps, and run tests in CI. Unit tests cover core claim, token, session, guard, redirect, and tenant-scope behavior.
 6. **IMPORTANT — Destructive helper scripts.** `scripts/separate-frontend.sh` and `scripts/separate-backend.sh` delete workspaces before copying nonexistent `docs/*` templates. Do not run them; repair/preflight the workflow before offering repository separation.
 7. **SUGGESTION — Production adaptation.** Remove artificial query delays, decide whether independent server/client demo reads are needed, introduce bounded link listing when needed, and investigate the oversized `app-thai-id.svg` asset. No production deployment or bundle-performance validation is implied.
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [Prisma persistence](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [Prisma persistence](packages/prisma/AGENTS.md), [authorization](packages/authorization/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.
