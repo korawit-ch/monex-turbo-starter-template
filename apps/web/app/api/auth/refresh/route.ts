@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-import { relaySetCookies } from '../../../../lib/auth/bff';
+import { relaySetCookies, requireSameOrigin } from '../../../../lib/auth/bff';
 import { getApiInternalUrl } from '../../../../lib/auth/config';
 import { SESSION_COOKIE } from '../../../../lib/auth/server';
 import { safeReturnTo } from '../../../../lib/auth/safe-return';
@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
   return response;
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const originFailure = requireSameOrigin(request);
+  if (originFailure) return originFailure;
   const upstream = await refresh();
   if (!upstream) {
     return NextResponse.json(

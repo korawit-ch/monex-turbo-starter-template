@@ -161,7 +161,7 @@ npm run db:seed
 npm run dev
 ```
 
-`db:push` and `db:seed` mutate the selected database. The seed is now repeatable by tenant/email/link identity, but it updates the development user's password hash on each run and invalidates the previous seeded password.
+`db:push` and `db:seed` mutate the selected database. The seed is now repeatable by tenant/email/link identity, but it generates a new salt and password hash on each run. The configured password remains valid when its value is unchanged.
 
 Focused checks:
 
@@ -173,9 +173,3 @@ npm run test --workspace=web -- --runInBand
 npm run build --workspace=api
 npm run check-types --workspace=web
 ```
-
-## Removal and rollback
-
-Preview removal with `npm run auth:remove`. Apply it with `npm run auth:remove -- --apply`. The script refuses a dirty working tree and reverse-applies the checked-in authentication patch, including schema, dependencies, documentation, BFF routes, and guards. It does not alter PostgreSQL data or schema; if auth schema was applied, create and review a separate database migration before dropping tables/columns.
-
-The removal artifact is intentionally exact for this implementation snapshot. Modify authentication first, regenerate/review the patch, and test removal before committing later auth changes.
