@@ -15,8 +15,9 @@
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@repo/api-contract": "*",
-    "@repo/ui": "*",
+    "@repo/assets": "*",
     "@repo/icons": "*",
+    "@repo/ui": "*",
     "@tanstack/react-query": "^5.80.7",
     "next": "^16.0.7",
     "react": "^19.1.0",

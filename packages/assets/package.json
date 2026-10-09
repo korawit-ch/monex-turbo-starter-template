@@ -1,0 +1,15 @@
+{
+  "name": "@repo/assets",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "files": [
+    "src"
+  ],
+  "exports": {
+    "./brand/*": "./src/brand/*",
+    "./illustrations/*": "./src/illustrations/*",
+    "./images/*": "./src/images/*"
+  },
+  "license": "MIT"
+}

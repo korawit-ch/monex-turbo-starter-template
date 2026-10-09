@@ -1,14 +1,10 @@
 export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
+import type { StaticImageData } from 'next/image';
+import { ComponentType, SVGProps } from 'react';
 
-import { getLinks } from '../../services/links.service';
-import { FeatureBadge } from '../../components/feature-badge';
-import { LinksClient } from '../../components/links-client';
-import { ButtonDemo } from '../../components/button-demo';
-import { InputDemo } from '../../components/input-demo';
-import { TextareaDemo } from '../../components/textarea-demo';
-import { FormDemo } from '../../components/form-demo';
+import turborepoLogo from '@repo/assets/brand/turborepo-dark.svg';
 import {
   AddFile,
   AddUser,
@@ -30,9 +26,17 @@ import {
   Send,
   Trash,
 } from '@repo/icons';
-import { ComponentType, SVGProps } from 'react';
 
+import { getLinks } from '../../services/links.service';
+import { FeatureBadge } from '../../components/feature-badge';
+import { LinksClient } from '../../components/links-client';
+import { ButtonDemo } from '../../components/button-demo';
+import { InputDemo } from '../../components/input-demo';
+import { TextareaDemo } from '../../components/textarea-demo';
+import { FormDemo } from '../../components/form-demo';
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+
+const turborepoLogoImage = turborepoLogo as StaticImageData;
 
 interface IconItem {
   name: string;
@@ -68,7 +72,7 @@ export default async function Home() {
       <main className="w-full max-w-3xl">
         {/* Logo */}
         <Image
-          src="/turborepo-dark.svg"
+          src={turborepoLogoImage}
           alt="Turborepo"
           width={160}
           height={34}
