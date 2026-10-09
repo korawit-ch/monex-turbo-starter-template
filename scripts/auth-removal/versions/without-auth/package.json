@@ -29,6 +29,7 @@
     "prisma:localize:api": "node scripts/localize-prisma-in-api.mjs",
     "app:duplicate": "node scripts/duplicate-app.mjs",
     "assets:localize:web": "node scripts/localize-web-assets.mjs",
+    "template:finalize": "node scripts/finalize-template.mjs",
     "env:setup": "node scripts/setup-env.js",
     "env:distribute": "node scripts/distribute-env.js",
     "prepare": "husky"

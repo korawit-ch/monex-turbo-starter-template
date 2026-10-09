@@ -8,6 +8,7 @@
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
 - `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/assets` owns cross-app raw visual files and SVGR-generated icon components. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
+- `docs/engineering/README.md` is the human-facing company convention index. Keep it aligned when architecture, delivery policy, or supported scripts change materially.
 
 ## Tooling and generated output
 
@@ -16,6 +17,7 @@
 - Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/assets/src/icons/index.ts`; use their generators. Review tracked changes after generation.
 - `npm run prisma:localize:api` is a dry-run architecture migration check. Add `-- --apply` only when intentionally moving all Prisma ownership into `apps/api`; it refuses to proceed while another workspace consumes `@repo/prisma`.
 - `npm run app:duplicate -- --source <web|api> --name <name>` previews app duplication; add `--apply` to create it. The script copies the source's current shared/localized ownership state while excluding generated output and local environment files.
+- `npm run template:finalize` previews removal of the Link vertical-slice example and one-time template migration tooling. Its `--apply` mode requires a clean tree, changes source/schema files, removes itself, and never changes database state.
 - ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Jest presets in `packages/jest-config`. The web app currently uses its own Jest config; API unit tests consume the shared Nest preset.
 - Preserve existing ESM/CommonJS boundaries. `api-contract` uses ESM with `.js` import specifiers; API uses CommonJS compilation. Check consumers before changing package exports or compiler settings.
 - Commit messages require a scope, as defined in `commitlint.config.js`; Husky runs lint-staged and Turbo type checks on commit.
@@ -35,7 +37,6 @@
 - A symlink does not ensure a runtime loads variables. Next.js and Prisma CLI have loading paths; API bootstrap and the seed client do not explicitly load dotenv. The Prisma CLI config checks the package and root environment paths. Preserve explicit runtime environment handling when changing startup.
 - Browser code reads `NEXT_PUBLIC_API_URL`. `.env.example` currently names `NEXT_PUBLIC_API`; account for this mismatch rather than copying it into new code.
 - `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Seeding is not idempotent under the current schema. Never use database reset/volume removal as routine verification.
-- `scripts/separate-*.sh` delete workspaces before copying missing `docs/*` templates. Do not use them as a setup workflow.
 - `npm run assets:localize:web` is a non-mutating preflight by default. Its `--apply` mode removes `packages/assets` only after confirming no workspace other than web consumes it; review architecture documentation after using the one-time migration.
 
 ## Verification and documentation
