@@ -20,7 +20,6 @@ This Turborepo includes the following packages & apps:
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/icons               # SVG icon components (SVGR-generated)
     ├── @repo/jest-config         # Jest configurations
-    ├── @repo/prisma              # Prisma 7 client, schema, and types
     ├── @repo/typescript-config   # TypeScript configurations
     └── @repo/ui                  # React 19 component library with Tailwind
 ```
@@ -105,7 +104,7 @@ Applications and runtime packages use [TypeScript](https://www.typescriptlang.or
    npm run db:generate
    npm run db:push
    # Optional seed, with root environment loaded explicitly:
-   node --env-file=.env --import=tsx packages/prisma/prisma/seed.ts
+   npm run db:seed
    ```
 
 5. **Build shared packages and start development servers**:
@@ -317,11 +316,6 @@ The Next.js apps display database results fetched from their respective NestJS A
   - JSON-safe responses (`LinkResponse`)
   - Runtime-agnostic - works on server and client components
   - **Shared by frontend and backend**
-
-- **@repo/prisma**: Shared Prisma client and schema
-  - Exports singleton Prisma client instance
-  - Exports all Prisma types (`Prisma`, `Link`, etc.)
-  - Includes publishing metadata/hooks; see [Prisma publishing prerequisites](packages/prisma/README.md#publishing) before publishing
 
 - **@repo/design-system**: Shared styling foundation
   - Tailwind CSS configuration and color palette
@@ -553,7 +547,7 @@ npx turbo link
 These are current implementation gaps, not features supplied by this documentation:
 
 1. **IMPORTANT — API boundary validation and access policy.** Body DTOs have Swagger annotations but no validation decorators/global pipe; IDs are coerced with `+id`. CRUD routes have no authentication/authorization, and CORS is unrestricted. Validate accepted fields/URLs/IDs and define server access policy before using the template for protected data. [API details](apps/api/README.md#improvements).
-2. **IMPORTANT — Startup and data integrity.** Unify environment loading/name conventions and declare Turbo runtime variables; remove credential logging and bound database readiness waits. Define seed identity and migration workflow before repeatable deployments. [DB details](apps/db/README.md#improvements), [Prisma details](packages/prisma/README.md#improvements).
+2. **IMPORTANT — Startup and data integrity.** Unify environment loading/name conventions and declare Turbo runtime variables; remove credential logging and bound database readiness waits. Define seed identity and migration workflow before repeatable deployments. [DB details](apps/db/README.md#improvements), [API persistence details](apps/api/README.md#persistence-ownership).
 3. **IMPORTANT — Shared form behavior.** FormInput/FormTextarea destructure missing context before their fallback; inputs without IDs lose label associations and reuse `undefined-helper`. Correct these contracts and add behavior/accessibility tests. [UI details](packages/ui/README.md#improvements).
 4. **IMPORTANT — HTTP failures and concurrency.** Shared contracts now represent JSON timestamps and DELETE responses explicitly. Still map database write races and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-contract/README.md), [web details](apps/web/README.md#improvements).
 5. **IMPORTANT — Verification coverage.** Repair badge tests that expect obsolete colors, add CRUD/failure-path coverage, close e2e Nest apps, and run tests in CI. Current links unit tests only check construction.
@@ -562,6 +556,6 @@ These are current implementation gaps, not features supplied by this documentati
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database](apps/db/AGENTS.md), [Prisma](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API and persistence](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.

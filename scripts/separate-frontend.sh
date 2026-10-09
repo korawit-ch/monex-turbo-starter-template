@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Separate Frontend from Monorepo
-# Removes: apps/api, apps/db, and packages/prisma
+# Removes: apps/api and apps/db
 
 set -e
 
@@ -21,10 +21,6 @@ fi
 echo "📦 Removing backend apps..."
 rm -rf apps/api
 rm -rf apps/db
-
-# Remove backend packages
-echo "📦 Removing backend packages..."
-rm -rf packages/prisma
 
 # Replace config files with frontend versions
 echo "📝 Updating config files..."
