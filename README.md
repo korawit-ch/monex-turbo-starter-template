@@ -397,7 +397,7 @@ This project separates **API definitions** from **fetch logic** for maximum flex
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
-│ linksApi.create()   │      │ features/links/data-access/     │
+│ linksApi.create()   │      │ data-access/links.{client,server}.ts │
 └─────────────────────┘      └─────────────────────────────────┘
 ```
 
@@ -445,7 +445,7 @@ export async function clientFetch<TResponse, TBody = never>(
 
 ```typescript
 // Server Component usage example
-import { getLinks } from '@/features/links/data-access/server';
+import { getLinks } from '@/data-access/links.server';
 
 export default async function Page() {
   const links = await getLinks();
@@ -456,11 +456,11 @@ export default async function Page() {
 **Client Components** use TanStack Query hooks:
 
 ```typescript
-// apps/web/components/links-client.tsx
+// apps/web/app/(protected)/(home)/_components/links-demo.tsx
 'use client';
-import { useLinksQuery } from '@/features/links/data-access/client';
+import { useLinksQuery } from '@/data-access/links.client';
 
-export function LinksClient() {
+export function LinksDemo() {
   const { data: links, isLoading } = useLinksQuery();
   if (isLoading) return <Loading />;
   return <LinksList links={links} />;

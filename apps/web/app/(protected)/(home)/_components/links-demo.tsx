@@ -1,14 +1,14 @@
 'use client';
 
 import { Button } from '@repo/ui/button';
-import { useLinksQuery } from '../features/links/data-access/client';
-import { useAuth } from '../providers/auth-provider';
+import { useLinksQuery } from '../../../../data-access/links.client';
+import { useAuth } from '../../../../providers/auth-provider';
 
 /**
  * Client-side links component using TanStack Query
  * Demonstrates clientFetch pattern with automatic caching & refetching
  */
-export function LinksClient() {
+export function LinksDemo() {
   const { can } = useAuth();
   const mayReadLinks = can('link.read');
   const {

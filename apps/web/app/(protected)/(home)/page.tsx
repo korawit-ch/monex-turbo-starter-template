@@ -2,14 +2,15 @@ export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
 
-import { getLinks } from '../../../features/links/data-access/server';
-import { FeatureBadge } from '../../../components/feature-badge';
-import { LinksClient } from '../../../components/links-client';
-import { LogoutButton } from '../../../components/logout-button';
-import { ButtonDemo } from '../../../components/button-demo';
-import { InputDemo } from '../../../components/input-demo';
-import { TextareaDemo } from '../../../components/textarea-demo';
-import { FormDemo } from '../../../components/form-demo';
+import { getLinks } from '../../../data-access/links.server';
+import { AuthorizationSummary } from '../../../components/auth/authorization-summary';
+import { LogoutButton } from '../../../components/auth/logout-button';
+import { ButtonDemo } from './_components/button-demo';
+import { FeatureBadge } from './_components/feature-badge';
+import { FormDemo } from './_components/form-demo';
+import { InputDemo } from './_components/input-demo';
+import { LinksDemo } from './_components/links-demo';
+import { TextareaDemo } from './_components/textarea-demo';
 import {
   AddFile,
   AddUser,
@@ -82,6 +83,7 @@ export default async function Home() {
         <p className="text-primary-500 mb-8">
           Fetching data from PostgreSQL via NestJS API and Prisma ORM.
         </p>
+        <AuthorizationSummary />
         <LogoutButton />
 
         {/* Badges */}
@@ -175,7 +177,7 @@ export default async function Home() {
         {/* Client-side fetch demo */}
         <section className="border-surface mt-8 border-t pt-8">
           <h2 className="mb-4 text-xl font-semibold">Client-Side Demo</h2>
-          <LinksClient />
+          <LinksDemo />
         </section>
       </main>
 

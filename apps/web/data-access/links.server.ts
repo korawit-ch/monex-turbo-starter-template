@@ -1,5 +1,5 @@
 import { linksApi, type LinkResponse } from '@repo/api-contract';
-import { serverFetch } from '../../../lib/fetch/server';
+import { serverFetch } from '../lib/fetch/server';
 
 /**
  * Server-side link data access for Server Components and Route Handlers.
