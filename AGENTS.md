@@ -15,6 +15,7 @@
 - Build shared dependencies before running app commands directly: `npx turbo run build --filter='./packages/*'`. Some packages export `dist`; `@repo/ui` has separate component/style tasks coordinated by `packages/ui/turbo.json`, without a package-level `build` script.
 - Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/icons/src/index.ts`; use their generators. Review tracked changes after generation.
 - `npm run prisma:localize:api` is a dry-run architecture migration check. Add `-- --apply` only when intentionally moving all Prisma ownership into `apps/api`; it refuses to proceed while another workspace consumes `@repo/prisma`.
+- `npm run app:duplicate -- --source <web|api> --name <name>` previews app duplication; add `--apply` to create it. The script copies the source's current shared/localized ownership state while excluding generated output and local environment files.
 - ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Jest presets in `packages/jest-config`. The web app currently uses its own Jest config; API unit tests consume the shared Nest preset.
 - Preserve existing ESM/CommonJS boundaries. `api-contract` uses ESM with `.js` import specifiers; API uses CommonJS compilation. Check consumers before changing package exports or compiler settings.
 - Commit messages require a scope, as defined in `commitlint.config.js`; Husky runs lint-staged and Turbo type checks on commit.

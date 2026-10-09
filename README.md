@@ -470,23 +470,25 @@ export function LinksClient() {
 
 ### Extending Apps
 
-> **Extension pattern**: Use the existing web app as a starting point, then update its identity, configuration, and verification.
+> **Extension pattern**: Duplicate the existing web or API app, then update its feature-specific behavior and verification.
 
-This monorepo is designed to make adding new apps straightforward:
+This monorepo is designed to make adding new apps straightforward. The duplication script reads the selected source app as it exists, so it preserves shared-package dependencies as well as any assets or Prisma files that have been localized into that app.
 
-1. **Duplicate an existing app**:
+1. **Preview the duplication**:
 
    ```bash
-   rsync -a --exclude=node_modules --exclude=.next --exclude=.turbo --exclude=.env apps/web/ apps/my-new-app/
+   npm run app:duplicate -- --source web --name my-new-app --port 3004
    ```
 
-2. **Update the app name** in the following files:
-   - `apps/my-new-app/package.json` - Change the name to `"my-new-app"`
-   - `apps/my-new-app/package.json` - Update the `"dev"` script port (e.g., `--port 3004`)
-   - `apps/my-new-app/next.config.js` (if it exists) - Update any app-specific configurations
+2. **Create the app** after reviewing the detected ownership state:
 
-3. **Verify the new workspace**: update its package name/port, retain the needed workspace dependencies, and build/test it. It will:
+   ```bash
+   npm run app:duplicate -- --source web --name my-new-app --port 3004 --apply
+   ```
+
+3. **Verify the new workspace**. It will:
    - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-contract`)
+   - ✅ Preserve shared or app-local assets and Prisma ownership from the source
    - ✅ Inherit all Tailwind configurations from the design system
    - ✅ Use the same environment variables (via symlink distribution)
    - ✅ Work with Turborepo's build and dev commands
@@ -495,20 +497,16 @@ This monorepo is designed to make adding new apps straightforward:
 **Example: Creating an admin dashboard**
 
 ```bash
-# 1. Duplicate an existing app
-rsync -a --exclude=node_modules --exclude=.next --exclude=.turbo --exclude=.env apps/web/ apps/admin/
+# Preview, then create the workspace
+npm run app:duplicate -- --source web --name admin --port 3004
+npm run app:duplicate -- --source web --name admin --port 3004 --apply
 
-# 2. Update package.json
-cd apps/admin
-# Change "name": "web" → "name": "admin"
-# Change port from 3000 → 3004
-
-# 3. Start developing!
-npm run dev
+# Start only the new app
+npm run dev --workspace=admin
 # Your new admin app will be available at http://localhost:3004
 ```
 
-All shared packages, configurations, and utilities are automatically available to your new app. This makes it incredibly easy to spin up additional frontend applications while maintaining consistency across your monorepo.
+Use `--source api` to duplicate the NestJS app. `--port` is optional; omitting it preserves the source port exactly. Generated output, caches, coverage, and local environment files are never copied. The command refuses existing destinations and duplicate workspace package names, then runs `npm install` to register the new workspace and refresh the lockfile.
 
 ### Environment Variables
 
