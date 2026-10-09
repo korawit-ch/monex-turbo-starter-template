@@ -15,7 +15,7 @@ This Turborepo includes the following packages & apps:
 │   ├── api                # NestJS 11 API              → http://localhost:3001
 │   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
-    ├── @repo/api-client          # Frontend API definitions & types (no fetch)
+    ├── @repo/api-contract        # Shared API request/response contracts
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/icons               # SVG icon components (SVGR-generated)
@@ -275,14 +275,14 @@ The NestJS APIs provide the following endpoints with **Swagger documentation**:
 
 #### DTOs & Swagger
 
-DTOs implement Prisma types to ensure type alignment:
+DTOs implement shared request contracts while retaining classes for Swagger:
 
 ```typescript
 // apps/api/src/links/dto/create-link.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import type { Prisma } from '@repo/prisma';
+import type { CreateLinkRequest } from '@repo/api-contract';
 
-export class CreateLinkDto implements Prisma.LinkCreateInput {
+export class CreateLinkDto implements CreateLinkRequest {
   @ApiProperty({ example: 'https://google.com' })
   url: string;
 
@@ -294,14 +294,11 @@ export class CreateLinkDto implements Prisma.LinkCreateInput {
 }
 ```
 
-**Why this pattern?**
+Controllers map Prisma records to `LinkResponse`, converting database `Date`
+instances to ISO strings. This keeps the database model internal while
+`@repo/api-contract` remains the source of truth for the wire format.
 
-- ✅ `implements Prisma.LinkCreateInput` - TypeScript enforces DTO ↔ Prisma alignment
-- ✅ `@ApiProperty()` - Swagger gets proper documentation with examples
-- ✅ Single source of truth - Prisma schema defines the data model
-- ✅ Compile-time errors if DTO drifts from schema
-
-Swagger decorators and Prisma interface implementation do not provide runtime request validation. The API currently has no validation pipe or authentication/authorization layer. Frontend DTOs are maintained separately in `@repo/api-client`.
+Swagger decorators and TypeScript interface implementation do not provide runtime request validation. The API currently has no validation pipe or authentication/authorization layer. Shared request contracts are maintained in `@repo/api-contract`.
 
 ### Frontend
 
@@ -310,15 +307,16 @@ The Next.js apps display database results fetched from their respective NestJS A
 - Fetches links from the API on server-side
 - Displays them in a styled card layout
 - Shows link metadata (ID, URL, creation date)
-- Uses Prisma-generated TypeScript types for type safety
+- Uses shared API response types rather than Prisma-generated model types
 
 ### Shared Packages
 
-- **@repo/api-client**: Frontend API definitions (no fetch, no React, no Next.js)
+- **@repo/api-contract**: Shared API contracts (no fetch, React, NestJS, or Prisma)
   - Endpoint definitions with typed request/response
-  - Shared DTOs (`CreateLinkDto`, `UpdateLinkDto`)
+  - Shared requests (`CreateLinkRequest`, `UpdateLinkRequest`)
+  - JSON-safe responses (`LinkResponse`)
   - Runtime-agnostic - works on server and client components
-  - **Shared across all frontend apps only**
+  - **Shared by frontend and backend**
 
 - **@repo/prisma**: Shared Prisma client and schema
   - Exports singleton Prisma client instance
@@ -387,7 +385,7 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 This project separates **API definitions** from **fetch logic** for maximum flexibility:
 
 ```
-@repo/api-client (shared)    apps/web (per-app)
+@repo/api-contract (shared)  apps/web (per-app)
 ┌─────────────────────┐      ┌─────────────────────────────────┐
 │ linksApi.list()     │      │ lib/fetch/server.ts (SSR)       │
 │ linksApi.detail(id) │ ──▶  │ lib/fetch/client.ts (CSR)       │
@@ -399,10 +397,10 @@ The following snippets illustrate the pattern; actual fetch helpers also set hea
 
 **How it works:**
 
-1. **`@repo/api-client`** defines endpoints as pure data (no fetch):
+1. **`@repo/api-contract`** defines endpoints and wire types as pure data (no fetch):
 
 ```typescript
-// packages/api-client/src/links.ts
+// packages/api-contract/src/links.ts
 export const linksApi = {
   list: () => ({ url: '/links', method: 'GET' }),
   detail: (id: number) => ({ url: `/links/${id}`, method: 'GET' }),
@@ -414,9 +412,9 @@ export const linksApi = {
 
 ```typescript
 // apps/web/lib/fetch/server.ts - Server-side fetch
-export async function serverFetch<T>(
-  endpoint: ApiEndpointWithBody<unknown, T>,
-): Promise<T> {
+export async function serverFetch<TResponse, TBody = never>(
+  endpoint: ApiEndpoint<TResponse, TBody>,
+): Promise<TResponse> {
   const response = await fetch(`${API_BASE_URL}${endpoint.url}`, {
     method: endpoint.method,
     body: endpoint.body ? JSON.stringify(endpoint.body) : undefined,
@@ -426,9 +424,9 @@ export async function serverFetch<T>(
 }
 
 // apps/web/lib/fetch/client.ts - Client-side fetch (for TanStack Query)
-export async function clientFetch<T>(
-  endpoint: ApiEndpointWithBody<unknown, T>,
-): Promise<T> {
+export async function clientFetch<TResponse, TBody = never>(
+  endpoint: ApiEndpoint<TResponse, TBody>,
+): Promise<TResponse> {
   // Same logic, but TanStack Query handles caching
 }
 ```
@@ -439,7 +437,7 @@ export async function clientFetch<T>(
 
 ```typescript
 // Server Component usage example (home entry: apps/web/app/(home)/page.tsx)
-import { linksApi } from '@repo/api-client';
+import { linksApi } from '@repo/api-contract';
 import { serverFetch } from '@/lib/fetch/server';
 
 export default async function Page() {
@@ -464,7 +462,7 @@ export function LinksClient() {
 
 **Why this pattern?**
 
-- ✅ **Share definitions, not fetch** - `@repo/api-client` has no fetch, no React, no Next.js
+- ✅ **Share contracts, not persistence types** - `@repo/api-contract` has no Prisma, fetch, React, or NestJS dependency
 - ✅ **Per-app control** - Each app manages caching, headers, error handling
 - ✅ **Server vs client separation** - Different strategies for SSR and CSR
 - ✅ **Type safety** - Full TypeScript inference from endpoint to response
@@ -488,7 +486,7 @@ This monorepo is designed to make adding new apps straightforward:
    - `apps/my-new-app/next.config.js` (if it exists) - Update any app-specific configurations
 
 3. **Verify the new workspace**: update its package name/port, retain the needed workspace dependencies, and build/test it. It will:
-   - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-client`)
+   - ✅ Automatically use shared packages (`@repo/design-system`, `@repo/ui`, `@repo/api-contract`)
    - ✅ Inherit all Tailwind configurations from the design system
    - ✅ Use the same environment variables (via symlink distribution)
    - ✅ Work with Turborepo's build and dev commands
@@ -557,13 +555,13 @@ These are current implementation gaps, not features supplied by this documentati
 1. **IMPORTANT — API boundary validation and access policy.** Body DTOs have Swagger annotations but no validation decorators/global pipe; IDs are coerced with `+id`. CRUD routes have no authentication/authorization, and CORS is unrestricted. Validate accepted fields/URLs/IDs and define server access policy before using the template for protected data. [API details](apps/api/README.md#improvements).
 2. **IMPORTANT — Startup and data integrity.** Unify environment loading/name conventions and declare Turbo runtime variables; remove credential logging and bound database readiness waits. Define seed identity and migration workflow before repeatable deployments. [DB details](apps/db/README.md#improvements), [Prisma details](packages/prisma/README.md#improvements).
 3. **IMPORTANT — Shared form behavior.** FormInput/FormTextarea destructure missing context before their fallback; inputs without IDs lose label associations and reuse `undefined-helper`. Correct these contracts and add behavior/accessibility tests. [UI details](packages/ui/README.md#improvements).
-4. **IMPORTANT — HTTP contracts and failures.** Represent JSON timestamp strings accurately, align DELETE's response type, map database write races, and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-client/README.md#improvements), [web details](apps/web/README.md#improvements).
+4. **IMPORTANT — HTTP failures and concurrency.** Shared contracts now represent JSON timestamps and DELETE responses explicitly. Still map database write races and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-contract/README.md), [web details](apps/web/README.md#improvements).
 5. **IMPORTANT — Verification coverage.** Repair badge tests that expect obsolete colors, add CRUD/failure-path coverage, close e2e Nest apps, and run tests in CI. Current links unit tests only check construction.
 6. **IMPORTANT — Destructive helper scripts.** `scripts/separate-frontend.sh` and `scripts/separate-backend.sh` delete workspaces before copying nonexistent `docs/*` templates. Do not run them; repair/preflight the workflow before offering repository separation.
 7. **SUGGESTION — Production adaptation.** Remove artificial query delays, decide whether independent server/client demo reads are needed, introduce bounded link listing when needed, and investigate the oversized `app-thai-id.svg` asset. No production deployment or bundle-performance validation is implied.
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database](apps/db/AGENTS.md), [Prisma](packages/prisma/AGENTS.md), [contracts](packages/api-client/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database](apps/db/AGENTS.md), [Prisma](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.

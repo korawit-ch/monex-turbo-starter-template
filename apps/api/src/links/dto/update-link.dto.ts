@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { Prisma } from '@repo/prisma';
+import type { UpdateLinkRequest } from '@repo/api-contract';
 
-// DTO implements Prisma type - TypeScript enforces alignment
-export class UpdateLinkDto implements Prisma.LinkUpdateInput {
+/** Runtime DTO for Swagger; its shape is governed by the shared contract. */
+export class UpdateLinkDto implements UpdateLinkRequest {
   @ApiProperty({ example: 'https://google.com', required: false })
   url?: string;
 

@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
-    "@repo/api-client": "*",
-    "@repo/prisma": "*",
+    "@repo/api-contract": "*",
     "@repo/ui": "*",
     "@repo/icons": "*",
     "@tanstack/react-query": "^5.80.7",

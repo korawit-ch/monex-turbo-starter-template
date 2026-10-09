@@ -7,37 +7,47 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import type { LinkResponse } from '@repo/api-contract';
 
 import { LinksService } from './links.service';
 import { CreateLinkDto } from './dto/create-link.dto';
 import { UpdateLinkDto } from './dto/update-link.dto';
+import { toLinkResponse } from './links.mapper';
 
 @Controller('links')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
   @Post()
-  create(@Body() data: CreateLinkDto) {
-    return this.linksService.create(data);
+  async create(@Body() data: CreateLinkDto): Promise<LinkResponse> {
+    const link = await this.linksService.create(data);
+    return toLinkResponse(link);
   }
 
   @Get()
-  findAll() {
-    return this.linksService.findAll();
+  async findAll(): Promise<LinkResponse[]> {
+    const links = await this.linksService.findAll();
+    return links.map(toLinkResponse);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.linksService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<LinkResponse> {
+    const link = await this.linksService.findOne(+id);
+    return toLinkResponse(link);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: UpdateLinkDto) {
-    return this.linksService.update(+id, data);
+  async update(
+    @Param('id') id: string,
+    @Body() data: UpdateLinkDto,
+  ): Promise<LinkResponse> {
+    const link = await this.linksService.update(+id, data);
+    return toLinkResponse(link);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.linksService.remove(+id);
+  async remove(@Param('id') id: string): Promise<LinkResponse> {
+    const link = await this.linksService.remove(+id);
+    return toLinkResponse(link);
   }
 }

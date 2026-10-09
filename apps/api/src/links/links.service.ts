@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Prisma } from '@repo/prisma';
+import type { CreateLinkRequest, UpdateLinkRequest } from '@repo/api-contract';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -7,9 +7,13 @@ import { PrismaService } from '../prisma/prisma.service';
 export class LinksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: Prisma.LinkCreateInput) {
+  async create(data: CreateLinkRequest) {
     return this.prisma.client.link.create({
-      data,
+      data: {
+        title: data.title,
+        url: data.url,
+        description: data.description,
+      },
     });
   }
 
@@ -33,12 +37,16 @@ export class LinksService {
     return link;
   }
 
-  async update(id: number, data: Prisma.LinkUpdateInput) {
+  async update(id: number, data: UpdateLinkRequest) {
     await this.findOne(id); // Check if link exists
 
     return this.prisma.client.link.update({
       where: { id },
-      data,
+      data: {
+        title: data.title,
+        url: data.url,
+        description: data.description,
+      },
     });
   }
 
