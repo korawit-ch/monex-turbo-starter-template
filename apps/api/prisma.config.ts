@@ -11,12 +11,8 @@ const databaseUrl =
   'postgresql://postgres:postgres@localhost:5433/monex-turbo-starter-template-db?schema=public';
 
 export default defineConfig({
-  earlyAccess: true,
   schema: path.join(__dirname, 'prisma', 'schema.prisma'),
   datasource: {
-    url: databaseUrl,
-  },
-  migrate: {
     url: databaseUrl,
   },
 });
