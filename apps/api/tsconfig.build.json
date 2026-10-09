@@ -8,8 +8,6 @@
     ".prettierrc.mjs",
     "eslint.config.mjs",
     "jest.config.mjs",
-    "jest.config.ts",
-    "prisma.config.ts",
-    "prisma/**/*.ts"
+    "jest.config.ts"
   ]
 }

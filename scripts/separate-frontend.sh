@@ -21,6 +21,7 @@ fi
 echo "📦 Removing backend apps..."
 rm -rf apps/api
 rm -rf apps/db
+rm -rf packages/prisma
 
 # Replace config files with frontend versions
 echo "📝 Updating config files..."

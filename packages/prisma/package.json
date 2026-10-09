@@ -1,0 +1,50 @@
+{
+  "name": "@repo/prisma",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared Prisma schema, generated database types, and runtime client",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+    "./schema": "./prisma/schema.prisma"
+  },
+  "files": [
+    "dist",
+    "prisma",
+    "prisma.config.ts"
+  ],
+  "scripts": {
+    "prebuild": "prisma generate",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx --tsconfig tsconfig.json prisma/seed.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^17.2.3",
+    "prisma": "^7.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "5.5.4"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}
