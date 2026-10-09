@@ -1,13 +1,39 @@
-[Link to ticket](https://linear.app/criclabs/issue/LINEAR-STORY-ID)
+<!--
+PR title: [PROJECT-123] concise imperative summary
+Use [TBD] only when no task exists yet.
+-->
+
+[Link to ticket](https://linear.app/criclabs/issue/LINEAR-STORY-ID) <!-- or: TBD -->
 
 ## What happened 📌
 
-Provide a brief overview of what happened, including the issue or feature being addressed.
+- What behavior changed?
+- Why is the change needed?
 
 ## Insight 🔍
 
-(Optional) Explain the changes made in this PR and how they address the issue or improve the feature.
+- Which application/package owns the change, and why?
+- Describe important request, data, authorization, or side-effect flow.
+- List meaningful risks, assumptions, migration steps, or follow-up work.
 
 ## Proof Of Work 📸
 
-Include any evidence that supports your changes, such as links to relevant documentation, screenshots of UI changes, or descriptions of testing and review processes.
+### Visual evidence
+
+<!-- Required for visual changes. Attach an image/video to GitHub, then replace the URL. Use useful alt text. For non-visual changes, write "Not applicable — non-visual change." -->
+
+![Describe the verified UI state](https://github.com/user-attachments/assets/replace-me)
+
+### Verification
+
+- [ ] Relevant lint checks pass
+- [ ] Relevant type checks/builds pass
+- [ ] Relevant unit/integration/e2e tests pass
+- [ ] Database migration or persistent-state impact was reviewed, if applicable
+- [ ] No secrets, tokens, customer data, or private infrastructure appear in evidence
+
+Commands/results:
+
+```text
+Paste concise command results here.
+```

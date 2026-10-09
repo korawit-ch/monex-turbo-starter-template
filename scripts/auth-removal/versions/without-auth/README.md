@@ -27,6 +27,19 @@ This Turborepo includes the following packages & apps:
 
 Applications and runtime packages use [TypeScript](https://www.typescriptlang.org/); database infrastructure, styles, and tooling also use YAML, CSS, JavaScript, and shell scripts.
 
+## Engineering conventions
+
+The [Engineering Handbook](docs/engineering/README.md) is the entry point for company-wide conventions. It covers:
+
+- [architecture, folder structure, and module ownership](docs/engineering/architecture-and-modules.md);
+- [frontend components and data access](docs/engineering/frontend.md);
+- [Prisma, NestJS, Swagger, and shared API contracts](docs/engineering/backend-and-api-contracts.md);
+- [file naming, coding style, linting, formatting, and tests](docs/engineering/coding-standards.md);
+- [branches, commits, pull requests, proof of work, releases, and hotfixes](docs/engineering/delivery-workflow.md);
+- [scripts, localization, authentication removal, and starter finalization](docs/engineering/scripts-and-template-customization.md).
+
+Start there before introducing a new folder, package, shared abstraction, or delivery process.
+
 ### Tech Stack & Versions
 
 **Runtime & Apps**
@@ -252,6 +265,8 @@ Normal work starts from `develop` on a `feature/*`, `fix/*`, `docs/*`, `refactor
 Prepare releases on `release/vX.Y.Z` from `develop`, then merge verified releases into `main` and synchronize back to `develop`. Production hotfixes start from `main` on `hotfix/*` and must also reach `develop` and any affected active release branch.
 
 The repository has no configured release/tag/publishing automation. Inspect existing tags, version metadata, CI, and remote state before releasing; a merge does not itself publish or deploy the project.
+
+Pull request titles must be `[PROJECT-123] concise summary` or `[TBD] concise summary`. Complete the repository PR template and attach an image or recording for visual changes. See the [delivery workflow](docs/engineering/delivery-workflow.md).
 
 #### GitHub Actions
 
@@ -567,8 +582,7 @@ These are current implementation gaps, not features supplied by this documentati
 3. **IMPORTANT — Shared form behavior.** FormInput/FormTextarea destructure missing context before their fallback; inputs without IDs lose label associations and reuse `undefined-helper`. Correct these contracts and add behavior/accessibility tests. [UI details](packages/ui/README.md#improvements).
 4. **IMPORTANT — HTTP failures and concurrency.** Shared contracts now represent JSON timestamps and DELETE responses explicitly. Still map database write races and distinguish API outages from empty/not-found UI results. [Contracts](packages/api-contract/README.md), [web details](apps/web/README.md#improvements).
 5. **IMPORTANT — Verification coverage.** Repair badge tests that expect obsolete colors, add CRUD/failure-path coverage, close e2e Nest apps, and run tests in CI. Current links unit tests only check construction.
-6. **IMPORTANT — Destructive helper scripts.** `scripts/separate-frontend.sh` and `scripts/separate-backend.sh` delete workspaces before copying nonexistent `docs/*` templates. Do not run them; repair/preflight the workflow before offering repository separation.
-7. **SUGGESTION — Production adaptation.** Remove artificial query delays, decide whether independent server/client demo reads are needed, introduce bounded link listing when needed, and investigate the oversized `app-thai-id.svg` asset. No production deployment or bundle-performance validation is implied.
+6. **SUGGESTION — Production adaptation.** Remove artificial query delays, decide whether independent server/client demo reads are needed, introduce bounded link listing when needed, and investigate the oversized `app-thai-id.svg` asset. No production deployment or bundle-performance validation is implied.
 
 ## Agent guidance
 
