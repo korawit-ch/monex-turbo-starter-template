@@ -5,10 +5,10 @@
       "dependsOn": ["build:styles", "build:components"]
     },
     "build:styles": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/index.css"]
     },
     "build:components": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.d.ts.map"]
     },
     "dev": {
       "with": ["dev:styles", "dev:components"]

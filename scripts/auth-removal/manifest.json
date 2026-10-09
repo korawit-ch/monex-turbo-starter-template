@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "transforms": [
+    { "path": ".env.example" },
+    { "path": "AGENTS.md" },
+    { "path": "README.md" },
+    { "path": "apps/api/AGENTS.md" },
+    { "path": "apps/api/README.md" },
+    { "path": "apps/api/package.json" },
+    { "path": "apps/api/src/app.controller.ts" },
+    { "path": "apps/api/src/app.module.ts" },
+    { "path": "apps/api/src/links/dto/create-link.dto.ts" },
+    { "path": "apps/api/src/links/dto/update-link.dto.ts" },
+    { "path": "apps/api/src/links/links.controller.ts" },
+    { "path": "apps/api/src/links/links.service.spec.ts" },
+    { "path": "apps/api/src/links/links.service.ts" },
+    { "path": "apps/api/src/main.ts" },
+    { "path": "apps/web/AGENTS.md" },
+    { "path": "apps/web/README.md" },
+    {
+      "path": "apps/web/app/(protected)/(home)/page.tsx",
+      "outputPath": "apps/web/app/(home)/page.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/links-demo.tsx",
+      "outputPath": "apps/web/app/(home)/_components/links-demo.tsx"
+    },
+    { "path": "apps/web/data-access/links.client.ts" },
+    { "path": "apps/web/data-access/links.server.ts" },
+    { "path": "apps/web/lib/fetch/client.ts" },
+    { "path": "apps/web/lib/fetch/server.ts" },
+    { "path": "apps/web/package.json" },
+    { "path": "apps/web/providers/index.tsx" },
+    { "path": "package.json" },
+    { "path": "packages/api-contract/package.json" },
+    { "path": "packages/api-contract/src/index.ts" },
+    { "path": "packages/prisma/AGENTS.md" },
+    { "path": "packages/prisma/README.md" },
+    { "path": "packages/prisma/prisma/schema.prisma" },
+    { "path": "packages/prisma/prisma/seed.ts" },
+    { "path": "turbo.json" }
+  ],
+  "relocate": [
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/__tests__/feature-badge.test.tsx",
+      "outputPath": "apps/web/app/(home)/_components/__tests__/feature-badge.test.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/button-demo.tsx",
+      "outputPath": "apps/web/app/(home)/_components/button-demo.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/feature-badge.tsx",
+      "outputPath": "apps/web/app/(home)/_components/feature-badge.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/form-demo.tsx",
+      "outputPath": "apps/web/app/(home)/_components/form-demo.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/input-demo.tsx",
+      "outputPath": "apps/web/app/(home)/_components/input-demo.tsx"
+    },
+    {
+      "path": "apps/web/app/(protected)/(home)/_components/textarea-demo.tsx",
+      "outputPath": "apps/web/app/(home)/_components/textarea-demo.tsx"
+    }
+  ],
+  "restore": [
+    "apps/web/providers/client-provider.tsx",
+    "apps/web/providers/server-provider.tsx"
+  ],
+  "removeTrees": [
+    "apps/api/src/auth",
+    "apps/web/app/api/auth",
+    "apps/web/lib/auth",
+    "packages/authorization"
+  ],
+  "removeFiles": [
+    "apps/web/app/(protected)/layout.tsx",
+    "apps/web/app/api/links/[id]/route.ts",
+    "apps/web/app/api/links/route.ts",
+    "apps/web/app/login/page.tsx",
+    "apps/web/components/auth/authorization-summary.tsx",
+    "apps/web/components/auth/logout-button.tsx",
+    "apps/web/providers/auth-provider.tsx",
+    "docs/authentication.md",
+    "packages/api-contract/src/auth.ts"
+  ],
+  "pruneDirectories": [
+    "apps/web/app/(protected)/(home)/_components/__tests__",
+    "apps/web/app/(protected)/(home)/_components",
+    "apps/web/app/(protected)/(home)",
+    "apps/web/app/(protected)",
+    "apps/web/app/api/links/[id]",
+    "apps/web/app/api/links",
+    "apps/web/app/login",
+    "apps/web/components/auth",
+    "docs"
+  ],
+  "lockfileEntries": [
+    "node_modules/@repo/authorization",
+    "packages/authorization"
+  ],
+  "generatedTreeEntries": [".turbo", "coverage", "dist", "node_modules"]
+}

@@ -6,10 +6,7 @@
     "types": ["node"],
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "strictPropertyInitialization": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "sourceMap": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
