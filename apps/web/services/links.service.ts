@@ -6,19 +6,9 @@ import { serverFetch } from '../lib/fetch/server';
  * Use in Server Components and Route Handlers
  */
 export async function getLinks(): Promise<LinkResponse[]> {
-  try {
-    return await serverFetch(linksApi.list());
-  } catch (error) {
-    console.error('Error fetching links:', error);
-    return [];
-  }
+  return serverFetch(linksApi.list(), 'link.read');
 }
 
 export async function getLink(id: number): Promise<LinkResponse | null> {
-  try {
-    return await serverFetch(linksApi.detail(id));
-  } catch (error) {
-    console.error(`Error fetching link ${id}:`, error);
-    return null;
-  }
+  return serverFetch(linksApi.detail(id), 'link.read');
 }

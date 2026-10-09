@@ -1,7 +1,21 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "API_PORT",
+    "API_HOST",
+    "API_INTERNAL_URL",
+    "WEB_ORIGIN",
+    "AUTH_COOKIE_SECRET",
+    "AUTH_COOKIE_DOMAIN",
+    "AUTH_JWT_SECRET",
+    "AUTH_JWT_ISSUER",
+    "AUTH_JWT_AUDIENCE",
+    "AUTH_ACCESS_TTL_SECONDS",
+    "AUTH_SESSION_TTL_SECONDS"
+  ],
   "tasks": {
     "dev": {
       "cache": false,
@@ -9,8 +23,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
-      "env": ["NEXT_PUBLIC_API_URL"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "db:generate": {
       "cache": false
