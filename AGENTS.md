@@ -34,6 +34,7 @@
 - Browser code reads `NEXT_PUBLIC_API_URL`. `.env.example` currently names `NEXT_PUBLIC_API`; account for this mismatch rather than copying it into new code.
 - `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Seeding is not idempotent under the current schema. Never use database reset/volume removal as routine verification.
 - `scripts/separate-*.sh` delete workspaces before copying missing `docs/*` templates. Do not use them as a setup workflow.
+- `npm run assets:localize:web` is a non-mutating preflight by default. Its `--apply` mode removes `packages/assets` only after confirming no workspace other than web consumes it; review architecture documentation after using the one-time migration.
 
 ## Verification and documentation
 

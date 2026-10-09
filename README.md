@@ -374,6 +374,19 @@ The `@repo/assets` package exposes raw shared files directly and uses [SVGR](htt
 - `npm run dev` - Watch mode (auto-rebuilds on SVG changes)
 - Icons are automatically converted from kebab-case filenames to PascalCase component names
 
+If assets stop being shared across applications, preview the guarded one-time
+migration that localizes them into `apps/web`:
+
+```bash
+npm run assets:localize:web
+npm run assets:localize:web -- --apply
+```
+
+The script leaves the company-wide `@repo/ui` and `@repo/design-system`
+packages in place. It refuses to run while another workspace imports
+`@repo/assets`, builds the icon output before copying it, rewrites web imports,
+and refreshes the lockfile. The default invocation is a non-mutating dry run.
+
 ### Data Fetching Architecture
 
 This project separates **API definitions** from **fetch logic** for maximum flexibility:
