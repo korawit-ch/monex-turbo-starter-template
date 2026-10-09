@@ -25,7 +25,7 @@ import {
   Search,
   Send,
   Trash,
-} from '@repo/icons';
+} from '@repo/assets/icons';
 
 import { getLinks } from '../../services/links.service';
 import { FeatureBadge } from '../../components/feature-badge';
@@ -109,7 +109,7 @@ export default async function Home() {
         <section className="border-surface mt-8 border-t pt-8">
           <h2 className="mb-4 text-xl font-semibold">Icon Showcase</h2>
           <p className="text-foreground/70 mb-6 text-sm">
-            All available icons from @repo/icons package
+            All available icons from @repo/assets/icons
           </p>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {icons.map(({ name, component: Icon }) => (

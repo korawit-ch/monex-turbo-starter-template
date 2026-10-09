@@ -16,7 +16,6 @@
     "@hookform/resolvers": "^3.9.1",
     "@repo/api-contract": "*",
     "@repo/assets": "*",
-    "@repo/icons": "*",
     "@repo/ui": "*",
     "@tanstack/react-query": "^5.80.7",
     "next": "^16.0.7",

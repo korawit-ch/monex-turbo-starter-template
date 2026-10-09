@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Separate Backend from Monorepo
-# Removes: apps/web, apps/admin, packages/design-system, and packages/ui
+# Removes: apps/web, apps/admin, packages/assets, packages/design-system, and packages/ui
 
 set -e
 
@@ -23,6 +23,7 @@ rm -rf apps/admin
 
 # Remove frontend packages
 echo "📦 Removing frontend packages..."
+rm -rf packages/assets
 rm -rf packages/design-system
 rm -rf packages/ui
 

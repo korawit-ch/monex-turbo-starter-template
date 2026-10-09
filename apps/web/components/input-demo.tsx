@@ -1,7 +1,7 @@
 'use client';
 
 import { Input } from '@repo/ui/input';
-import { AddUser } from '@repo/icons';
+import { AddUser } from '@repo/assets/icons';
 import React from 'react';
 
 export function InputDemo() {

@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, ReactNode } from 'react';
-import { ArrowRight } from '@repo/icons';
+import { ArrowRight } from '@repo/assets/icons';
 import { cn } from './utils';
 
 type ButtonSize = 'large' | 'small';

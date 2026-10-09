@@ -3,7 +3,7 @@
 
 import { forwardRef, ReactNode } from 'react';
 import { cn } from './utils';
-import { Error } from '@repo/icons';
+import { Error } from '@repo/assets/icons';
 
 /**
  * Input Component - Pure presentational component
