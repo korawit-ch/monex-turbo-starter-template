@@ -1,4 +1,4 @@
-import prisma from '../src/prisma/prisma.client';
+import prisma from '../src/index';
 
 async function main() {
   // Example seed data

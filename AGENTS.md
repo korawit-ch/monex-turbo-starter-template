@@ -4,16 +4,17 @@
 
 - This is an npm-workspaces/Turborepo template: `apps/web` (Next.js App Router), `apps/api` (NestJS), and `apps/db` (local PostgreSQL Compose service). See [README.md](README.md) for setup and known gaps.
 - Runtime data flows from web services/query hooks through `@repo/api-contract` endpoint descriptions to API controllers, services, `PrismaService`, and PostgreSQL. Keep database access in the server runtime.
-- `apps/api/prisma/schema.prisma` owns the database model. `apps/api/prisma.config.ts` configures CLI connection/schema discovery; `apps/api/src/prisma/prisma.client.ts` constructs the runtime client separately. The API owns persistence end to end.
+- `packages/prisma/prisma/schema.prisma` owns the database model. `packages/prisma/prisma.config.ts` configures CLI connection/schema discovery, and `packages/prisma/src/index.ts` constructs the runtime client and exposes generated database types. This package is server-only persistence infrastructure.
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
 - `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG sources. App feature behavior stays in the app.
-- Shared packages must not import from apps. Web may import Prisma types only; the package's value entry creates a database client.
+- Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
 
 ## Tooling and generated output
 
 - Use npm and the root `package-lock.json`. The root manifest requires Node >=22.12; `.nvmrc` selects Node 22. Do not introduce another lockfile.
 - Build shared dependencies before running app commands directly: `npx turbo run build --filter='./packages/*'`. Some packages export `dist`; `@repo/ui` has separate component/style tasks coordinated by `packages/ui/turbo.json`, without a package-level `build` script.
 - Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/icons/src/index.ts`; use their generators. Review tracked changes after generation.
+- `npm run prisma:localize:api` is a dry-run architecture migration check. Add `-- --apply` only when intentionally moving all Prisma ownership into `apps/api`; it refuses to proceed while another workspace consumes `@repo/prisma`.
 - ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Jest presets in `packages/jest-config`. The web app currently uses its own Jest config; API unit tests consume the shared Nest preset.
 - Preserve existing ESM/CommonJS boundaries. `api-contract` uses ESM with `.js` import specifiers; API uses CommonJS compilation. Check consumers before changing package exports or compiler settings.
 - Commit messages require a scope, as defined in `commitlint.config.js`; Husky runs lint-staged and Turbo type checks on commit.
@@ -30,7 +31,7 @@
 ## Environment and stateful commands
 
 - Root `.env` is the intended local configuration source. `env:setup` creates it if missing; `env:distribute` links it into apps and non-config packages. Distribution removes existing regular target `.env` files; inspect before running it on an existing checkout.
-- A symlink does not ensure a runtime loads variables. Next.js and Prisma CLI have loading paths; API bootstrap and the seed client do not explicitly load dotenv. Preserve explicit runtime environment handling when changing startup.
+- A symlink does not ensure a runtime loads variables. Next.js and Prisma CLI have loading paths; API bootstrap and the seed client do not explicitly load dotenv. The Prisma CLI config checks the package and root environment paths. Preserve explicit runtime environment handling when changing startup.
 - Browser code reads `NEXT_PUBLIC_API_URL`. `.env.example` currently names `NEXT_PUBLIC_API`; account for this mismatch rather than copying it into new code.
 - `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Seeding is not idempotent under the current schema. Never use database reset/volume removal as routine verification.
 - `scripts/separate-*.sh` delete workspaces before copying missing `docs/*` templates. Do not use them as a setup workflow.
