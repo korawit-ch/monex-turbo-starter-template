@@ -1,5 +1,5 @@
 {
-  "name": "@repo/icons",
+  "name": "@repo/assets",
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
@@ -7,20 +7,20 @@
     "dist",
     "src"
   ],
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./*": "./dist/*.js"
+    "./icons": "./src/icons/index.ts",
+    "./brand/*": "./src/brand/*",
+    "./illustrations/*": "./src/illustrations/*",
+    "./images/*": "./src/images/*"
   },
   "license": "MIT",
   "scripts": {
     "build": "npm run build:icons && npm run build:index",
-    "build:icons": "svgr --out-dir dist --typescript --config-file .svgrrc.js src/icons",
-    "build:index": "node scripts/generate-index.mjs",
+    "build:icons": "svgr --out-dir dist/icons --typescript --config-file .svgrrc.js src/icons",
+    "build:index": "node scripts/generate-icons-index.mjs",
     "dev": "chokidar \"src/icons/**/*.svg\" --initial --debounce 300 -c \"npm run build\" --verbose",
     "check-types": "npm run build && tsc --noEmit",
-    "lint": "eslint src --max-warnings 0"
+    "lint": "eslint src scripts --max-warnings 0"
   },
   "peerDependencies": {
     "react": "^19"

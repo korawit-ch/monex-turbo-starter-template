@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@repo/ui/button';
+import { ArrowRight } from '@repo/assets/icons';
 
 /**
  * Button Demo Component
@@ -15,6 +16,9 @@ export function ButtonDemo() {
         <Button disabled>Disabled</Button>
         <Button className="bg-warning-500 hover:bg-warning-600">
           Custom Style
+        </Button>
+        <Button variant="linked" endIcon={<ArrowRight className="h-5 w-5" />}>
+          Dynamic icon
         </Button>
       </div>
     </section>

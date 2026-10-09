@@ -22,7 +22,6 @@
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
-    "@repo/icons": "*",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.4"
   },

@@ -1,7 +1,10 @@
 export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
+import type { StaticImageData } from 'next/image';
+import { ComponentType, SVGProps } from 'react';
 
+import turborepoLogo from '@repo/assets/brand/turborepo-dark.svg';
 import { getLinks } from '../../data-access/links.server';
 import { ButtonDemo } from './_components/button-demo';
 import { FeatureBadge } from './_components/feature-badge';
@@ -29,10 +32,11 @@ import {
   Search,
   Send,
   Trash,
-} from '@repo/icons';
-import { ComponentType, SVGProps } from 'react';
+} from '@repo/assets/icons';
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+
+const turborepoLogoImage = turborepoLogo as StaticImageData;
 
 interface IconItem {
   name: string;
@@ -68,7 +72,7 @@ export default async function Home() {
       <main className="w-full max-w-3xl">
         {/* Logo */}
         <Image
-          src="/turborepo-dark.svg"
+          src={turborepoLogoImage}
           alt="Turborepo"
           width={160}
           height={34}
@@ -105,7 +109,7 @@ export default async function Home() {
         <section className="border-surface mt-8 border-t pt-8">
           <h2 className="mb-4 text-xl font-semibold">Icon Showcase</h2>
           <p className="text-foreground/70 mb-6 text-sm">
-            All available icons from @repo/icons package
+            All available icons from @repo/assets/icons
           </p>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {icons.map(({ name, component: Icon }) => (

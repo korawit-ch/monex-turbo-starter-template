@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */ /* better for readability */
 'use client';
 
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef, type ReactNode } from 'react';
+
 import { cn } from './utils';
-import { Error } from '@repo/icons';
 
 /**
  * Input Component - Pure presentational component
@@ -13,7 +13,7 @@ import { Error } from '@repo/icons';
  * @example
  * <Input label="Email" placeholder="Enter your email" />
  * <Input label="Email" required placeholder="Enter your email" />
- * <Input label="Email" icon={<Icon />} placeholder="Enter your email" />
+ * <Input label="Email" endIcon={<Icon />} placeholder="Enter your email" />
  * <Input label="Email" error="Invalid email" placeholder="Enter your email" />
  * <Input label="Email" disabled placeholder="Enter your email" />
  */
@@ -32,7 +32,9 @@ export interface InputProps extends Omit<
   /**
    * Icon displayed on the right side of the input
    */
-  icon?: ReactNode;
+  startIcon?: ReactNode;
+  endIcon?: ReactNode;
+  errorIcon?: ReactNode;
   /**
    * Error message (triggers error state)
    */
@@ -48,7 +50,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       label,
       required = false,
-      icon,
+      startIcon,
+      endIcon,
+      errorIcon,
       error,
       helperText,
       disabled = false,
@@ -67,7 +71,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     // Base input styles
     const baseInputStyles = cn(
       'h-14 w-full rounded-lg bg-white px-4 placeholder:text-medium-gray transition-all duration-200 focus:outline-none text-mobile-body1 md:text-desktop-body1',
-      icon && 'pr-10',
+      startIcon && 'pl-10',
+      (endIcon || (error && errorIcon)) && 'pr-10',
     );
 
     // State-based border and text colors
@@ -111,6 +116,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
 
         <div className="relative">
+          {startIcon && (
+            <div
+              aria-hidden="true"
+              className="text-medium-gray pointer-events-none absolute top-1/2 left-3 flex -translate-y-1/2 items-center justify-center"
+            >
+              {startIcon}
+            </div>
+          )}
+
           <input
             ref={ref}
             disabled={disabled}
@@ -122,8 +136,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...inputProps}
           />
 
-          {(icon || error) && (
+          {(endIcon || (error && errorIcon)) && (
             <div
+              aria-hidden="true"
               className={cn(
                 'pointer-events-none absolute top-1/2 right-3 -translate-y-1/2',
                 'flex items-center justify-center',
@@ -136,7 +151,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                       : 'text-medium-gray',
               )}
             >
-              {error ? <Error className="text-error-500 h-6" /> : icon}
+              {error && errorIcon ? errorIcon : endIcon}
             </div>
           )}
         </div>

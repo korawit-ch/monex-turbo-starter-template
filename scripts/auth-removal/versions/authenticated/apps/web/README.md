@@ -43,7 +43,7 @@ The repository has no configured application deployment workflow. A deployment m
 
 Both fetch helpers consume JSON-safe contracts from `@repo/api-contract`. Browser fetch uses same-origin BFF routes and renews once after 401; server fetch verifies the cookie and calls internal Nest with the bearer token. The BFF verifies named permissions, requires trusted mutation origin, and never forwards browser cookies to link endpoints. Nest verifies and scopes again. See [authentication architecture](../../docs/authentication.md).
 
-Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, with named icons from `@repo/icons`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
+Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, composing their icon slots with named components from `@repo/assets/icons`. The UI package does not select icons itself. Raw files reused across applications come from explicit `@repo/assets` subpaths; the home page statically imports the shared Turborepo wordmark as an example. Web-only files remain in `public`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
 
 ## Development
 

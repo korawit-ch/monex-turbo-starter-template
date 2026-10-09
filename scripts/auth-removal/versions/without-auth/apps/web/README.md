@@ -41,7 +41,7 @@ The repository has no configured application deployment workflow. A deployment m
 
 Both fetch helpers consume descriptions and JSON-safe wire contracts from `@repo/api-contract`. They parse JSON and throw on non-success HTTP status, but do not validate response shapes, convert timestamps to `Date` instances, or forward authentication cookies. The server helpers catch errors and return `[]`/`null`. The page separately mounts `LinksDemo`, so the demo performs both server and client reads without hydration handoff.
 
-Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, with named icons from `@repo/icons`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
+Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, composing their icon slots with named components from `@repo/assets/icons`. The UI package does not select icons itself. Raw files reused across applications come from explicit `@repo/assets` subpaths; the home page statically imports the shared Turborepo wordmark as an example. Web-only files remain in `public`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
 
 ## Development
 

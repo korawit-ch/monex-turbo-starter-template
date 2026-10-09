@@ -16,9 +16,9 @@ This Turborepo includes the following packages & apps:
 │   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
     ├── @repo/api-contract        # Shared API request/response contracts
+    ├── @repo/assets              # Shared raw assets and SVG icon components
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
-    ├── @repo/icons               # SVG icon components (SVGR-generated)
     ├── @repo/jest-config         # Jest configurations
     ├── @repo/prisma              # Server-only Prisma schema, client, and DB types
     ├── @repo/typescript-config   # TypeScript configurations
@@ -203,7 +203,7 @@ Build shared packages before tests. API unit tests use the shared Nest Jest pres
 npx turbo run check-types
 ```
 
-This runs scripts in web, UI, and icons. API and other TypeScript packages are checked through builds.
+This runs scripts in web, UI, and assets. API and other TypeScript packages are checked through builds.
 
 #### Lint
 
@@ -328,41 +328,41 @@ The Next.js apps display database results fetched from their respective NestJS A
   - Global CSS variables and styles
   - Used by all frontend apps
 
-- **@repo/icons**: SVG icon components library
-  - SVG files converted to React components using SVGR
-  - TypeScript support with full type safety
-  - Optimized SVGs with `currentColor` for styling flexibility
-  - See [@repo/icons README](./packages/icons/README.md) for usage
+- **@repo/assets**: Shared visual assets and SVG icon components
+  - Raw logos and illustrations exposed through purpose-based subpaths
+  - UI icon SVGs converted to React components using SVGR
+  - TypeScript support with `currentColor` styling for icon components
+  - See [@repo/assets README](./packages/assets/README.md) for usage
 
 - **@repo/ui**: Shared React component library
   - Reusable Button, Input, Textarea, and React Hook Form/Zod adapters
   - Built with Tailwind CSS from `@repo/design-system`
 
-### Icon System with SVGR
+### Asset and Icon System
 
-The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically convert SVG files into React components. This provides a type-safe, tree-shakeable icon system.
+The `@repo/assets` package exposes raw shared files directly and uses [SVGR](https://react-svgr.com/) to convert SVGs in its icon source directory into React components. This keeps both asset categories together while preserving separate consumption paths.
 
 **How it works:**
 
-1. **SVG Source Files**: Place SVG files in `packages/icons/src/icons/` (e.g., `arrow-right.svg`)
+1. **SVG Icon Sources**: Place component-style SVG glyphs in `packages/assets/src/icons/` (e.g., `arrow-right.svg`). Keep raw logos and illustrations in their purpose-based asset folders.
 
 2. **Build Process**: SVGR transforms SVGs into React components:
 
    ```bash
-   npm run build:icons --workspace=@repo/icons  # Converts SVG → React components in dist/
+   npm run build:icons --workspace=@repo/assets  # Converts SVG → React components in dist/icons/
    ```
 
 3. **Auto-Generated Index**: The build process creates TypeScript exports:
 
    ```typescript
-   // packages/icons/src/index.ts (auto-generated)
-   export { default as ArrowRight } from '../dist/ArrowRight';
+   // packages/assets/src/icons/index.ts (auto-generated)
+   export { default as ArrowRight } from '../../dist/icons/ArrowRight';
    ```
 
 4. **Usage in Apps**: Import icons as React components:
 
    ```tsx
-   import { ArrowRight, AddUser } from '@repo/icons';
+   import { ArrowRight, AddUser } from '@repo/assets/icons';
 
    <ArrowRight className="text-primary-600 h-5 w-5" />;
    ```
@@ -374,11 +374,24 @@ The `@repo/icons` package uses [SVGR](https://react-svgr.com/) to automatically 
 - **Color Replacement**: `#000` and `#000000` → `currentColor` for styling flexibility
 - **Icon Mode**: Optimized for icon usage (removes dimensions, preserves viewBox)
 
-**Development Workflow** (run these commands inside `packages/icons`):
+**Development Workflow** (run these commands inside `packages/assets`):
 
 - `npm run build` - Build all icons and regenerate index
 - `npm run dev` - Watch mode (auto-rebuilds on SVG changes)
 - Icons are automatically converted from kebab-case filenames to PascalCase component names
+
+If assets stop being shared across applications, preview the guarded one-time
+migration that localizes them into `apps/web`:
+
+```bash
+npm run assets:localize:web
+npm run assets:localize:web -- --apply
+```
+
+The script leaves the company-wide `@repo/ui` and `@repo/design-system`
+packages in place. It refuses to run while another workspace imports
+`@repo/assets`, builds the icon output before copying it, rewrites web imports,
+and refreshes the lockfile. The default invocation is a non-mutating dry run.
 
 ### Data Fetching Architecture
 
@@ -559,6 +572,6 @@ These are current implementation gaps, not features supplied by this documentati
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [Prisma persistence](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [Prisma persistence](packages/prisma/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [assets and icons](packages/assets/AGENTS.md), and [UI](packages/ui/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.

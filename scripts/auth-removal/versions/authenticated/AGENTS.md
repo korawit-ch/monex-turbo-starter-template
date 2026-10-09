@@ -7,7 +7,7 @@
 - Protected browser traffic flows through same-origin Next.js BFF handlers. Both Next and Nest verify the access JWT and use `@repo/authorization`; Nest guards and tenant-scoped Prisma queries are the authoritative security boundaries. See [docs/authentication.md](docs/authentication.md).
 - `packages/prisma/prisma/schema.prisma` owns the database model. `packages/prisma/prisma.config.ts` configures CLI connection/schema discovery, and `packages/prisma/src/index.ts` constructs the runtime client and exposes generated database types. This package is server-only persistence infrastructure.
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
-- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG sources. App feature behavior stays in the app.
+- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/assets` owns cross-app raw visual files and SVGR-generated icon components. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
 - `@repo/authorization` is framework-independent and owns only stable permission vocabulary, claim parsing, sanitized context, and pure evaluation. Dynamic business rules remain in API services.
 
@@ -15,7 +15,7 @@
 
 - Use npm and the root `package-lock.json`. The root manifest requires Node >=22.12; `.nvmrc` selects Node 22. Do not introduce another lockfile.
 - Build shared dependencies before running app commands directly: `npx turbo run build --filter='./packages/*'`. Some packages export `dist`; `@repo/ui` has separate component/style tasks coordinated by `packages/ui/turbo.json`, without a package-level `build` script.
-- Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/icons/src/index.ts`; use their generators. Review tracked changes after generation.
+- Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/assets/src/icons/index.ts`; use their generators. Review tracked changes after generation.
 - `npm run prisma:localize:api` is a dry-run architecture migration check. Add `-- --apply` only when intentionally moving all Prisma ownership into `apps/api`; it refuses to proceed while another workspace consumes `@repo/prisma`.
 - `npm run app:duplicate -- --source <web|api> --name <name>` previews app duplication; add `--apply` to create it. The script copies the source's current shared/localized ownership state while excluding generated output and local environment files.
 - `npm run auth:remove` previews scoped authentication removal; `-- --apply` uses the versioned files under `scripts/auth-removal` to three-way merge shared integration files, restore replaced files, and delete verified auth-owned files. It requires a clean tree, preserves compatible later changes, and does not change database state.
@@ -39,12 +39,13 @@
 - Protected browser traffic uses same-origin BFF routes; `API_INTERNAL_URL` is server-only. Never expose auth secrets or the internal API URL through `NEXT_PUBLIC_*` variables.
 - `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Auth seeding is repeatable by stable identities but rotates the seeded password hash. Never use database reset/volume removal as routine verification.
 - `scripts/separate-*.sh` delete workspaces before copying missing `docs/*` templates. Do not use them as a setup workflow.
+- `npm run assets:localize:web` is a non-mutating preflight by default. Its `--apply` mode removes `packages/assets` only after confirming no workspace other than web consumes it; review architecture documentation after using the one-time migration.
 
 ## Verification and documentation
 
 - Discover affected workspace scripts before choosing checks. Typical sequence: shared builds, affected lint/tests, relevant type checks, then affected app builds.
 - Root commands: `npm run lint` (workspace lint plus Prettier), `npm run test`, `npm run test:e2e`, `npx turbo run check-types`, and `npm run build`.
-- `check-types` exists only in web, UI, and icons; other TypeScript packages/API are checked by builds. Turbo tests have no build dependencies, so prepare shared outputs first.
+- `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo tests have no build dependencies, so prepare shared outputs first.
 - API e2e tests require PostgreSQL and initialize the real Prisma service. CI currently runs lint, formatting, type checks, and builds, but not tests.
 - For documentation-only changes, run Prettier on the changed Markdown files, check relative links/command names against the repository, and run `git diff --check`. Do not reformat unrelated files.
 - Report failed, skipped, and cached checks accurately. Passing compilation is not proof of database, authorization, or request behavior.
