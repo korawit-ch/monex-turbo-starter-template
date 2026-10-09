@@ -1,6 +1,22 @@
 # @repo/ui
 
-Shared React 19 controls styled with Tailwind 4 and `@repo/design-system`, using icons from `@repo/assets/icons`. The package contains Button, Input, Textarea, and React Hook Form/Zod adapters. It has no API access or application state.
+Shared React 19 controls styled with Tailwind 4 and `@repo/design-system`. The package contains Button, Input, Textarea, and React Hook Form/Zod adapters. It has no API access, application state, or icon-library dependency.
+
+Visual variants and content composition are independent. `Button` accepts `startIcon` and `endIcon`; `Input` accepts `startIcon`, `endIcon`, and `errorIcon`. Applications supply any `ReactNode`, so the shared controls do not prescribe an asset package:
+
+```tsx
+import { ArrowRight, Error } from '@repo/assets/icons';
+import { Button } from '@repo/ui/button';
+import { Input } from '@repo/ui/input';
+
+<Button variant="linked" endIcon={<ArrowRight className="h-5 w-5" />}>
+  Continue
+</Button>;
+
+<Input error="Required" errorIcon={<Error className="h-5 w-5" />} />;
+```
+
+Button `variant`, `color`, and `size` props control styling only. Supplying `href` controls link behavior independently of the selected visual variant.
 
 Import components by subpath (`@repo/ui/button`, `@repo/ui/input`, `@repo/ui/textarea`, `@repo/ui/form/form-wrapper`, and other `form/*` modules). Import `@repo/ui/styles.css` once at the app layout. `@repo/ui/utils` exposes `cn`, whose custom font-size groups match shared design-system typography.
 

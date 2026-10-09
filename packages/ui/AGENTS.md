@@ -2,7 +2,7 @@
 
 - Keep this package independent of Next.js routing, API access, and app state. `src` owns reusable controls; `src/form` adapts them to React Hook Form and Zod. See [README.md](README.md).
 - Use `cn` from `src/utils.ts`. Its custom font-size groups track typography utilities in `@repo/design-system/shared-styles.css`; keep those sources aligned when typography changes.
-- Consume icons from `@repo/assets/icons` and tokens from `@repo/design-system`. Keep app-specific validation and submission behavior in the consumer.
+- Keep icons injectable through `ReactNode` slots; this package must not import an icon or asset library. Applications compose icons with controls. Continue consuming shared tokens from `@repo/design-system`.
 - Preserve ref forwarding, button/link semantics, disabled/submitting behavior, and form-context integration. Inspect `apps/web/components/*-demo.tsx` when changing public props.
 - Current inputs rely on caller-supplied IDs for labels/helper text. Current form inputs/textareas require context in practice despite their fallback comments. Fix and behavior-test these contracts deliberately when changing the controls; do not document the comments as guarantees.
 - Component/style outputs are generated into `dist`. Package exports expose component subpaths, `styles.css`, and source `utils`; there is no root component barrel.
