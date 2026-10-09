@@ -28,14 +28,12 @@ const removalPaths = [
 ];
 
 const requiredPaths = [
+  ...removalPaths,
   'apps/api/src/app.module.ts',
-  'apps/api/src/links/links.module.ts',
   'apps/web/app/(protected)/(home)/page.tsx',
   'packages/api-contract/src/index.ts',
-  'packages/api-contract/src/links.ts',
   'packages/prisma/prisma/schema.prisma',
   'packages/prisma/prisma/seed.ts',
-  'scripts/auth-removal/manifest.json',
 ];
 
 function absolute(relativePath) {
@@ -76,6 +74,49 @@ async function replaceRequired(relativePath, search, replacement) {
     throw new Error(`Expected content is missing from ${relativePath}.`);
   }
   await writeFile(filePath, current.replace(search, replacement));
+}
+
+async function requireText(relativePath, fragments) {
+  const current = await readFile(absolute(relativePath), 'utf8');
+  for (const fragment of fragments) {
+    if (!current.includes(fragment)) {
+      throw new Error(`Expected content is missing from ${relativePath}.`);
+    }
+  }
+}
+
+async function validateFinalization() {
+  await requireText('apps/api/src/app.module.ts', [
+    "import { LinksModule } from './links/links.module';",
+    'imports: [PrismaModule, AuthModule, LinksModule]',
+  ]);
+  await requireText('apps/web/app/(protected)/(home)/page.tsx', [
+    "import { getLinks } from '../../../data-access/links.server';",
+    "import { LinksDemo } from './_components/links-demo';",
+    'const links = await getLinks();',
+    '{/* Data */}',
+    '{/* Client-side fetch demo */}',
+  ]);
+  await requireText('packages/api-contract/src/index.ts', [
+    "export { linksApi } from './links.js';",
+    "} from './links.js';",
+  ]);
+  await requireText('packages/api-contract/package.json', ['"./links"']);
+  await requireText('packages/prisma/prisma/schema.prisma', [
+    'links Link[]',
+    'model Link {',
+  ]);
+  await requireText('packages/prisma/prisma/seed.ts', [
+    'const links = [',
+    'await prisma.link.upsert',
+  ]);
+  await requireText('package.json', [
+    '"app:duplicate"',
+    '"assets:localize:web"',
+    '"auth:remove"',
+    '"prisma:localize:api"',
+    '"template:finalize"',
+  ]);
 }
 
 async function updateJson(relativePath, update) {
@@ -232,6 +273,7 @@ for (const relativePath of requiredPaths) {
     throw new Error(`Expected template path is missing: ${relativePath}`);
   }
 }
+await validateFinalization();
 
 if (!apply) {
   console.info('Dry run: the starter template can be finalized safely.');
