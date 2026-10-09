@@ -2,8 +2,8 @@
 
 - Use the existing App Router structure. The home page is `app/(home)/page.tsx`; `app/layout.tsx` loads Prompt, shared UI CSS, global CSS, and providers. See [README.md](README.md).
 - Keep pages/layouts server-rendered where possible. Interactive controls, query hooks, form hooks, and context state use client components.
-- Server reads go through `services/links.service.ts` → `lib/fetch/server.ts`; client reads/mutations go through `queries/links.ts` → `lib/fetch/client.ts`. Both consume `@repo/api-client` descriptions; keep transport policy in the app.
-- Import Prisma models with `import type` only. JSON timestamps are strings even though the current shared `Link` type declares `Date`; do not call Date methods without conversion or a corrected wire contract.
+- Server reads go through `services/links.service.ts` → `lib/fetch/server.ts`; client reads/mutations go through `queries/links.ts` → `lib/fetch/client.ts`. Both consume `@repo/api-contract` descriptions; keep transport policy in the app.
+- Do not import Prisma models. Consume JSON-safe response contracts from `@repo/api-contract`; timestamp fields are ISO strings and must be converted explicitly when a `Date` instance is needed.
 - Keep query keys in `queries/links.ts`. `linkKeys.all` is a prefix covering list/detail queries; account for that when invalidating mutations. The provider uses a 60-second stale time and disables focus refetching.
 - The home page intentionally demonstrates independent server and client fetches. There is no hydration/prefetch handoff. When adapting this demo, decide deliberately whether both reads are still needed.
 - Server link helpers currently log errors and return empty/null results. Do not mistake these values for verified empty/not-found responses when adding features.

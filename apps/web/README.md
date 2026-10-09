@@ -38,7 +38,7 @@ The repository has no configured application deployment workflow. A deployment m
 - `lib/query/provider.tsx` creates one query client per provider instance, with 60-second stale time and no focus refetching.
 - `providers/client-provider.tsx` holds demo user state only; it supplies no session or API authentication. `server-provider.tsx` renders public configuration in a DOM attribute.
 
-Both fetch helpers consume descriptions from `@repo/api-client`. They parse JSON and throw on non-success HTTP status, but do not validate response shapes, convert timestamps, or forward authentication cookies. The server helpers catch errors and return `[]`/`null`. The page separately mounts `LinksClient`, so the demo performs both server and client reads without hydration handoff.
+Both fetch helpers consume descriptions and JSON-safe wire contracts from `@repo/api-contract`. They parse JSON and throw on non-success HTTP status, but do not validate response shapes, convert timestamps to `Date` instances, or forward authentication cookies. The server helpers catch errors and return `[]`/`null`. The page separately mounts `LinksClient`, so the demo performs both server and client reads without hydration handoff.
 
 Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, with named icons from `@repo/icons`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
 

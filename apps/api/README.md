@@ -35,7 +35,7 @@ Learn more about `NestJs` with following resources:
 - `PATCH /links/:id`: update and return a link.
 - `DELETE /links/:id`: delete and return the deleted link.
 
-`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The schema is [packages/prisma/prisma/schema.prisma](../../packages/prisma/prisma/schema.prisma); request DTOs live in `src/links/dto`, and frontend contracts live in `packages/api-client`.
+`/api` is only the Swagger path; it does not prefix the routes above. Dates serialize as JSON strings. The schema is [packages/prisma/prisma/schema.prisma](../../packages/prisma/prisma/schema.prisma); request DTOs live in `src/links/dto`, response mapping lives in `src/links/links.mapper.ts`, and shared API contracts live in `packages/api-contract`.
 
 ## Development
 
