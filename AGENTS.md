@@ -6,7 +6,7 @@
 - Runtime data flows from web services/query hooks through `@repo/api-contract` endpoint descriptions to API controllers, services, `PrismaService`, and PostgreSQL. Keep database access in the server runtime.
 - `apps/api/prisma/schema.prisma` owns the database model. `apps/api/prisma.config.ts` configures CLI connection/schema discovery; `apps/api/src/prisma/prisma.client.ts` constructs the runtime client separately. The API owns persistence end to end.
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
-- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG sources. App feature behavior stays in the app.
+- `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/icons/src/icons` owns SVG component sources; `@repo/assets` owns raw visual files reused by multiple apps. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Web may import Prisma types only; the package's value entry creates a database client.
 
 ## Tooling and generated output

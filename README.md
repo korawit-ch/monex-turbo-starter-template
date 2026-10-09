@@ -16,6 +16,7 @@ This Turborepo includes the following packages & apps:
 │   └── db                        # PostgreSQL 16 (Docker Compose)    → localhost:5433
 └── packages
     ├── @repo/api-contract        # Shared API request/response contracts
+    ├── @repo/assets              # Raw visual assets shared across apps
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/icons               # SVG icon components (SVGR-generated)
@@ -556,6 +557,6 @@ These are current implementation gaps, not features supplied by this documentati
 
 ## Agent guidance
 
-[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API and persistence](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
+[AGENTS.md](AGENTS.md) describes root architecture, sources of truth, tooling, and verification. Local instructions cover [web](apps/web/AGENTS.md), [API and persistence](apps/api/AGENTS.md), [database infrastructure](apps/db/AGENTS.md), [contracts](packages/api-contract/AGENTS.md), [assets](packages/assets/AGENTS.md), [UI](packages/ui/AGENTS.md), and [icons](packages/icons/AGENTS.md). Shared tooling/design-system rules remain at the root because those packages do not need separate instruction hierarchies.
 
 Keep README setup and agent guidance synchronized with durable architecture/runtime changes. Do not turn instruction files into task logs or copy generic engineering rules into every package.
