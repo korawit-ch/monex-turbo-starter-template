@@ -1,7 +1,7 @@
 'use client';
 
 import { Input } from '@repo/ui/input';
-import { AddUser } from '@repo/assets/icons';
+import { AddUser, Error } from '@repo/assets/icons';
 import React from 'react';
 
 export function InputDemo() {
@@ -34,14 +34,14 @@ export function InputDemo() {
           <div className="max-w-md space-y-4">
             <Input
               label="ID Card"
-              icon={<AddUser className="h-5 w-5" />}
+              endIcon={<AddUser className="h-5 w-5" />}
               placeholder="Enter ID card number"
               id="input-icon"
             />
             <Input
               label="ID Card"
               required
-              icon={<AddUser className="h-5 w-5" />}
+              endIcon={<AddUser className="h-5 w-5" />}
               placeholder="Enter ID card number"
               id="input-icon-required"
             />
@@ -60,6 +60,7 @@ export function InputDemo() {
             <Input
               label="Email"
               error="Invalid email address"
+              errorIcon={<Error className="h-6 w-6" />}
               placeholder="Enter your email"
               id="input-error"
             />
