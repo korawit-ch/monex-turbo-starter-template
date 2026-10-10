@@ -9,13 +9,13 @@ Browser
   -> shared endpoint description and JSON contract (@repo/api-contract)
   -> NestJS controller and runtime DTO (apps/api)
   -> service and authorization scope
-  -> PrismaService / @repo/prisma
+  -> PrismaService / shared or API-local Prisma client
   -> PostgreSQL (apps/db)
 ```
 
 The frontend and backend share the meaning of an HTTP request and response. They do not share database records, framework handlers, fetch clients, or UI state.
 
-## Repository structure
+## Default repository structure
 
 ```text
 apps/
@@ -44,6 +44,104 @@ docs/                        durable architecture and engineering guidance
 scripts/                     operational and guarded migration utilities
 ```
 
+This is the default shared-package layout. The template also supports moving Prisma ownership into `apps/api`, moving asset ownership into `apps/web`, or applying both changes. These ownership choices change where implementation files and build tools live; they do not change the API contract, authorization, database-runtime, or application boundaries.
+
+## Supported ownership variants
+
+### API-owned Prisma
+
+Use API-owned Prisma when one backend owns its database schema and independent deployment or maintenance is more valuable than sharing persistence infrastructure with another backend.
+
+```text
+apps/
+  api/
+    prisma.config.ts         Prisma CLI configuration
+    prisma/
+      schema.prisma          database model
+      seed.ts                seed entry point
+    src/prisma/
+      prisma.client.ts       runtime Prisma client construction
+      prisma.service.ts      Nest lifecycle adapter
+packages/
+  prisma/                    removed
+```
+
+The runtime path becomes:
+
+```text
+Nest controller -> service -> PrismaService -> API-local Prisma client -> PostgreSQL
+```
+
+In this structure:
+
+- `apps/api/package.json` owns the Prisma, PostgreSQL adapter, seed, and generation dependencies and scripts.
+- Root database commands delegate to the `api` workspace instead of `@repo/prisma`.
+- API persistence imports use the local client or `@prisma/client`; `apps/web` still never imports Prisma.
+- `@repo/api-contract` remains JSON-safe and persistence-independent.
+- The schema, client, and seed can move only when no other workspace consumes `@repo/prisma`.
+
+Run `npm run prisma:localize:api` to preview this structure and add `-- --apply` to create it. The migration moves source ownership and refreshes workspace dependencies; it does not change PostgreSQL data. See [Localize shared infrastructure](scripts-and-template-customization.md#localize-shared-infrastructure) for the guarded workflow.
+
+### Web-owned assets
+
+Use web-owned assets when one frontend owns all product imagery and icons and no other workspace needs the raw files or generated icon components.
+
+```text
+apps/
+  web/
+    assets/
+      .svgrrc.cjs            app-local SVG generation configuration
+      brand/                 raw brand assets, when present
+      illustrations/         raw illustrations, when present
+      images/                raw images, when present
+      icons/
+        source/              source SVG files
+        generated/           generated React components
+        index.ts             generated icon exports
+    scripts/
+      generate-web-icons-index.mjs
+packages/
+  assets/                    removed
+```
+
+In this structure:
+
+- Web imports change from `@repo/assets/...` to the `@/assets/...` app alias.
+- `apps/web/package.json` owns SVGR dependencies and generates assets before development, builds, linting, type checks, and tests.
+- `@repo/ui` and `@repo/design-system` stay shared; only raw asset and icon ownership moves.
+- Generated icon components remain generated output and must not be edited by hand.
+- Assets can move only when no workspace other than `apps/web` consumes `@repo/assets`.
+
+Run `npm run assets:localize:web` to preview this structure and add `-- --apply` to create it. The migration copies the current raw and generated assets, rewrites web imports, removes `packages/assets`, and refreshes workspace dependencies.
+
+### Combined localized structure
+
+The two migrations are independent and may both be applied. The resulting repository keeps persistence inside `apps/api` and visual assets inside `apps/web` while retaining shared contracts, authorization vocabulary, UI controls, design tokens, and tool configuration.
+
+```text
+apps/
+  web/                       Next.js app plus app-local assets
+  api/                       NestJS app plus app-local Prisma schema/client
+  db/                        local PostgreSQL Compose service
+packages/
+  api-contract/              shared HTTP contract
+  authorization/             shared permission vocabulary and evaluation
+  design-system/             shared visual tokens and styles
+  ui/                        shared controls and form adapters
+  eslint-config/             shared lint policy
+  jest-config/               shared test policy
+  typescript-config/         shared TypeScript policy
+```
+
+Choose ownership based on actual consumers:
+
+| Concern | Keep shared when                                                                 | Localize when                                                               |
+| ------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Prisma  | Multiple server applications intentionally share one schema and client boundary. | One API owns the schema, migrations, seed, and runtime client.              |
+| Assets  | Multiple applications reuse the same files or generated icons.                   | One web application owns every asset consumer and its generation lifecycle. |
+
+Apply localization before duplicating an app when each copy should receive independent Prisma or asset ownership. Duplicate first when the resulting applications should continue consuming the same shared package.
+
 ## Application responsibilities
 
 ### `apps/web`
@@ -59,6 +157,7 @@ scripts/                     operational and guarded migration utilities
 - Owns HTTP controllers, runtime validation, Swagger decorators, authorization enforcement, and business operations.
 - Maps persistence records to shared response contracts.
 - Keeps tenant and ownership filters in authoritative Prisma queries.
+- Uses `@repo/prisma` in the default layout or owns its Prisma schema/client directly after localization.
 - Returns intentional HTTP errors instead of leaking database exceptions.
 
 ### `apps/db`
@@ -73,7 +172,7 @@ scripts/                     operational and guarded migration utilities
 
 Contains paths, methods, request types, response types, and framework-neutral endpoint descriptions. It may not import React, fetch, Next.js, NestJS, Prisma, or database runtimes.
 
-### `@repo/prisma`
+### `@repo/prisma` (default shared ownership)
 
 Contains the schema, seed, Prisma CLI configuration, runtime client, and generated database types. It is server-only. A Prisma type describes storage; it is not a promise to API consumers.
 
@@ -89,7 +188,7 @@ Contains visual tokens and shared CSS foundations. Add a value here when multipl
 
 Contains company-wide controls and form adapters. Components accept content and icon slots from callers. They must not choose product copy, routes, permissions, API calls, or feature-specific icons.
 
-### `@repo/assets`
+### `@repo/assets` (default shared ownership)
 
 Contains visual files reused by applications. Raw files use purpose-based exports such as `@repo/assets/brand/...`; SVG glyphs are generated into React components and imported from `@repo/assets/icons`.
 
@@ -102,8 +201,8 @@ Contains visual files reused by applications. Raw files use purpose-based export
 ```text
 apps -> shared packages
 shared packages -X-> apps
-web -> api-contract, authorization, UI/design/assets
-api -> api-contract, authorization, prisma
+web -> api-contract, authorization, UI/design, shared or app-local assets
+api -> api-contract, authorization, shared or API-local Prisma
 api-contract -X-> frameworks, fetch, Prisma, apps
 ui -X-> app features, API clients, selected product icons
 ```
