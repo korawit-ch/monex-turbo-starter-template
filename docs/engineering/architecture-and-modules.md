@@ -2,20 +2,82 @@
 
 ## System overview
 
-```text
-Browser
-  -> Next.js route or Server Component (apps/web)
-  -> same-origin Next.js BFF for protected browser requests
-  -> shared endpoint description and JSON contract (@repo/api-contract)
-  -> NestJS controller and runtime DTO (apps/api)
-  -> service and authorization scope
-  -> PrismaService / shared or API-local Prisma client
-  -> PostgreSQL (apps/db)
+```mermaid
+flowchart LR
+  subgraph browser["Browser runtime"]
+    UI["React UI"]
+    Query["TanStack Query<br/>and clientFetch"]
+  end
+
+  subgraph web["apps/web · Next.js"]
+    Server["Server Components<br/>and serverFetch"]
+    BFF["Same-origin BFF<br/>route handlers under /api"]
+    WebAuth["Access JWT verification<br/>and can() check"]
+  end
+
+  subgraph shared["Framework-independent packages"]
+    Contract["@repo/api-contract<br/>paths and JSON-safe types"]
+    Authorization["@repo/authorization<br/>claims, permissions, can()"]
+  end
+
+  subgraph api["apps/api · NestJS"]
+    Guards["JwtAuthGuard<br/>and PermissionGuard"]
+    Controller["Controller<br/>runtime DTO and mapper"]
+    Service["Domain service<br/>tenant-scoped rules"]
+    PrismaService["PrismaService<br/>Nest lifecycle adapter"]
+  end
+
+  subgraph persistence["Persistence boundary"]
+    Prisma["@repo/prisma or API-local Prisma<br/>schema, client, DB types"]
+    PostgreSQL[("PostgreSQL<br/>apps/db locally")]
+  end
+
+  UI --> Query
+  Query -->|"same-origin /api request"| BFF
+  UI -->|"page request"| Server
+  BFF --> WebAuth
+  Server --> WebAuth
+  WebAuth -->|"Bearer access JWT"| Guards
+  Guards --> Controller
+  Controller --> Service
+  Service --> PrismaService
+  PrismaService --> Prisma
+  Prisma --> PostgreSQL
+
+  Contract -.->|"endpoint and wire types"| Query
+  Contract -.->|"endpoint and wire types"| Server
+  Contract -.->|"request and response contracts"| Controller
+  Authorization -.->|"claim parsing and permission policy"| WebAuth
+  Authorization -.->|"claim parsing and permission policy"| Guards
 ```
 
-The frontend and backend share the meaning of an HTTP request and response. They do not share database records, framework handlers, fetch clients, or UI state.
+Client-side calls enter Nest through the same-origin BFF. Server Components may call the internal API directly through `serverFetch()`, but they perform the same Next-side access-token verification and named-permission check first. Responses travel back along the same path.
+
+The frontend and backend share the meaning of an HTTP request and response. They do not share database records, framework handlers, fetch clients, or UI state. The dotted arrows above are compile-time contract or policy dependencies; the solid arrows are runtime request and persistence paths.
 
 ## Default repository structure
+
+```mermaid
+flowchart TB
+  Root["Repository root"]
+
+  Root --> Apps["apps · deployable runtimes"]
+  Root --> Packages["packages · reusable boundaries"]
+  Root --> Docs["docs · durable engineering guidance"]
+  Root --> Scripts["scripts · guarded setup and migrations"]
+
+  Apps --> Web["web · Next.js UI and BFF"]
+  Apps --> API["api · NestJS HTTP and domain runtime"]
+  Apps --> DB["db · local PostgreSQL Compose service"]
+
+  Packages --> Contracts["api-contract · transport contract"]
+  Packages --> Policy["authorization · permission policy"]
+  Packages --> Presentation["ui + design-system + assets"]
+  Packages --> Data["prisma · server-only persistence"]
+  Packages --> Tooling["eslint + jest + TypeScript config"]
+```
+
+The repository is organized by runtime ownership first and reusable responsibility second. Applications may consume packages; packages must never reach back into application code.
 
 ```text
 apps/
@@ -46,7 +108,67 @@ scripts/                     operational and guarded migration utilities
 
 This is the default shared-package layout. The template also supports moving Prisma ownership into `apps/api`, moving asset ownership into `apps/web`, or applying both changes. These ownership choices change where implementation files and build tools live; they do not change the API contract, authorization, database-runtime, or application boundaries.
 
+### Default module dependencies
+
+Arrows point from a consumer to the package or runtime it depends on. Configuration-only dependencies are omitted so the runtime and architectural boundaries remain visible.
+
+```mermaid
+flowchart LR
+  Web["apps/web"]
+  API["apps/api"]
+  DB["apps/db<br/>local infrastructure"]
+
+  Contract["@repo/api-contract"]
+  Authorization["@repo/authorization"]
+  UI["@repo/ui"]
+  Design["@repo/design-system"]
+  Assets["@repo/assets"]
+  Prisma["@repo/prisma"]
+
+  Web --> Contract
+  Web --> Authorization
+  Web --> UI
+  Web --> Design
+  Web --> Assets
+
+  API --> Contract
+  API --> Authorization
+  API --> Prisma
+
+  UI --> Design
+  Prisma -->|"runtime connection"| DB
+```
+
+There is intentionally no application-to-application source import. `apps/web` reaches `apps/api` over HTTP, and `apps/api` reaches PostgreSQL through Prisma. `@repo/api-contract` describes that HTTP boundary without depending on either application.
+
 ## Supported ownership variants
+
+Prisma and asset localization are independent ownership decisions. They move source files, generators, dependencies, and scripts; they do not collapse the web, API, or database runtime boundaries.
+
+```mermaid
+flowchart TB
+  subgraph prismaChoice["Prisma ownership"]
+    PrismaConsumers{"Who owns the schema<br/>and runtime client?"}
+    SharedPrisma["Multiple server consumers<br/>keep @repo/prisma"]
+    LocalPrisma["One backend consumer<br/>move into apps/api"]
+    PrismaConsumers -->|"shared deliberately"| SharedPrisma
+    PrismaConsumers -->|"owned by one API"| LocalPrisma
+  end
+
+  subgraph assetChoice["Asset ownership"]
+    AssetConsumers{"Who consumes raw assets<br/>and generated icons?"}
+    SharedAssets["Multiple app consumers<br/>keep @repo/assets"]
+    LocalAssets["One frontend consumer<br/>move into apps/web"]
+    AssetConsumers -->|"shared deliberately"| SharedAssets
+    AssetConsumers -->|"owned by one web app"| LocalAssets
+  end
+
+  Stable["Unchanged boundaries<br/>api-contract · authorization · UI · design · tooling"]
+  SharedPrisma -.-> Stable
+  LocalPrisma -.-> Stable
+  SharedAssets -.-> Stable
+  LocalAssets -.-> Stable
+```
 
 ### API-owned Prisma
 
@@ -144,6 +266,43 @@ Apply localization before duplicating an app when each copy should receive indep
 
 ## Application responsibilities
 
+### Protected request execution flow
+
+The sequence below shows a protected browser mutation. A read follows the same path without the same-origin mutation check.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Browser
+  participant BFF as Next.js BFF
+  participant NextAuth as Next auth policy
+  participant Guards as Nest guards
+  participant Controller as Nest controller
+  participant Service as Domain service
+  participant Prisma as Prisma client
+  participant DB as PostgreSQL
+
+  Browser->>BFF: POST /api/links with JSON body
+  BFF->>NextAuth: Verify access cookie and can(link.create)
+  NextAuth->>NextAuth: Require the configured WEB_ORIGIN
+  NextAuth-->>BFF: Sanitized auth context and raw JWT
+  BFF->>Guards: POST /links with Bearer JWT
+  Guards->>Guards: Verify JWT and can(link.create)
+  Guards->>Controller: Validated authorization context
+  Controller->>Controller: Validate CreateLinkDto
+  Controller->>Service: create(auth, request)
+  Service->>Prisma: link.create with auth.tenantId
+  Prisma->>DB: Parameterized INSERT
+  DB-->>Prisma: Persisted Link record
+  Prisma-->>Service: Prisma Link with Date values
+  Service-->>Controller: Persisted Link
+  Controller->>Controller: Map to JSON-safe LinkResponse
+  Controller-->>BFF: 201 JSON response
+  BFF-->>Browser: Relay status and JSON body
+```
+
+Nest guards and tenant-scoped service queries remain authoritative. The Next checks reject invalid traffic earlier and protect the browser-facing boundary, but they do not replace API authorization. Server Components skip the browser BFF hop and call the internal API through `serverFetch()` after equivalent Next-side verification.
+
 ### `apps/web`
 
 - Renders routes and owns user interaction.
@@ -167,6 +326,39 @@ Apply localization before duplicating an app when each copy should receive indep
 - Must not be treated as a production deployment definition.
 
 ## Package responsibilities
+
+### Contract and data-shape boundaries
+
+The same feature has different representations at each boundary. Types may share field names, but persistence records and public response contracts are not interchangeable.
+
+```mermaid
+flowchart LR
+  Form["UI form values"]
+  Request["CreateLinkRequest<br/>JSON-safe input"]
+  Endpoint["linksApi.create()<br/>method, path, body"]
+  DTO["CreateLinkDto<br/>runtime validation"]
+  Domain["LinksService<br/>authorization and business rules"]
+  Record["Prisma Link<br/>tenantId and Date values"]
+  Mapper["toLinkResponse()"]
+  Response["LinkResponse<br/>ISO timestamp strings"]
+  UIModel["UI or TanStack Query cache"]
+
+  Form --> Request
+  Request --> Endpoint
+  Endpoint -->|"HTTP JSON"| DTO
+  DTO --> Domain
+  Domain --> Record
+  Record --> Mapper
+  Mapper --> Response
+  Response -->|"HTTP JSON"| UIModel
+
+  Contract["@repo/api-contract"]
+  Contract -.->|"defines"| Request
+  Contract -.->|"defines"| Endpoint
+  Contract -.->|"defines"| Response
+```
+
+Runtime DTO classes implement request contracts so Nest can validate incoming JSON and generate Swagger metadata. Controllers explicitly map Prisma results into response contracts; this prevents database-only fields and runtime-specific values such as `Date` from leaking into the transport boundary.
 
 ### `@repo/api-contract`
 
@@ -198,13 +390,29 @@ Contains visual files reused by applications. Raw files use purpose-based export
 
 ## Dependency direction
 
-```text
-apps -> shared packages
-shared packages -X-> apps
-web -> api-contract, authorization, UI/design, shared or app-local assets
-api -> api-contract, authorization, shared or API-local Prisma
-api-contract -X-> frameworks, fetch, Prisma, apps
-ui -X-> app features, API clients, selected product icons
+```mermaid
+flowchart LR
+  subgraph allowed["Allowed direction"]
+    Apps["Applications<br/>web · api"]
+    Feature["Application feature modules"]
+    Shared["Shared capability packages<br/>UI · assets · Prisma"]
+    Foundation["Framework-independent foundations<br/>api-contract · authorization"]
+    Config["Tool configuration packages"]
+
+    Apps --> Feature
+    Apps --> Shared
+    Apps --> Foundation
+    Apps -.->|"extends"| Config
+    Feature --> Shared
+    Feature --> Foundation
+    Shared --> Foundation
+  end
+
+  subgraph prohibited["Prohibited direction"]
+    Packages["Any shared package"] --x AppCode["Application source"]
+    ContractBoundary["@repo/api-contract"] --x Runtime["React · fetch · Next.js<br/>NestJS · Prisma"]
+    UIControls["@repo/ui"] --x ProductPolicy["Routes · API clients · permissions<br/>product-specific icon choices"]
+  end
 ```
 
-When a shared package needs an app import, the responsibility is in the wrong layer.
+When a shared package needs an app import, the responsibility is in the wrong layer. When a contract needs Prisma or framework types, the public boundary has become coupled to an implementation detail.
