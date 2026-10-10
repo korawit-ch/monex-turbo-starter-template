@@ -95,14 +95,23 @@ Start there before introducing a new folder, package, shared abstraction, or del
    - Create `.env` from `.env.example` if it doesn't exist
    - Set up the environment configuration
 
-2. **Start PostgreSQL database** (review root `.env` and preserve any workspace `.env` values before distribution):
+2. **Run the guided project setup**:
 
    ```bash
-   npm run env:distribute
+   npm run setup
+   ```
+
+   The first run asks whether the project needs built-in authentication, shared or API-owned Prisma, shared or web-owned assets, and how many additional frontend and backend apps to create. It collects every new app name before previewing the copies. The counts exclude the starter's existing `apps/web` and `apps/api`. Every source-changing action is previewed and separately confirmed. It then creates/distributes the root environment and records ignored local setup state. The Link example is deliberately kept until the team chooses cleanup on a later run.
+
+   Use `npm run setup -- --dry-run` to preview the questionnaire without changing anything, or `npm run setup -- --status` to inspect the detected architecture.
+
+3. **Start PostgreSQL database**:
+
+   ```bash
    docker-compose --env-file .env -f apps/db/docker-compose.yml up -d --wait postgres
    ```
 
-3. **Verify database connection configuration**:
+4. **Verify database connection configuration**:
 
    The `.env` file is automatically created from `.env.example` during `npm install`. If you need to update it, edit the root `.env` file:
 
@@ -112,7 +121,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 
    **Note**: When you run `npm run dev`, the root `.env` file is automatically distributed to all apps and packages (except config packages) via symlinks. This makes the root configuration available to those workspaces; API bootstrap and the seed runtime still need explicit process environment loading.
 
-4. **Generate Prisma client and push schema**:
+5. **Generate Prisma client and push schema**:
 
    ```bash
    npm run db:generate
@@ -121,7 +130,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
    npm run db:seed
    ```
 
-5. **Build shared packages and start development servers**:
+6. **Build shared packages and start development servers**:
 
    ```bash
    npx turbo run build --filter='./packages/*'
@@ -133,6 +142,44 @@ Start there before introducing a new folder, package, shared abstraction, or del
    - Start all development servers:
      - Web on <http://localhost:3000>
      - API on <http://localhost:3001>
+
+#### Guided setup assistant
+
+`npm run setup` runs `scripts/setup-project.mjs`, which detects the current project layout and coordinates the existing guarded ownership-localization, app-duplication, environment, and finalization scripts.
+
+| Command                      | Use                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run setup`              | Run the first-time questionnaire or open the later-run maintenance menu.                                                  |
+| `npm run setup -- --dry-run` | Complete the questionnaire and child-script previews without changing source, environments, dependencies, or setup state. |
+| `npm run setup -- --status`  | Print detected authentication, Prisma, asset, and setup state without prompting.                                          |
+| `npm run setup -- --help`    | Print the command options.                                                                                                |
+
+On the first non-dry run, the assistant collects the complete plan before changing files:
+
+1. Keep Prisma in `@repo/prisma` or localize its schema, seed, CLI configuration, and client into `apps/api`.
+2. Keep assets in `@repo/assets` or localize raw assets and icon generation into `apps/web`.
+3. Choose how many additional frontend and backend apps to create, then provide each app name and optional development port.
+
+The requested app counts are additional to the existing `apps/web` and `apps/api`. Names must be unique, lowercase unscoped npm names and cannot match existing app directories. Omitting a port keeps the source app's current port.
+
+Selected source changes run in this order:
+
+```text
+Prisma localization
+  -> asset localization
+  -> app duplication
+  -> npm install
+  -> environment creation/distribution
+  -> .monex-setup.json
+```
+
+Each child script runs its normal dry-run preflight first. Applying a mutation requires its explicit phrase: `LOCALIZE PRISMA`, `LOCALIZE ASSETS`, or `CREATE`. App copies are confirmed individually. Child scripts skip dependency installation so the assistant can run `npm install` once after all selected source changes.
+
+Environment setup creates the root `.env` only when missing and links it into eligible workspaces. Regular workspace `.env` files are preserved by default. Replacing them requires the separate `REPLACE ENV FILES` phrase because their existing values will be deleted.
+
+After a successful initial run, the ignored `.monex-setup.json` file records a completion timestamp and detected architecture snapshot. The file selects the maintenance menu; it is not the source of truth for architecture, which is detected from the filesystem on every run. The maintenance menu can revisit applicable architecture choices, batch duplicate more apps, redistribute environments, show status, or preview template cleanup. Final cleanup requires `FINALIZE TEMPLATE` and removes the setup assistant with the other one-time template tooling.
+
+The setup workflow is not transactional across child scripts. If a later step fails, an earlier confirmed mutation may already be applied. Run it from a clean branch and inspect `git status` before retrying. The workflow changes source and local workspace files but never applies database schema or data changes. See [Scripts and Template Customization](docs/engineering/scripts-and-template-customization.md#guided-project-setup) for confirmation details, maintenance behavior, and recovery guidance.
 
 ### Commands
 
@@ -548,7 +595,7 @@ The project uses a centralized `.env` file in the root directory:
 
 - Set `NEXT_PUBLIC_API_URL` for web; `.env.example` currently uses the unconsumed name `NEXT_PUBLIC_API`.
 - Setup substitutes fixed defaults when first creating `.env`; later edits to `DB_*` do not recalculate `DATABASE_URL`.
-- `env:distribute` replaces existing regular workspace `.env` files with symlinks. Preserve any local values before running it.
+- `env:distribute` preserves regular workspace `.env` files and exits with a warning. After backing them up or merging their values, use `npm run env:distribute -- --force` to replace them with symlinks intentionally.
 - API bootstrap and the seed client do not explicitly load dotenv. Turbo strict mode also lacks some API/database environment declarations. For custom settings, launch the API directly with exported variables; see [API startup](apps/api/README.md#development).
 - `NEXT_PUBLIC_*` values and the web server-provider DOM attribute are public; never put secrets there.
 
