@@ -6,6 +6,7 @@
   "author": "",
   "license": "UNLICENSED",
   "scripts": {
+    "setup": "node scripts/setup-project.mjs",
     "postinstall": "node scripts/setup-env.js",
     "predev": "node scripts/distribute-env.js",
     "dev": "turbo run dev",
