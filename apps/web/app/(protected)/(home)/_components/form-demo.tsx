@@ -33,7 +33,6 @@ export function FormDemo() {
   });
 
   const handleSubmit = (data: ContactFormData) => {
-    console.log('Form submitted:', data);
     setSubmittedData(data);
     // Reset form after successful submission
     setTimeout(() => {
