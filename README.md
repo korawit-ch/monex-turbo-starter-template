@@ -146,6 +146,46 @@ Start there before introducing a new folder, package, shared abstraction, or del
      - Web on <http://localhost:3000>
      - API on <http://localhost:3001>
 
+#### Guided setup assistant
+
+`npm run setup` runs `scripts/setup-project.mjs`, which detects the current project layout and coordinates the existing guarded auth-removal, ownership-localization, app-duplication, environment, and finalization scripts.
+
+| Command                      | Use                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run setup`              | Run the first-time questionnaire or open the later-run maintenance menu.                                                  |
+| `npm run setup -- --dry-run` | Complete the questionnaire and child-script previews without changing source, environments, dependencies, or setup state. |
+| `npm run setup -- --status`  | Print detected authentication, Prisma, asset, and setup state without prompting.                                          |
+| `npm run setup -- --help`    | Print the command options.                                                                                                |
+
+On the first non-dry run, the assistant collects the complete plan before changing files:
+
+1. Keep or remove the included authentication and authorization flow.
+2. Keep Prisma in `@repo/prisma` or localize its schema, seed, CLI configuration, and client into `apps/api`.
+3. Keep assets in `@repo/assets` or localize raw assets and icon generation into `apps/web`.
+4. Choose how many additional frontend and backend apps to create, then provide each app name and optional development port.
+
+The requested app counts are additional to the existing `apps/web` and `apps/api`. Names must be unique, lowercase unscoped npm names and cannot match existing app directories. Omitting a port keeps the source app's current port.
+
+Selected source changes run in this order:
+
+```text
+authentication removal
+  -> Prisma localization
+  -> asset localization
+  -> app duplication
+  -> npm install
+  -> environment creation/distribution
+  -> .monex-setup.json
+```
+
+Each child script runs its normal dry-run preflight first. Applying a mutation requires its explicit phrase: `REMOVE AUTH`, `LOCALIZE PRISMA`, `LOCALIZE ASSETS`, or `CREATE`. App copies are confirmed individually. Child scripts skip dependency installation so the assistant can run `npm install` once after all selected source changes.
+
+Environment setup creates the root `.env` only when missing and links it into eligible workspaces. Regular workspace `.env` files are preserved by default. Replacing them requires the separate `REPLACE ENV FILES` phrase because their existing values will be deleted.
+
+After a successful initial run, the ignored `.monex-setup.json` file records a completion timestamp and detected architecture snapshot. The file selects the maintenance menu; it is not the source of truth for architecture, which is detected from the filesystem on every run. The maintenance menu can revisit applicable architecture choices, batch duplicate more apps, redistribute environments, show status, or preview template cleanup. Final cleanup requires `FINALIZE TEMPLATE` and removes the setup assistant with the other one-time template tooling.
+
+The setup workflow is not transactional across child scripts. If a later step fails, an earlier confirmed mutation may already be applied. Run it from a clean branch and inspect `git status` before retrying. The workflow changes source and local workspace files but never applies database schema or data changes. See [Scripts and Template Customization](docs/engineering/scripts-and-template-customization.md#guided-project-setup) for confirmation details, maintenance behavior, and recovery guidance.
+
 ### Commands
 
 This `Turborepo` includes useful commands for all apps and packages.
