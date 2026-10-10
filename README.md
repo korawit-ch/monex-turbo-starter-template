@@ -32,6 +32,7 @@ Applications and runtime packages use [TypeScript](https://www.typescriptlang.or
 
 The [Engineering Handbook](docs/engineering/README.md) is the entry point for company-wide conventions. It covers:
 
+- [the project overview, module strategy, security flow, and AI-friendly structure](docs/engineering/overview.md);
 - [architecture, folder structure, and module ownership](docs/engineering/architecture-and-modules.md);
 - [frontend components and data access](docs/engineering/frontend.md);
 - [Prisma, NestJS, Swagger, and shared API contracts](docs/engineering/backend-and-api-contracts.md);
