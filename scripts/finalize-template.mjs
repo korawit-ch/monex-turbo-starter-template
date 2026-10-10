@@ -12,10 +12,19 @@ const rootDir = path.resolve(scriptDir, '..');
 const apply = process.argv.includes('--apply');
 const skipInstall = process.argv.includes('--skip-install');
 
+if (process.argv.includes('--help')) {
+  console.info(
+    'Usage: npm run template:finalize -- [--apply] [--skip-install]',
+  );
+  console.info('The command is a dry run unless --apply is provided.');
+  process.exit(0);
+}
+
 const removalPaths = [
   'apps/api/src/links',
   'apps/web/app/api/links',
   'apps/web/app/(protected)/(home)/_components/links-demo.tsx',
+  'apps/web/app/(home)/_components/links-demo.tsx',
   'apps/web/data-access/links.client.ts',
   'apps/web/data-access/links.server.ts',
   'packages/api-contract/src/links.ts',
@@ -24,16 +33,21 @@ const removalPaths = [
   'scripts/localize-prisma-in-api.mjs',
   'scripts/localize-web-assets.mjs',
   'scripts/remove-auth.mjs',
+  'scripts/setup-project.mjs',
   'scripts/finalize-template.mjs',
 ];
 
+const optionalRemovalPaths = ['.monex-setup.json'];
+
 const requiredPaths = [
-  ...removalPaths,
+  'apps/api/src/links',
+  'apps/web/data-access/links.client.ts',
+  'apps/web/data-access/links.server.ts',
+  'packages/api-contract/src/links.ts',
+  'scripts/setup-project.mjs',
+  'scripts/finalize-template.mjs',
   'apps/api/src/app.module.ts',
-  'apps/web/app/(protected)/(home)/page.tsx',
   'packages/api-contract/src/index.ts',
-  'packages/prisma/prisma/schema.prisma',
-  'packages/prisma/prisma/seed.ts',
 ];
 
 function absolute(relativePath) {
@@ -50,6 +64,35 @@ async function exists(relativePath) {
     throw error;
   }
 }
+
+async function findRequiredPath(candidates, description) {
+  for (const candidate of candidates) {
+    if (await exists(candidate)) return candidate;
+  }
+  throw new Error(
+    `Cannot find ${description}. Checked: ${candidates.join(', ')}`,
+  );
+}
+
+const homePagePath = await findRequiredPath(
+  ['apps/web/app/(protected)/(home)/page.tsx', 'apps/web/app/(home)/page.tsx'],
+  'the web home example',
+);
+const linksDemoPath = await findRequiredPath(
+  [
+    'apps/web/app/(protected)/(home)/_components/links-demo.tsx',
+    'apps/web/app/(home)/_components/links-demo.tsx',
+  ],
+  'the web Link demo component',
+);
+const prismaSchemaPath = await findRequiredPath(
+  ['packages/prisma/prisma/schema.prisma', 'apps/api/prisma/schema.prisma'],
+  'the Prisma schema',
+);
+const prismaSeedPath = await findRequiredPath(
+  ['packages/prisma/prisma/seed.ts', 'apps/api/prisma/seed.ts'],
+  'the Prisma seed',
+);
 
 function git(args) {
   return execFileSync('git', args, {
@@ -88,10 +131,23 @@ async function requireText(relativePath, fragments) {
 async function validateFinalization() {
   await requireText('apps/api/src/app.module.ts', [
     "import { LinksModule } from './links/links.module';",
-    'imports: [PrismaModule, AuthModule, LinksModule]',
   ]);
-  await requireText('apps/web/app/(protected)/(home)/page.tsx', [
-    "import { getLinks } from '../../../data-access/links.server';",
+  const apiModule = await readFile(
+    absolute('apps/api/src/app.module.ts'),
+    'utf8',
+  );
+  if (
+    ![
+      'imports: [PrismaModule, AuthModule, LinksModule]',
+      'imports: [PrismaModule, LinksModule]',
+    ].some((fragment) => apiModule.includes(fragment))
+  ) {
+    throw new Error(
+      'Expected Link module registration is missing from apps/api/src/app.module.ts.',
+    );
+  }
+  await requireText(homePagePath, [
+    'data-access/links.server',
     "import { LinksDemo } from './_components/links-demo';",
     'const links = await getLinks();',
     '{/* Data */}',
@@ -102,21 +158,10 @@ async function validateFinalization() {
     "} from './links.js';",
   ]);
   await requireText('packages/api-contract/package.json', ['"./links"']);
-  await requireText('packages/prisma/prisma/schema.prisma', [
-    'links Link[]',
-    'model Link {',
-  ]);
-  await requireText('packages/prisma/prisma/seed.ts', [
-    'const links = [',
-    'await prisma.link.upsert',
-  ]);
-  await requireText('package.json', [
-    '"app:duplicate"',
-    '"assets:localize:web"',
-    '"auth:remove"',
-    '"prisma:localize:api"',
-    '"template:finalize"',
-  ]);
+  await requireText(prismaSchemaPath, ['model Link {']);
+  await requireText(prismaSeedPath, ['const links = [', 'prisma.link.']);
+  await requireText('package.json', ['"template:finalize"', '"setup"']);
+  await requireText(linksDemoPath, ['useLinksQuery']);
 }
 
 async function updateJson(relativePath, update) {
@@ -127,12 +172,11 @@ async function updateJson(relativePath, update) {
 }
 
 async function updatePage() {
-  const relativePath = 'apps/web/app/(protected)/(home)/page.tsx';
+  const relativePath = homePagePath;
   const filePath = absolute(relativePath);
   let current = await readFile(filePath, 'utf8');
 
   const requiredFragments = [
-    "import { getLinks } from '../../../data-access/links.server';\n",
     "import { LinksDemo } from './_components/links-demo';\n",
     '  const links = await getLinks();\n\n',
     '        {/* Data */}',
@@ -146,10 +190,23 @@ async function updatePage() {
     }
   }
 
+  const getLinksImport = current
+    .split('\n')
+    .find(
+      (line) =>
+        line.startsWith("import { getLinks } from '") &&
+        line.includes('data-access/links.server'),
+    );
+  if (!getLinksImport) {
+    throw new Error(
+      `Expected getLinks import is missing from ${relativePath}.`,
+    );
+  }
+
   current = current
+    .replace(`${getLinksImport}\n`, '')
     .replace(requiredFragments[0], '')
-    .replace(requiredFragments[1], '')
-    .replace(requiredFragments[2], '');
+    .replace(requiredFragments[1], '');
 
   const demoStart = current.indexOf('        {/* Data */}');
   const mainEnd = current.indexOf('      </main>', demoStart);
@@ -161,7 +218,7 @@ async function updatePage() {
 }
 
 async function updateSeed() {
-  const relativePath = 'packages/prisma/prisma/seed.ts';
+  const relativePath = prismaSeedPath;
   const filePath = absolute(relativePath);
   const current = await readFile(filePath, 'utf8');
   const start = current.indexOf('  const links = [');
@@ -184,10 +241,28 @@ async function applyFinalization() {
     "import { LinksModule } from './links/links.module';\n",
     '',
   );
-  await replaceRequired(
-    'apps/api/src/app.module.ts',
-    'imports: [PrismaModule, AuthModule, LinksModule]',
-    'imports: [PrismaModule, AuthModule]',
+  const apiModulePath = 'apps/api/src/app.module.ts';
+  const apiModuleFile = absolute(apiModulePath);
+  const apiModule = await readFile(apiModuleFile, 'utf8');
+  const registrations = [
+    {
+      current: 'imports: [PrismaModule, AuthModule, LinksModule]',
+      updated: 'imports: [PrismaModule, AuthModule]',
+    },
+    {
+      current: 'imports: [PrismaModule, LinksModule]',
+      updated: 'imports: [PrismaModule]',
+    },
+  ];
+  const registration = registrations.find(({ current }) =>
+    apiModule.includes(current),
+  );
+  if (!registration) {
+    throw new Error(`Expected content is missing from ${apiModulePath}.`);
+  }
+  await writeFile(
+    apiModuleFile,
+    apiModule.replace(registration.current, registration.updated),
   );
 
   await updatePage();
@@ -206,21 +281,17 @@ async function applyFinalization() {
     delete manifest.exports?.['./links'];
   });
 
-  await replaceRequired(
-    'packages/prisma/prisma/schema.prisma',
-    '  users User[]\n  links Link[]\n',
-    '  users User[]\n',
-  );
-  const schemaPath = 'packages/prisma/prisma/schema.prisma';
+  const schemaPath = prismaSchemaPath;
   const schema = await readFile(absolute(schemaPath), 'utf8');
-  const modelStart = schema.indexOf('\nmodel Link {');
-  const modelEnd = schema.indexOf('\n}\n', modelStart);
+  const schemaWithoutRelation = schema.replace(/^ {2}links Link\[\]\n/m, '');
+  const modelStart = schemaWithoutRelation.indexOf('\nmodel Link {');
+  const modelEnd = schemaWithoutRelation.indexOf('\n}\n', modelStart);
   if (modelStart === -1 || modelEnd === -1) {
     throw new Error(`Cannot locate the Link model in ${schemaPath}.`);
   }
   await writeFile(
     absolute(schemaPath),
-    `${schema.slice(0, modelStart)}${schema.slice(modelEnd + 3)}`,
+    `${schemaWithoutRelation.slice(0, modelStart)}${schemaWithoutRelation.slice(modelEnd + 3)}`,
   );
   await updateSeed();
 
@@ -231,12 +302,16 @@ async function applyFinalization() {
       'auth:remove',
       'prisma:localize:api',
       'template:finalize',
+      'setup',
     ]) {
       delete manifest.scripts?.[scriptName];
     }
   });
 
   for (const relativePath of removalPaths) {
+    await rm(absolute(relativePath), { recursive: true, force: true });
+  }
+  for (const relativePath of optionalRemovalPaths) {
     await rm(absolute(relativePath), { recursive: true, force: true });
   }
 
@@ -246,11 +321,11 @@ async function applyFinalization() {
       'prettier',
       '--write',
       'apps/api/src/app.module.ts',
-      'apps/web/app/(protected)/(home)/page.tsx',
+      homePagePath,
       'package.json',
       'packages/api-contract/package.json',
       'packages/api-contract/src/index.ts',
-      'packages/prisma/prisma/seed.ts',
+      prismaSeedPath,
     ],
     { cwd: rootDir, stdio: 'inherit' },
   );
@@ -258,14 +333,6 @@ async function applyFinalization() {
   if (!skipInstall) {
     execFileSync('npm', ['install'], { cwd: rootDir, stdio: 'inherit' });
   }
-}
-
-if (process.argv.includes('--help')) {
-  console.info(
-    'Usage: npm run template:finalize -- [--apply] [--skip-install]',
-  );
-  console.info('The command is a dry run unless --apply is provided.');
-  process.exit(0);
 }
 
 for (const relativePath of requiredPaths) {
@@ -282,6 +349,7 @@ if (!apply) {
   console.info('- remove the Link Prisma model and seed records from source');
   console.info('- remove the Link API contract and exports');
   console.info('- remove one-time template migration scripts and snapshots');
+  console.info('- remove the interactive setup assistant and its local state');
   console.info('- keep operational environment/database scripts and docs');
   console.info('- leave PostgreSQL schema/data unchanged');
   console.info('Run with --apply to perform the cleanup.');

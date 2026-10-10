@@ -17,6 +17,7 @@
 - Use npm and the root `package-lock.json`. The root manifest requires Node >=22.12; `.nvmrc` selects Node 22. Do not introduce another lockfile.
 - Build shared dependencies before running app commands directly: `npx turbo run build --filter='./packages/*'`. Some packages export `dist`; `@repo/ui` has separate component/style tasks coordinated by `packages/ui/turbo.json`, without a package-level `build` script.
 - Do not hand-edit Prisma client output, `dist`, `.next`, or `packages/assets/src/icons/index.ts`; use their generators. Review tracked changes after generation.
+- `npm run setup` is the interactive entry point for first-run environment distribution and optional auth/Prisma/assets/app-duplication choices. Every architecture mutation keeps its underlying dry run and explicit confirmation. Initial setup never finalizes the template; later runs may offer finalization separately.
 - `npm run prisma:localize:api` is a dry-run architecture migration check. Add `-- --apply` only when intentionally moving all Prisma ownership into `apps/api`; it refuses to proceed while another workspace consumes `@repo/prisma`.
 - `npm run app:duplicate -- --source <web|api> --name <name>` previews app duplication; add `--apply` to create it. The script copies the source's current shared/localized ownership state while excluding generated output and local environment files.
 - `npm run auth:remove` previews scoped authentication removal; `-- --apply` uses the versioned files under `scripts/auth-removal` to three-way merge shared integration files, restore replaced files, and delete verified auth-owned files. It requires a clean tree, preserves compatible later changes, and does not change database state.
@@ -36,7 +37,7 @@
 
 ## Environment and stateful commands
 
-- Root `.env` is the intended local configuration source. `env:setup` creates it if missing; `env:distribute` links it into apps and non-config packages. Distribution removes existing regular target `.env` files; inspect before running it on an existing checkout.
+- Root `.env` is the intended local configuration source. `env:setup` creates it if missing; `env:distribute` links it into apps and non-config packages. Distribution preserves regular target `.env` files unless `--force` is explicit; back them up or merge their values before forced replacement.
 - A symlink does not ensure a runtime loads variables. Next.js and Prisma CLI have loading paths; API bootstrap and the seed client do not explicitly load dotenv. The Prisma CLI config checks the package and root environment paths. Preserve explicit runtime environment handling when changing startup.
 - Protected browser traffic uses same-origin BFF routes; `API_INTERNAL_URL` is server-only. Never expose auth secrets or the internal API URL through `NEXT_PUBLIC_*` variables.
 - `db:push`, `db:migrate`, and `db:seed` change persistent data. Inspect the target first. Auth seeding is repeatable by stable identities but rotates the seeded password hash. Never use database reset/volume removal as routine verification.
