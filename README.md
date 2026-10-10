@@ -96,14 +96,23 @@ Start there before introducing a new folder, package, shared abstraction, or del
    - Create `.env` from `.env.example` if it doesn't exist
    - Set up the environment configuration
 
-2. **Start PostgreSQL database** (review root `.env` and preserve any workspace `.env` values before distribution):
+2. **Run the guided project setup**:
 
    ```bash
-   npm run env:distribute
+   npm run setup
+   ```
+
+   The first run asks whether the project needs built-in authentication, shared or API-owned Prisma, shared or web-owned assets, and how many additional frontend and backend apps to create. It collects every new app name before previewing the copies. The counts exclude the starter's existing `apps/web` and `apps/api`. Every source-changing action is previewed and separately confirmed. It then creates/distributes the root environment and records ignored local setup state. The Link example is deliberately kept until the team chooses cleanup on a later run.
+
+   Use `npm run setup -- --dry-run` to preview the questionnaire without changing anything, or `npm run setup -- --status` to inspect the detected architecture.
+
+3. **Start PostgreSQL database**:
+
+   ```bash
    docker-compose --env-file .env -f apps/db/docker-compose.yml up -d --wait postgres
    ```
 
-3. **Verify database connection configuration**:
+4. **Verify database connection configuration**:
 
    The `.env` file is automatically created from `.env.example` during `npm install`. If you need to update it, edit the root `.env` file:
 
@@ -115,7 +124,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 
    Replace both authentication secrets in `.env` with independent values of at least 32 random bytes. Keep `API_INTERNAL_URL` server-only and set `WEB_ORIGIN` to the browser-visible Next origin. See [authentication environment details](docs/authentication.md#environment).
 
-4. **Generate Prisma client and push schema**:
+5. **Generate Prisma client and push schema**:
 
    ```bash
    npm run db:generate
@@ -124,7 +133,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
    npm run db:seed
    ```
 
-5. **Build shared packages and start development servers**:
+6. **Build shared packages and start development servers**:
 
    ```bash
    npx turbo run build --filter='./packages/*'
@@ -556,7 +565,7 @@ The project uses a centralized `.env` file in the root directory:
 
 - Protected browser calls use same-origin Next.js BFF routes. Configure server-only `API_INTERNAL_URL`; do not expose it with a `NEXT_PUBLIC_*` prefix.
 - Setup substitutes fixed defaults when first creating `.env`; later edits to `DB_*` do not recalculate `DATABASE_URL`.
-- `env:distribute` replaces existing regular workspace `.env` files with symlinks. Preserve any local values before running it.
+- `env:distribute` preserves regular workspace `.env` files and exits with a warning. After backing them up or merging their values, use `npm run env:distribute -- --force` to replace them with symlinks intentionally.
 - API bootstrap does not explicitly load dotenv. For direct startup, export the required database/auth variables or use `node --env-file=.env`; see [API startup](apps/api/README.md#development).
 - Both auth secrets are server-only. Never put credentials, tokens, internal URLs, or authorization claims in public environment variables or DOM attributes.
 
