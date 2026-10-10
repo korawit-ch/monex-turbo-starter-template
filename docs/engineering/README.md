@@ -6,6 +6,7 @@ This handbook is the company-wide source of truth for routine engineering work i
 
 | Guide                                                                       | Use it when                                                                                                       |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [Project overview](overview.md)                                             | You need a descriptive introduction to the system, module strategy, security flow, and AI-friendly structure.     |
 | [Architecture and modules](architecture-and-modules.md)                     | You need to understand the repository, runtime boundaries, or package ownership.                                  |
 | [Frontend conventions](frontend.md)                                         | You are adding routes, components, data access, forms, or assets.                                                 |
 | [Backend and API contracts](backend-and-api-contracts.md)                   | You are changing Prisma, NestJS, validation, Swagger, or a shared request/response.                               |
