@@ -40,7 +40,7 @@ Allowed types are `build`, `chore`, `docs`, `feat`, `fix`, `refactor`, `test`, a
 On commit:
 
 1. Husky runs `lint-staged`.
-2. ESLint fixes staged TypeScript/JavaScript where safe.
+2. ESLint fixes staged TypeScript/JavaScript where safe, linting each file with its nearest workspace `eslint.config` (the rules CI applies), and refuses the commit while errors remain.
 3. Prettier formats staged supported files.
 4. Turbo runs configured type checks.
 5. The `commit-msg` hook runs Commitlint.
