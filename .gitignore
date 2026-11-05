@@ -5,8 +5,9 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files (only the committed example is tracked)
+# Local env files
 .env
+# Only the committed example is tracked.
 .env.*
 !.env.example
 .monex-setup.json
