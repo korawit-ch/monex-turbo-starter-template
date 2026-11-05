@@ -5,6 +5,9 @@ node_modules
 .pnp
 .pnp.js
 
+# Personal Claude Code settings
+.claude/settings.local.json
+
 # Local env files
 .env
 # Only the committed example is tracked.
