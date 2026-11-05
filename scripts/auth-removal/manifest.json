@@ -1,24 +1,60 @@
 {
   "version": 1,
   "transforms": [
-    { "path": ".env.example" },
-    { "path": "AGENTS.md" },
-    { "path": "README.md" },
-    { "path": "apps/api/AGENTS.md" },
-    { "path": "apps/api/README.md" },
-    { "path": "apps/api/package.json" },
-    { "path": "apps/api/src/app.controller.ts" },
-    { "path": "apps/api/src/app.module.ts" },
-    { "path": "apps/api/src/links/dto/create-link.dto.ts" },
-    { "path": "apps/api/src/links/dto/update-link.dto.ts" },
-    { "path": "apps/api/src/links/links.controller.ts" },
-    { "path": "apps/api/src/links/links.mapper.spec.ts" },
-    { "path": "apps/api/src/links/links.mapper.ts" },
-    { "path": "apps/api/src/links/links.service.spec.ts" },
-    { "path": "apps/api/src/links/links.service.ts" },
-    { "path": "apps/api/src/main.ts" },
-    { "path": "apps/web/AGENTS.md" },
-    { "path": "apps/web/README.md" },
+    {
+      "path": ".env.example"
+    },
+    {
+      "path": "AGENTS.md"
+    },
+    {
+      "path": "README.md"
+    },
+    {
+      "path": "apps/api/AGENTS.md"
+    },
+    {
+      "path": "apps/api/README.md"
+    },
+    {
+      "path": "apps/api/package.json"
+    },
+    {
+      "path": "apps/api/src/app.controller.ts"
+    },
+    {
+      "path": "apps/api/src/app.module.ts"
+    },
+    {
+      "path": "apps/api/src/links/dto/create-link.dto.ts"
+    },
+    {
+      "path": "apps/api/src/links/dto/update-link.dto.ts"
+    },
+    {
+      "path": "apps/api/src/links/links.controller.ts"
+    },
+    {
+      "path": "apps/api/src/links/links.mapper.spec.ts"
+    },
+    {
+      "path": "apps/api/src/links/links.mapper.ts"
+    },
+    {
+      "path": "apps/api/src/links/links.service.spec.ts"
+    },
+    {
+      "path": "apps/api/src/links/links.service.ts"
+    },
+    {
+      "path": "apps/api/src/main.ts"
+    },
+    {
+      "path": "apps/web/AGENTS.md"
+    },
+    {
+      "path": "apps/web/README.md"
+    },
     {
       "path": "apps/web/app/(protected)/(home)/page.tsx",
       "outputPath": "apps/web/app/(home)/page.tsx"
@@ -27,21 +63,51 @@
       "path": "apps/web/app/(protected)/(home)/_components/links-demo.tsx",
       "outputPath": "apps/web/app/(home)/_components/links-demo.tsx"
     },
-    { "path": "apps/web/data-access/links.client.ts" },
-    { "path": "apps/web/data-access/links.server.ts" },
-    { "path": "apps/web/lib/fetch/client.ts" },
-    { "path": "apps/web/lib/fetch/server.ts" },
-    { "path": "apps/web/package.json" },
-    { "path": "apps/web/providers/index.tsx" },
-    { "path": "package.json" },
-    { "path": "packages/api-contract/package.json" },
-    { "path": "packages/api-contract/src/index.ts" },
-    { "path": "packages/api-contract/src/links.ts" },
-    { "path": "packages/prisma/AGENTS.md" },
-    { "path": "packages/prisma/README.md" },
-    { "path": "packages/prisma/prisma/schema.prisma" },
-    { "path": "packages/prisma/prisma/seed.ts" },
-    { "path": "turbo.json" }
+    {
+      "path": "apps/web/data-access/links.client.ts"
+    },
+    {
+      "path": "apps/web/data-access/links.server.ts"
+    },
+    {
+      "path": "apps/web/lib/fetch/client.ts"
+    },
+    {
+      "path": "apps/web/lib/fetch/server.ts"
+    },
+    {
+      "path": "apps/web/package.json"
+    },
+    {
+      "path": "apps/web/providers/index.tsx"
+    },
+    {
+      "path": "package.json"
+    },
+    {
+      "path": "packages/api-contract/package.json"
+    },
+    {
+      "path": "packages/api-contract/src/index.ts"
+    },
+    {
+      "path": "packages/api-contract/src/links.ts"
+    },
+    {
+      "path": "packages/prisma/AGENTS.md"
+    },
+    {
+      "path": "packages/prisma/README.md"
+    },
+    {
+      "path": "packages/prisma/prisma/schema.prisma"
+    },
+    {
+      "path": "packages/prisma/prisma/seed.ts"
+    },
+    {
+      "path": "turbo.json"
+    }
   ],
   "relocate": [
     {
@@ -84,14 +150,26 @@
     "packages/authorization"
   ],
   "removeFiles": [
+    "apps/web/app/(protected)/(home)/_components/links-demo.test.tsx",
+    "apps/web/app/(protected)/layout.test.tsx",
     "apps/web/app/(protected)/layout.tsx",
+    "apps/web/app/api/links/[id]/route.test.ts",
     "apps/web/app/api/links/[id]/route.ts",
+    "apps/web/app/api/links/route.test.ts",
     "apps/web/app/api/links/route.ts",
+    "apps/web/app/login/page.test.tsx",
     "apps/web/app/login/page.tsx",
+    "apps/web/components/auth/authorization-summary.test.tsx",
     "apps/web/components/auth/authorization-summary.tsx",
+    "apps/web/components/auth/logout-button.test.tsx",
     "apps/web/components/auth/logout-button.tsx",
+    "apps/web/data-access/links.server.test.ts",
+    "apps/web/lib/fetch/client.test.ts",
+    "apps/web/lib/fetch/server.test.ts",
+    "apps/web/providers/auth-provider.test.tsx",
     "apps/web/providers/auth-provider.tsx",
     "docs/authentication.md",
+    "packages/api-contract/src/auth.spec.ts",
     "packages/api-contract/src/auth.ts"
   ],
   "pruneDirectories": [

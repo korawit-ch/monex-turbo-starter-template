@@ -11,6 +11,6 @@
 - Direct startup must receive `DATABASE_URL` and optionally `API_PORT`; bootstrap does not explicitly load `.env`. `API_PORT` defaults to 3001. `/api` hosts Swagger, not a global route prefix.
 - Generate from the schema with root `npm run db:generate`; never edit generated Prisma output. Validate schema syntax without database writes with `npm run db:validate`.
 - No migration history is currently checked in. `db:push` is for disposable local development; `db:migrate` runs `prisma migrate dev`, not a production deployment command. The seed is not idempotent because URLs are not unique.
-- From the root, build shared packages first, then use `npm run lint --workspace=api`, `npm run test --workspace=api -- --runInBand`, and `npm run build --workspace=api`. In particular, the API consumes the compiled `@repo/prisma` entry point.
+- From the root, build shared packages first, then use `npm run lint --workspace=api`, `npm run test --workspace=api`, and `npm run build --workspace=api`. In particular, the API consumes the compiled `@repo/prisma` entry point.
 - Unit tests mock `PrismaService`. Extend behavior coverage for invalid input, missing rows, and database failures when implementing changes; existing links tests only check instantiation.
-- `npm run test:e2e --workspace=api -- --runInBand` uses the real database. Verify the target, close created Nest apps, and account for bootstrap settings not applied by the test's `createNestApplication()`.
+- `npm run test:e2e --workspace=api` uses the real database. Verify the target, close created Nest apps, and account for bootstrap settings not applied by the test's `createNestApplication()`.

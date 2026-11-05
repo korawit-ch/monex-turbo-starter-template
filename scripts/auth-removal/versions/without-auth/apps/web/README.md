@@ -61,7 +61,7 @@ After shared builds, run from the root:
 ```bash
 npm run lint --workspace=web
 npm run check-types --workspace=web
-npm run test --workspace=web -- --runInBand
+npm run test --workspace=web
 npm run build --workspace=web
 ```
 

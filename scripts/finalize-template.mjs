@@ -28,6 +28,12 @@ const removalPaths = [
   'apps/web/data-access/links.client.ts',
   'apps/web/data-access/links.server.ts',
   'packages/api-contract/src/links.ts',
+  // Tests of the removed Link files (folders above take theirs with them).
+  'apps/web/app/(protected)/(home)/_components/links-demo.test.tsx',
+  'apps/web/app/(home)/_components/links-demo.test.tsx',
+  'apps/web/data-access/links.client.test.tsx',
+  'apps/web/data-access/links.server.test.ts',
+  'packages/api-contract/src/links.spec.ts',
   'scripts/auth-removal',
   'scripts/duplicate-app.mjs',
   'scripts/localize-prisma-in-api.mjs',

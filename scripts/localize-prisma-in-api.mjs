@@ -181,6 +181,15 @@ async function localizePrisma() {
     path.join(prismaPackageDir, 'src/index.ts'),
     path.join(apiDir, 'src/prisma/prisma.client.ts'),
   );
+  // Keep the client's tests: they move with it and import the new file name.
+  const clientSpec = path.join(prismaPackageDir, 'src/index.spec.ts');
+  if (await pathExists(clientSpec)) {
+    const movedSpec = path.join(apiDir, 'src/prisma/prisma.client.spec.ts');
+    await cp(clientSpec, movedSpec);
+    await rewriteFile(movedSpec, (contents) =>
+      contents.replaceAll("import('./index')", "import('./prisma.client')"),
+    );
+  }
 
   await rewriteFile(path.join(apiDir, 'prisma/seed.ts'), (contents) =>
     contents.replace('../src/index', '../src/prisma/prisma.client'),
@@ -190,8 +199,20 @@ async function localizePrisma() {
     (contents) =>
       contents.replace("from '@repo/prisma'", "from './prisma.client'"),
   );
+  // The service spec mocks the module the service imports, so it follows it.
+  const serviceSpec = path.join(apiDir, 'src/prisma/prisma.service.spec.ts');
+  if (await pathExists(serviceSpec)) {
+    await rewriteFile(serviceSpec, (contents) =>
+      contents.replaceAll("'@repo/prisma'", "'./prisma.client'"),
+    );
+  }
   for (const filePath of await collectFiles(path.join(apiDir, 'src'))) {
-    if (filePath.endsWith('prisma.service.ts')) continue;
+    if (
+      filePath.endsWith('prisma.service.ts') ||
+      filePath.endsWith('prisma.service.spec.ts')
+    ) {
+      continue;
+    }
     await rewriteFile(filePath, (contents) =>
       contents.replaceAll("from '@repo/prisma'", "from '@prisma/client'"),
     );

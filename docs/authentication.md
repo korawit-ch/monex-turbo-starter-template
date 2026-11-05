@@ -216,8 +216,8 @@ Focused checks:
 ```bash
 npm run db:validate
 npm run test --workspace=@repo/authorization
-npm run test --workspace=api -- --runInBand
-npm run test --workspace=web -- --runInBand
+npm run test --workspace=api
+npm run test --workspace=web
 npm run build --workspace=api
 npm run check-types --workspace=web
 ```
