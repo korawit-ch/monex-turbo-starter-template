@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { z } from 'zod';
 
 import { FormInput } from '@repo/ui/form/form-input';
@@ -82,12 +82,12 @@ describe('shared UI form adapters', () => {
   it('shows the error of a nested field name', async () => {
     render(<AddressForm />);
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(screen.getByLabelText('Street')).toHaveAccessibleDescription(
-      'Street is required',
+    await waitFor(() =>
+      expect(screen.getByLabelText('Street')).toHaveAccessibleDescription(
+        'Street is required',
+      ),
     );
   });
 
@@ -99,10 +99,9 @@ describe('shared UI form adapters', () => {
     fireEvent.change(screen.getByLabelText('Street'), {
       target: { value: 'Main Street 1' },
     });
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onStreetChange).toHaveBeenCalledTimes(1);
     expect(onSubmit).toHaveBeenCalledWith(
       { address: { street: 'Main Street 1' }, note: '' },
