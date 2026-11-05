@@ -111,10 +111,6 @@
   ],
   "relocate": [
     {
-      "path": "apps/web/app/(protected)/(home)/_components/__tests__/ui-icon-slots.test.tsx",
-      "outputPath": "apps/web/app/(home)/_components/__tests__/ui-icon-slots.test.tsx"
-    },
-    {
       "path": "apps/web/app/(protected)/(home)/_components/__tests__/feature-badge.test.tsx",
       "outputPath": "apps/web/app/(home)/_components/__tests__/feature-badge.test.tsx"
     },
