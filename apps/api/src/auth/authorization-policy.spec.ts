@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { buildPermissionGrants } from './authorization-policy';
 
 describe('buildPermissionGrants', () => {

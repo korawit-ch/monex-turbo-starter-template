@@ -14,4 +14,4 @@
 - Never expose raw access/session tokens through props, context, storage, readable cookies, or logs. Configuration failures must not be converted into ordinary login redirects.
 - Mutating BFF handlers require the configured `WEB_ORIGIN`; they forward only business input and the server-verified bearer token. Client fetch may renew once after 401, never after 403/409.
 - After shared builds, run `npm run lint --workspace=web`, `npm run check-types --workspace=web`, `npm run test --workspace=web -- --runInBand`, and `npm run build --workspace=web` as appropriate. Build uses `next/font/google` and may need network access.
-- Tests use local Jest/jsdom/ts-jest configuration, not the shared Next preset. For UI changes, verify behavior, loading/error/empty states, keyboard access, and form submission rather than merely matching CSS classes.
+- Tests run on Vitest with the shared `react` preset (jsdom; `vitest.setup.ts` adds the jest-dom matchers and Testing Library cleanup). Import `describe`/`it`/`expect`/`vi` from `vitest`. For UI changes, verify behavior, loading/error/empty states, keyboard access, and form submission rather than merely matching CSS classes.

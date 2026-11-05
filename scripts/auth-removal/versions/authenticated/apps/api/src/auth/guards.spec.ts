@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import type { ExecutionContext } from '@nestjs/common';
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import type { Link as PrismaLink } from '@repo/prisma';
 
 import { toLinkResponse } from './links.mapper';

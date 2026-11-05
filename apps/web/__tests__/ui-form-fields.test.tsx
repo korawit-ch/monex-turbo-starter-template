@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { createRef } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { z } from 'zod';
@@ -92,8 +93,8 @@ describe('shared UI form adapters', () => {
   });
 
   it('runs the caller onChange and still updates the form value', async () => {
-    const onStreetChange = jest.fn();
-    const onSubmit = jest.fn();
+    const onStreetChange = vi.fn();
+    const onSubmit = vi.fn();
     render(<AddressForm onStreetChange={onStreetChange} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByLabelText('Street'), {

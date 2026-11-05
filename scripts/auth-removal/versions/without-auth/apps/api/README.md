@@ -77,7 +77,7 @@ npm run test --workspace=api -- --runInBand
 npm run build --workspace=api
 ```
 
-Unit tests use the shared Nest Jest preset and mocked Prisma service. Existing coverage checks the root information response and links controller/service construction; it does not verify CRUD behavior.
+Unit tests use the shared `nest` Vitest preset (SWC keeps decorator metadata for Nest's dependency injection) and a mocked Prisma service. Existing coverage checks the root information response and links controller/service construction; it does not verify CRUD behavior.
 
 `npm run test:e2e --workspace=api -- --runInBand` initializes the real application/Prisma service and requires an explicitly configured test database. It creates a Nest application directly rather than invoking `main.ts`, so bootstrap-only middleware/pipes are not automatically tested. The current test lacks application teardown.
 

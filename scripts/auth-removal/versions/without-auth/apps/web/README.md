@@ -65,7 +65,7 @@ npm run test --workspace=web -- --runInBand
 npm run build --workspace=web
 ```
 
-The app uses its own Jest/jsdom/ts-jest setup. Its only current suite tests `FeatureBadge`; two assertions still expect `bg-blue-100`/`bg-gray-100` although the component uses design-system classes. The build can require Google Fonts network access. There is no web e2e script.
+The app runs Vitest with the shared `react` preset (jsdom). Its only current suite tests `FeatureBadge`; two assertions still expect `bg-blue-100`/`bg-gray-100` although the component uses design-system classes. The build can require Google Fonts network access. There is no web e2e script.
 
 ## Improvements
 

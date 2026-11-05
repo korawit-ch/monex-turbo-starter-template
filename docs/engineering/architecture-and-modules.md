@@ -74,7 +74,7 @@ flowchart TB
   Packages --> Policy["authorization · permission policy"]
   Packages --> Presentation["ui + design-system + assets"]
   Packages --> Data["prisma · server-only persistence"]
-  Packages --> Tooling["eslint + jest + TypeScript config"]
+  Packages --> Tooling["eslint + vitest + TypeScript config"]
 ```
 
 The repository is organized by runtime ownership first and reusable responsibility second. Applications may consume packages; packages must never reach back into application code.
@@ -100,7 +100,7 @@ packages/
   prisma/                    server-only schema, seed, client, and DB types
   ui/                        reusable React controls and form adapters
   eslint-config/             shared lint presets
-  jest-config/               shared Jest presets
+  vitest-config/             shared Vitest presets
   typescript-config/         shared TypeScript presets
 docs/                        durable architecture and engineering guidance
 scripts/                     operational and guarded migration utilities
@@ -251,7 +251,7 @@ packages/
   design-system/             shared visual tokens and styles
   ui/                        shared controls and form adapters
   eslint-config/             shared lint policy
-  jest-config/               shared test policy
+  vitest-config/             shared test policy
   typescript-config/         shared TypeScript policy
 ```
 
@@ -387,7 +387,7 @@ Contains visual files reused by applications. Raw files use purpose-based export
 
 ### Configuration packages
 
-`eslint-config`, `jest-config`, and `typescript-config` centralize tool policy. Applications may extend them, but should not silently weaken shared correctness rules.
+`eslint-config`, `vitest-config`, and `typescript-config` centralize tool policy. Applications may extend them, but should not silently weaken shared correctness rules.
 
 ## Dependency direction
 

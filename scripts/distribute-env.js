@@ -13,7 +13,11 @@ const envPath = path.join(rootDir, '.env');
 const force = process.argv.includes('--force');
 
 // Packages to exclude (config packages)
-const excludedPackages = ['eslint-config', 'jest-config', 'typescript-config'];
+const excludedPackages = [
+  'eslint-config',
+  'vitest-config',
+  'typescript-config',
+];
 
 // Check if root .env exists
 if (!fs.existsSync(envPath)) {

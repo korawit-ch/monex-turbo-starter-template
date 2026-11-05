@@ -1,23 +1,24 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { LinksService } from './links.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 describe('LinksService', () => {
   let service: LinksService;
   let prismaClient: {
-    link: Record<string, jest.Mock>;
+    link: Record<string, Mock>;
   };
 
   beforeEach(async () => {
     prismaClient = {
       link: {
-        create: jest.fn(),
-        findMany: jest.fn(),
-        findFirst: jest.fn(),
-        updateMany: jest.fn(),
-        deleteMany: jest.fn(),
+        create: vi.fn(),
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        updateMany: vi.fn(),
+        deleteMany: vi.fn(),
       },
     };
     const module: TestingModule = await Test.createTestingModule({

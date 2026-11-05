@@ -12,7 +12,6 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
-    "test:agent-guards": "node --test .claude/hooks/guard-bash.test.mjs",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint && prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",

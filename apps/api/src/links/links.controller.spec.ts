@@ -1,5 +1,5 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 import { LinksController } from './links.controller';
 import { LinksService } from './links.service';
@@ -18,11 +18,11 @@ describe('LinksController', () => {
           useValue: {
             client: {
               link: {
-                create: jest.fn(),
-                findMany: jest.fn(),
-                findUnique: jest.fn(),
-                update: jest.fn(),
-                delete: jest.fn(),
+                create: vi.fn(),
+                findMany: vi.fn(),
+                findUnique: vi.fn(),
+                update: vi.fn(),
+                delete: vi.fn(),
               },
             },
           },

@@ -1,5 +1,5 @@
+import { describe, it, expect, vi } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
-import { jest } from '@jest/globals';
 
 import { AuthService } from './auth.service';
 
@@ -15,23 +15,25 @@ describe('AuthService', () => {
 
   function setup() {
     const client = {
-      user: { findUnique: jest.fn(async () => user) },
+      user: { findUnique: vi.fn(async () => user) },
       authSession: {
-        create: jest.fn(async (input) => input),
-        findFirst: jest.fn(),
-        updateMany: jest.fn(async () => ({ count: 1 })),
+        create: vi.fn(async (input) => input),
+        findFirst: vi.fn(),
+        updateMany: vi.fn(async () => ({ count: 1 })),
       },
     };
-    const accessTokens = { issue: jest.fn(() => 'access-jwt') };
+    const accessTokens = { issue: vi.fn(() => 'access-jwt') };
     const sessions = {
-      seal: jest.fn(() => 'encrypted-session'),
-      open: jest.fn(() => ({ token: 'raw-session', exp: Date.now() + 1000 })),
+      seal: vi.fn<(token: string, expiresAt: Date) => string>(
+        () => 'encrypted-session',
+      ),
+      open: vi.fn(() => ({ token: 'raw-session', exp: Date.now() + 1000 })),
     };
     const service = new AuthService(
       { client } as never,
       accessTokens as never,
       sessions as never,
-      { verify: jest.fn(() => true) } as never,
+      { verify: vi.fn(() => true) } as never,
       { sessionTtlSeconds: 3600 } as never,
     );
     return { service, client, accessTokens, sessions };

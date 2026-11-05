@@ -12,8 +12,8 @@ The recipes live in `docs/engineering/ai-assisted-development.md` so every tool 
 | New resource or feature (schema to UI)                     | Add a feature slice          | `npm run db:validate`, `npm run db:generate`                 |
 | New web or API app                                         | Add an app                   | `npm run app:duplicate -- --source <web\|api> --name <name>` |
 | New shared package                                         | Add a shared package         | `npx turbo run build --filter=<package>`                     |
-| Instructions outgrew the code, or the project grew a layer | Grow the AI context          | `npm run test:agent-guards` after guard changes              |
-| A command the agent must never run, or must ask before     | Grow the AI context → Guards | `npm run test:agent-guards`                                  |
+| Instructions outgrew the code, or the project grew a layer | Grow the AI context          | `npm run test:agent-hooks` after guard changes               |
+| A command the agent must never run, or must ask before     | Grow the AI context → Guards | `npm run test:agent-hooks`                                   |
 
 Rules that hold for every extension:
 
