@@ -41,7 +41,7 @@ A guard reduces mistakes; it is not a sandbox. Patterns can be bypassed by unusu
 
 ## Workflow
 
-Agents start every change with the `deliver-change` skill: scope line, mode (quick, standard or full by risk), plan for high-risk work, tests from the contract, affected checks, review by the `reviewer` agent, context updates, and a report shaped like the pull request template. Full mode covers authentication, tenant scope, the Prisma schema, `@repo/api-contract`, environment handling, `scripts/` and CI.
+Agents start every change with the `deliver-change` skill: scope line, mode (quick, standard or full by risk), plan for high-risk work, tests from the contract, affected checks, review by the `reviewer` agent, and context updates. The pull request template is the record of those phases: the agent fills its Plan, Deviations, Requirement → code → test, Checks, Review, Not verified and After merge sections as the work happens, so a reviewer sees how the change was planned and what changed course, not only the result. Full mode covers authentication, tenant scope, the Prisma schema, `@repo/api-contract`, environment handling, `scripts/` and CI.
 
 Give the reviewer the task and the diff range only. A reviewer that reads the implementer's reasoning tends to confirm it.
 

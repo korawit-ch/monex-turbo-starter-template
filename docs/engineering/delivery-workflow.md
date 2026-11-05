@@ -69,13 +69,15 @@ Complete every section in `.github/PULL_REQUEST_TEMPLATE.md`. Proof of work must
 
 For non-visual changes, include command output or a concise test matrix. Never include credentials, tokens, customer data, or private infrastructure in screenshots or logs.
 
-Reviewers should be able to determine:
+The template doubles as the work record of the `deliver-change` workflow: authors and agents fill it while working, so the pull request shows how the change was planned as well as what it does. Reviewers should be able to determine:
 
-- what behavior changed;
-- why the chosen layer owns it;
-- request/data/side-effect flow;
-- risk and rollback implications;
-- exact checks performed;
+- what behavior changed, and which requirement or decision asked for it;
+- the mode chosen (quick, standard or full) and why, the scope, and the plan;
+- every deviation from that plan, with its reason and who decided;
+- why the chosen layer owns the change, its request/data/side-effect flow, and which consumers were checked;
+- which code and which test answer each requirement;
+- the exact checks that ran, the review findings and what was done with each, and what was not verified;
+- risk, rollback, and anything someone must do after merge;
 - visual evidence when applicable.
 
 ## CI
