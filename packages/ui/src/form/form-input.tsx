@@ -3,6 +3,7 @@
 import { forwardRef } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { Input, type InputProps } from '../input';
+import { mergeRefs } from './merge-refs';
 
 type FormInputProps = Omit<InputProps, 'error'> & {
   /**
@@ -35,27 +36,36 @@ type FormInputProps = Omit<InputProps, 'error'> & {
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   ({ name, error: customError, ...inputProps }, ref) => {
     const formContext = useFormContext();
-    const {
-      control,
-      formState: { errors },
-    } = formContext || {};
 
-    // Get error from form state or custom error
-    const fieldError = errors[name];
-    const errorMessage =
-      customError || (fieldError?.message as string) || undefined;
-
-    // If no form context, render as regular Input
+    // Outside a FormProvider, behave as a plain Input.
     if (!formContext) {
-      return <Input ref={ref} error={errorMessage} {...inputProps} />;
+      return <Input ref={ref} error={customError} {...inputProps} />;
     }
 
+    // React Hook Form's field bindings are applied last so caller props cannot
+    // replace them; caller handlers and refs are composed instead. fieldState
+    // resolves nested names such as "address.street".
     return (
       <Controller
         name={name}
-        control={control}
-        render={({ field }) => (
-          <Input {...field} {...inputProps} error={errorMessage} />
+        control={formContext.control}
+        render={({ field, fieldState }) => (
+          <Input
+            {...inputProps}
+            name={field.name}
+            value={field.value ?? ''}
+            disabled={field.disabled ?? inputProps.disabled}
+            ref={mergeRefs(field.ref, ref)}
+            onChange={(event) => {
+              inputProps.onChange?.(event);
+              field.onChange(event);
+            }}
+            onBlur={(event) => {
+              inputProps.onBlur?.(event);
+              field.onBlur();
+            }}
+            error={customError || fieldState.error?.message}
+          />
         )}
       />
     );

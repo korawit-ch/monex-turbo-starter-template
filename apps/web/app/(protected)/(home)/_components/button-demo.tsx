@@ -14,7 +14,7 @@ export function ButtonDemo() {
       <div className="flex flex-wrap gap-3">
         <Button onClick={() => alert('Clicked!')}>Click me</Button>
         <Button disabled>Disabled</Button>
-        <Button className="bg-warning-500 hover:bg-warning-600">
+        <Button className="bg-warning-500 hover:bg-warning-800">
           Custom Style
         </Button>
         <Button variant="linked" endIcon={<ArrowRight className="h-5 w-5" />}>

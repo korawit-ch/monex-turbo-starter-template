@@ -56,7 +56,7 @@ export function TextareaDemo() {
             />
             <Textarea
               label="Note"
-              value="เนื่องจากมีการฉีกบัตรเลือกตั้ง จำนวน 4 ใบ"
+              defaultValue="เนื่องจากมีการฉีกบัตรเลือกตั้ง จำนวน 4 ใบ"
               id="textarea-filled"
             />
           </div>

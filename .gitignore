@@ -7,6 +7,9 @@ node_modules
 
 # Local env files
 .env
+# Only the committed example is tracked.
+.env.*
+!.env.example
 .monex-setup.json
 .env.local
 .env.development.local

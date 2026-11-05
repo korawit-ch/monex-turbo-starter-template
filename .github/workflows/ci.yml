@@ -3,6 +3,15 @@ name: Lint, Type Check & Build
 on:
   push:
   pull_request:
+    # edited: re-run the title check after the title is fixed.
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pull-request-title:
@@ -19,6 +28,8 @@ jobs:
           fi
 
   lint:
+    # A title edit changes no code; only the title check re-runs.
+    if: github.event.action != 'edited'
     runs-on: ubuntu-latest
 
     steps:
@@ -27,14 +38,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Generate Prisma Client
-        run: cd packages/prisma && npm run db:generate
+        # The root script follows Prisma when it is localized into apps/api.
+        run: npm run db:generate
 
       - name: Build packages
         run: npx turbo run build --filter='./packages/*'
@@ -47,6 +59,9 @@ jobs:
 
       - name: Type check
         run: npx turbo run check-types
+
+      - name: Unit tests
+        run: npx turbo run test
 
       - name: Build
         run: npx turbo run build

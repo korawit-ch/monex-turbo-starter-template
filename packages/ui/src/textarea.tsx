@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */ /* better for readability */
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from './utils';
 
 /**
@@ -55,6 +55,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref,
   ) => {
+    // Fall back to a generated id so the label, field and helper text stay
+    // associated when the caller passes none.
+    const generatedId = useId();
+    const fieldId = textareaProps.id ?? generatedId;
+    const helperId = `${fieldId}-helper`;
+
     // Determine if textarea has a value (for filled state styling)
     // For controlled textareas (React Hook Form), check value prop
     // For uncontrolled textareas, check defaultValue prop
@@ -98,10 +104,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className={cn('w-full', className)}>
         {label && (
-          <label htmlFor={textareaProps.id} className={labelStyles}>
+          <label htmlFor={fieldId} className={labelStyles}>
             {label}
             {required && (
-              <span className="text-error-500 ml-1" aria-label="required">
+              <span className="text-error-500 ml-1" aria-hidden="true">
                 *
               </span>
             )}
@@ -111,12 +117,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <div className="relative">
           <textarea
             ref={ref}
+            id={fieldId}
+            required={required}
             rows={rows}
             disabled={disabled}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={
-              error || helperText ? `${textareaProps.id}-helper` : undefined
-            }
+            aria-describedby={error || helperText ? helperId : undefined}
             className={cn(baseTextareaStyles, stateStyles)}
             {...textareaProps}
           />
@@ -124,7 +130,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
         {(error || helperText) && (
           <p
-            id={`${textareaProps.id}-helper`}
+            id={helperId}
             className={helperStyles}
             role={error ? 'alert' : undefined}
           >

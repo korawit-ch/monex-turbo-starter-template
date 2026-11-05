@@ -97,7 +97,7 @@ Backend application 1 development port (optional, press Enter to keep it): 4001
 
 Names must be lowercase, unscoped npm package names no longer than 214 characters. They must begin and end with a letter or number and may otherwise contain letters, numbers, dots, hyphens, or underscores. A name cannot be repeated in the same plan or match an existing directory under `apps`. The underlying duplication preflight also rejects an existing destination or workspace package name.
 
-The development port is optional. When omitted, the copy keeps the source app's current port. When supplied, the web copy updates its `dev` script and the API copy updates its `API_PORT` fallback.
+The development port is optional. When omitted, the copy keeps the source app's current port. When supplied, the web copy updates its `dev` script and the API copy updates its `API_PORT` fallback. Every app still reads the one root `.env`: a web copy needs its own `WEB_ORIGIN`, or its login and other mutating BFF requests are rejected as cross-origin, and an API copy needs its own `API_PORT`, because the shared value overrides the fallback. Set them in the process environment when starting the copy; the script prints this reminder.
 
 The assistant gathers and validates the complete plan before invoking the duplication script. It then runs the normal dry-run preflight for each app. Outside `--dry-run` mode, each app requires its own `CREATE` confirmation; declining one app skips it without cancelling the remaining plan. Copies use `--skip-install`, and the setup assistant runs `npm install` once after all selected architecture changes and app copies finish.
 
@@ -134,17 +134,17 @@ The initial workflow never runs `template:finalize`. Keep the Link vertical slic
 
 ## Environment scripts
 
-| Command                  | Behavior                                                                                                 |
-| ------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `npm run env:setup`      | Creates root `.env` from `.env.example` only when missing.                                               |
-| `npm run env:distribute` | Links workspace `.env` targets to root `.env`; regular files are preserved unless `--force` is explicit. |
-| `npm run dev`            | Runs `env:distribute`, then starts workspace development tasks.                                          |
+| Command                  | Behavior                                                                                                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run env:setup`      | Creates root `.env` from `.env.example` only when missing, resolving `${DB_*}` placeholders from the values assigned in `.env.example` and replacing every `*_SECRET` placeholder with a random value. |
+| `npm run env:distribute` | Links workspace `.env` targets to root `.env`; regular files are preserved unless `--force` is explicit.                                                                                               |
+| `npm run dev`            | Runs `env:distribute`, then starts workspace development tasks. It stops before starting when distribution preserved a regular workspace `.env`.                                                       |
 
 Use `npm run env:distribute -- --force` only after backing up or merging every regular workspace `.env`; forced distribution deletes those files before creating symlinks. A symlink does not make every runtime load dotenv. API and seed commands still need the documented process environment.
 
 ## Database scripts
 
-`db:start`, `db:stop`, `db:up`, `db:down`, `db:logs`, and `db:ps` operate on local Compose infrastructure. `db:generate` and `db:validate` do not intentionally change database data. `db:push`, `db:migrate`, and `db:seed` do.
+`db:start`, `db:stop`, `db:up`, `db:down`, `db:logs`, and `db:ps` operate on local Compose infrastructure. `db:start` passes the root `.env` to Compose, waits at most 60 seconds for readiness, and prints the bound address without credentials. The port binds to `127.0.0.1` only. `db:generate` and `db:validate` do not intentionally change database data. `db:push`, `db:migrate`, and `db:seed` do.
 
 ## Duplicate an app
 
@@ -166,7 +166,7 @@ npm run prisma:localize:api
 npm run prisma:localize:api -- --apply
 ```
 
-This moves schema, seed, config, client, and dependencies into `apps/api`. It refuses to proceed while another workspace consumes `@repo/prisma`. It does not change database data.
+This moves schema, seed, config, client, and dependencies into `apps/api`. It refuses to proceed while another workspace, including a duplicated app such as `apps/api-admin`, consumes `@repo/prisma`. It does not change database data.
 
 ### Assets into web
 
@@ -186,7 +186,7 @@ npm run auth:remove
 npm run auth:remove -- --apply
 ```
 
-The versioned three-way merge preserves compatible later edits, removes auth-owned files, restores auth-neutral files, and leaves database state unchanged. Review the remaining Prisma schema/data and environment variables separately.
+The versioned three-way merge preserves compatible later edits, removes auth-owned files, restores auth-neutral files, and leaves database state unchanged. It refuses while any file the plan does not cover, such as an app created with `app:duplicate`, still references `@repo/authorization`. Review the remaining Prisma schema/data and environment variables separately.
 
 ## Finalize the starter template
 
@@ -197,7 +197,7 @@ npm run template:finalize -- --apply
 
 Use this only after the team has replaced the Link vertical-slice example or decided it is no longer needed. It removes the example API module, BFF routes, web link data access/demo, Link API contract, Link Prisma model/seed data, the guided setup assistant, and one-time template migration scripts. It also removes its own command. It keeps operational environment/database scripts and the engineering handbook.
 
-The finalizer recognizes the unmodified starter example and intentionally stops if overlapping project work makes automatic removal ambiguous. Duplicated apps retain their copied examples and must be reviewed separately.
+Both the preview and `--apply` require a clean working tree. The finalizer recognizes the unmodified starter example and intentionally stops if overlapping project work makes automatic removal ambiguous. Duplicated apps retain their copied examples and must be reviewed separately.
 
 The finalizer changes source/schema files but never changes a database. Create and review the required migration after applying it. Link-named authorization permissions remain as concrete auth examples until the first real domain permission replaces them; do not ship placeholder permission vocabulary unnoticed.
 
