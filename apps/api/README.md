@@ -79,13 +79,13 @@ After shared contract/UI builds, run from the root:
 
 ```bash
 npm run lint --workspace=api
-npm run test --workspace=api -- --runInBand
+npm run test --workspace=api
 npm run build --workspace=api
 ```
 
-Unit tests use the shared Nest Jest preset and mocked Prisma service. Focused tests cover JWT validation, encrypted session envelopes, session revocation predicates, authentication/permission guards, and tenant scope in final link mutations.
+Unit tests use the shared `nest` Vitest preset (SWC keeps decorator metadata for Nest's dependency injection) and a mocked Prisma service. Focused tests cover JWT validation, encrypted session envelopes, session revocation predicates, authentication/permission guards, and tenant scope in final link mutations.
 
-`npm run test:e2e --workspace=api -- --runInBand` initializes the real application/Prisma service and requires an explicitly configured test database. It creates a Nest application directly rather than invoking `main.ts`, so bootstrap-only middleware/pipes are not automatically tested. The current test lacks application teardown.
+`npm run test:e2e --workspace=api` initializes the real application/Prisma service and requires an explicitly configured test database. It creates a Nest application directly rather than invoking `main.ts`, so bootstrap-only middleware/pipes are not automatically tested. The current test lacks application teardown.
 
 ## Improvements
 

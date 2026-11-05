@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { safeReturnTo } from './safe-return';
 
 describe('safeReturnTo', () => {

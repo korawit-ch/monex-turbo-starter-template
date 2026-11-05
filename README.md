@@ -20,7 +20,7 @@ This Turborepo includes the following packages & apps:
     ├── @repo/authorization       # Typed grants, claim validation, and scope resolution
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
-    ├── @repo/jest-config         # Jest configurations
+    ├── @repo/vitest-config       # Vitest presets
     ├── @repo/prisma              # Server-only Prisma schema, client, and DB types
     ├── @repo/typescript-config   # TypeScript configurations
     └── @repo/ui                  # React 19 component library with Tailwind
@@ -72,7 +72,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 | [**Turborepo**](https://turbo.build/repo)              | Monorepo build     |
 | [**ESLint**](https://eslint.org/)                      | Code linting       |
 | [**Prettier**](https://prettier.io)                    | Code formatting    |
-| [**Jest**](https://jestjs.io/)                         | Testing            |
+| [**Vitest**](https://vitest.dev/)                      | Testing            |
 | [**Docker Compose**](https://docs.docker.com/compose/) | Database container |
 | [**Husky**](https://typicode.github.io/husky/)         | Git hooks          |
 | [**Commitlint**](https://commitlint.js.org/)           | Commit messages    |
@@ -247,7 +247,7 @@ npm run build
 npm run dev
 ```
 
-**Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `jest-config`, `typescript-config`).
+**Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `vitest-config`, `typescript-config`).
 
 #### Test
 
@@ -258,10 +258,10 @@ npm run test
 # You can launch e2e testes with `test:e2e`
 npm run test:e2e
 
-# See `@repo/jest-config` to customize the behavior.
+# See `@repo/vitest-config` to customize the behavior.
 ```
 
-Build shared packages before tests. API unit tests use the shared Nest Jest preset; web uses its own Jest configuration. API e2e tests need a reachable test database and do not start it automatically.
+`npm run test` builds the packages each test imports first. API unit tests use the shared `nest` Vitest preset, `@repo/authorization` the `node` preset and web the `react` preset. API e2e tests need a reachable test database and do not start it automatically.
 
 #### Type Check
 
@@ -631,7 +631,7 @@ The project uses a centralized `.env` file in the root directory:
 
 - **Automatic Setup**: `.env` is created from `.env.example` during `npm install`
 - **Automatic Distribution**: When running `npm run dev`, the root `.env` is distributed to all apps and packages via symlinks
-- **Excluded Packages**: Config packages (`eslint-config`, `jest-config`, `typescript-config`) don't receive `.env` files
+- **Excluded Packages**: Config packages (`eslint-config`, `vitest-config`, `typescript-config`) don't receive `.env` files
 - **Single Source of Truth**: All environment variables are managed in the root `.env` file
 
 #### Configuration details

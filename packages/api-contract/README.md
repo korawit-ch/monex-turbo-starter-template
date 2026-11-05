@@ -22,7 +22,7 @@ npx turbo run build --filter=@repo/api-contract
 npm run lint --workspace=@repo/api-contract
 ```
 
-The package exports compiled ESM/declarations at the root, `/links`, and `/types`, plus `/auth` while authentication is installed. Keep `.js` relative import specifiers in TypeScript source. There is no test script; verify contract changes through API/web behavior tests and consumer builds.
+The package exports compiled ESM/declarations at the root, `/links`, and `/types`, plus `/auth` while authentication is installed. Keep `.js` relative import specifiers in TypeScript source. `npm run test --workspace=@repo/api-contract` tests the endpoint builders; verify contract changes through API/web behavior tests and consumer builds too. The build uses `tsconfig.build.json`, which keeps specs out of `dist`.
 
 Keep request DTOs aligned with validated server inputs and keep database-only fields out of public contracts. TypeScript contracts do not provide runtime validation.
 

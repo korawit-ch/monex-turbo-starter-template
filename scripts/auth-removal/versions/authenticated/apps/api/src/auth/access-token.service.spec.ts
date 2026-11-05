@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 

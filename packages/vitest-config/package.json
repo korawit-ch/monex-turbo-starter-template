@@ -1,0 +1,41 @@
+{
+  "name": "@repo/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./node": {
+      "types": "./node.d.mts",
+      "default": "./node.mjs"
+    },
+    "./nest": {
+      "types": "./nest.d.mts",
+      "default": "./nest.mjs"
+    },
+    "./react": {
+      "types": "./react.d.mts",
+      "default": "./react.mjs"
+    }
+  },
+  "peerDependencies": {
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@swc/core": "^1.16.18",
+    "unplugin-swc": "^2.0.0"
+  },
+  "typesVersions": {
+    "*": {
+      "node": [
+        "node.d.mts"
+      ],
+      "nest": [
+        "nest.d.mts"
+      ],
+      "react": [
+        "react.d.mts"
+      ]
+    }
+  }
+}

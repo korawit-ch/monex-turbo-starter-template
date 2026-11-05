@@ -294,7 +294,7 @@ design-system boundaries.
 
 ### Shared configuration packages
 
-The ESLint, Jest, and TypeScript packages centralize engineering policy. An
+The ESLint, Vitest, and TypeScript packages centralize engineering policy. An
 application may extend them for a real runtime need, but it should not silently
 weaken shared correctness rules. This reduces workspace drift and gives code
 reviewers one predictable baseline.

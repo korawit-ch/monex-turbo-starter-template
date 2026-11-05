@@ -1,6 +1,7 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import type { ApiEndpoint } from '@repo/api-contract';
 
 import { clientFetch } from '../lib/fetch/client';
@@ -20,7 +21,7 @@ describe('client fetch errors and the query retry policy', () => {
   });
 
   it('attaches the HTTP status to a failed response', async () => {
-    global.fetch = jest.fn(() => respond(403, 'Forbidden'));
+    global.fetch = vi.fn(() => respond(403, 'Forbidden'));
 
     await expect(clientFetch(listEndpoint)).rejects.toMatchObject({
       message: 'API Error: 403 Forbidden',

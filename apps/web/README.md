@@ -63,11 +63,11 @@ After shared builds, run from the root:
 ```bash
 npm run lint --workspace=web
 npm run check-types --workspace=web
-npm run test --workspace=web -- --runInBand
+npm run test --workspace=web
 npm run build --workspace=web
 ```
 
-The app uses its own Jest/jsdom/ts-jest setup. Tests cover the existing feature badge and renewal redirect sanitization. The build can require Google Fonts network access. There is no browser e2e script.
+The app runs Vitest with the shared `react` preset (jsdom). Tests cover the existing feature badge and renewal redirect sanitization. The build can require Google Fonts network access. There is no browser e2e script.
 
 ## Improvements
 

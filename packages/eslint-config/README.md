@@ -3,7 +3,7 @@
 Shared ESLint flat configurations used by root and workspace `eslint.config.mjs` files:
 
 - `/base`: JavaScript/TypeScript recommended rules, Prettier conflict suppression, Turbo environment declarations, and local quality rules.
-- `/nest-js`: Node/Jest globals and Nest-oriented type-aware rules; used by `apps/api`.
+- `/nest-js`: Node globals and Nest-oriented type-aware rules; used by `apps/api`. Tests import Vitest's functions explicitly, so no test globals are declared.
 - `/next-js`: Next.js, React, hooks, and type-aware rules; used by `apps/web`.
 - `/react-internal`: shared React/hooks rules; used by UI and icons.
 - `/library`: an additional library preset, unused by workspace configs. It still uses the legacy `env` key, which flat config rejects, so fix it before adopting it.

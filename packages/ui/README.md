@@ -32,7 +32,7 @@ npm run lint --workspace=@repo/ui
 npm run check-types --workspace=@repo/ui
 ```
 
-`packages/ui/turbo.json` coordinates `build:styles` and `build:components`; the package has no standalone `build` script. Both emit to `dist`. Turbo also coordinates style/component watchers for development. There is no package test runner; field and form-adapter behavior is tested from the web consumer in `apps/web/__tests__/ui-form-fields.test.tsx` (rebuild `@repo/ui` before running it, because web imports `dist`).
+`packages/ui/turbo.json` coordinates `build:styles` and `build:components`; the package has no standalone `build` script. Both emit to `dist`. Turbo also coordinates style/component watchers for development. `npm run test --workspace=@repo/ui` runs the component tests (`src/**/*.test.tsx`, Vitest with jsdom) against the source, so no build is needed first; `tsconfig.build.json` keeps them out of `dist`.
 
 ## Improvements
 
