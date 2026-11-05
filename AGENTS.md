@@ -9,7 +9,7 @@
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
 - `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/assets` owns cross-app raw visual files and SVGR-generated icon components. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
-- `@repo/authorization` is framework-independent and owns only stable permission vocabulary, claim parsing, sanitized context, and pure evaluation. Dynamic business rules remain in API services.
+- `@repo/authorization` is framework-independent and owns stable permission vocabulary, typed grant/condition validation, sanitized contexts, pure evaluation, and plain database-scope resolution. The API owns role-to-grant construction and dynamic business rules.
 - `docs/engineering/README.md` is the human-facing company convention index. Keep it aligned when architecture, delivery policy, or supported scripts change materially.
 
 ## Tooling and generated output

@@ -13,6 +13,15 @@ export interface LinkResponse {
   description: string | null;
   createdAt: string;
   updatedAt: string;
+  capabilities: {
+    update: LinkCapability;
+    delete: LinkCapability;
+  };
+}
+
+export interface LinkCapability {
+  allowed: boolean;
+  reason?: string;
 }
 
 export interface CreateLinkRequest {

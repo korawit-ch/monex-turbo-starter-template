@@ -28,7 +28,7 @@ Learn more about `NestJs` with following resources:
 
 `src/main.ts` creates the app, installs strict runtime validation, mounts Swagger outside production, and listens on `API_HOST`/`API_PORT` (loopback/3001 by default). `AppModule` imports global persistence, authentication, and link modules. The Prisma service connects on module initialization and disconnects on destruction.
 
-Global `JwtAuthGuard` verifies every non-public bearer JWT and writes the sanitized context to `request.user`. `PermissionGuard` evaluates typed route metadata through `@repo/authorization`. Link services then repeat tenant scope in Prisma queries and final mutations; Next.js authorization is only an earlier check.
+Global `JwtAuthGuard` verifies every non-public bearer JWT and writes the sanitized grant context to `request.user`. `PermissionGuard` checks typed route metadata with `hasPermission()`. Link services then resolve the action grant with `resourceScope()` and repeat tenant scope in Prisma queries and final mutations; response mappers compute resource capabilities with `can()`. Next.js authorization is only an earlier check.
 
 - `GET /`: API information.
 - `POST /auth/login`: validate credentials and create session/access cookies.

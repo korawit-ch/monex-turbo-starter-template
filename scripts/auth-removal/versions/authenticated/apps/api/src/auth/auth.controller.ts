@@ -77,7 +77,7 @@ export class AuthController {
     @CurrentAuth() auth: AuthorizationContext,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthMutationResponse> {
-    await this.auth.revokeAll(auth.userId);
+    await this.auth.revokeAll(auth.subject.userId);
     this.clearCookies(response);
     return { ok: true };
   }

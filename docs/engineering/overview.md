@@ -38,12 +38,12 @@ flowchart LR
   subgraph web["apps/web · Next.js"]
     Server["Server Components<br/>and serverFetch"]
     BFF["Same-origin BFF<br/>route handlers under /api"]
-    WebAuth["Access JWT verification<br/>and can() check"]
+    WebAuth["Access JWT verification<br/>and hasPermission()"]
   end
 
   subgraph shared["Framework-independent packages"]
     Contract["@repo/api-contract<br/>paths and JSON-safe types"]
-    Authorization["@repo/authorization<br/>claims, permissions, can()"]
+    Authorization["@repo/authorization<br/>typed grants and scope resolution"]
   end
 
   subgraph api["apps/api · NestJS"]
@@ -73,8 +73,8 @@ flowchart LR
   Contract -.->|"endpoint and wire types"| Query
   Contract -.->|"endpoint and wire types"| Server
   Contract -.->|"request and response contracts"| Controller
-  Authorization -.->|"claim parsing and permission policy"| WebAuth
-  Authorization -.->|"claim parsing and permission policy"| Guards
+  Authorization -.->|"claim parsing and coarse checks"| WebAuth
+  Authorization -.->|"grant evaluation and scope"| Guards
 ```
 
 The solid arrows represent runtime request and persistence paths. The dotted
@@ -168,10 +168,10 @@ Protected browser calls go through `app/api/*`, where the BFF verifies the acces
 cookie, checks the expected permission, requires the configured origin for
 mutations, and forwards only the business input and bearer token.
 
-The React authorization provider receives a sanitized context containing the
-user ID, tenant ID, and permissions. Client-side `can()` checks improve the user
-experience by controlling visible actions. They are not treated as the security
-boundary.
+The React authorization provider receives only the user ID and coarse permission
+names. It does not receive tenant scope or grant conditions. Resource-dependent
+presentation uses backend-computed capabilities, and neither client mechanism is
+treated as the security boundary.
 
 ### `apps/api`: validation, business behavior, and authoritative writes
 
@@ -191,15 +191,16 @@ contract while adding class-validator and Swagger decorators. This is necessary
 because TypeScript interfaces disappear at runtime; a compile-time type cannot
 validate untrusted JSON.
 
-The service owns business rules and state changes. It receives a sanitized
-authorization context instead of raw JWT claims. For tenant-owned records, the
-tenant or ownership predicate is repeated in the final Prisma query or mutation.
-An earlier lookup is not enough to protect a later write.
+The service owns business rules and state changes. It receives a sanitized grant
+context instead of raw JWT claims. For tenant-owned records, it resolves the
+requested action grant into a tenant predicate and repeats that predicate in the
+final Prisma query or mutation. An earlier lookup is not enough to protect a
+later write.
 
 The mapper converts persistence records into the exact JSON-safe response
 contract. Prisma `Date` instances become ISO strings, persistence-only fields
-stay private, and a storage model does not accidentally become a public API
-promise.
+stay private, and backend-computed update/delete capabilities cross the wire
+without exposing their grant conditions.
 
 The Link module is the executable example of this pattern. Reads are tenant
 scoped. Updates and deletes verify the tenant-owned record and then perform a
@@ -233,18 +234,20 @@ explicit, and database-only fields remain private.
 
 ### `@repo/authorization`: stable permission vocabulary
 
-The authorization package owns known permission names, parsing of untrusted
-access-token claims, construction of a sanitized `AuthorizationContext`, and the
-pure `can()` evaluator.
+The authorization package owns known permission names, allowlisted grant
+conditions, parsing of untrusted access-token claims, sanitized server/client
+contexts, `hasPermission()` for coarse checks, `can()` for resource evaluation,
+and `resourceScope()` for framework-neutral database-scope input.
 
 It contains no JWT library, cookie handling, React context, Nest guard, database
 query, or environment configuration. That narrow design allows Next.js and
 NestJS to share one permission language without placing framework-specific
 security behavior in a common package.
 
-Dynamic rules do not belong in `can()`. Ownership, workflow state, limits,
-quotas, and time windows depend on current data and therefore remain in API
-services and final database predicates.
+The API owns role-to-grant construction. Dynamic rules do not belong in the
+stable grant evaluator: workflow state, limits, quotas, and time windows depend
+on current data and therefore remain in API services and final database
+predicates.
 
 ### `@repo/prisma`: server-only persistence ownership
 
@@ -314,20 +317,21 @@ sequenceDiagram
   participant DB as PostgreSQL
 
   Browser->>BFF: POST /api/links with JSON body
-  BFF->>NextAuth: Verify access cookie and can(link.create)
+  BFF->>NextAuth: Verify access cookie and hasPermission(link.create)
   NextAuth->>NextAuth: Require the configured WEB_ORIGIN
   NextAuth-->>BFF: Sanitized auth context and raw JWT
   BFF->>Guards: POST /links with Bearer JWT
-  Guards->>Guards: Verify JWT and can(link.create)
+  Guards->>Guards: Verify JWT and hasPermission(link.create)
   Guards->>Controller: Validated authorization context
   Controller->>Controller: Validate CreateLinkDto
   Controller->>Service: create(auth, request)
-  Service->>Prisma: link.create with auth.tenantId
+  Service->>Service: resourceScope(link.create)
+  Service->>Prisma: link.create with resolved tenantId
   Prisma->>DB: Parameterized INSERT
   DB-->>Prisma: Persisted Link record
   Prisma-->>Service: Prisma Link with Date values
   Service-->>Controller: Persisted Link
-  Controller->>Controller: Map to JSON-safe LinkResponse
+  Controller->>Controller: Map to LinkResponse with capabilities
   Controller-->>BFF: 201 JSON response
   BFF-->>Browser: Relay status and JSON body
 ```
@@ -337,15 +341,16 @@ fetch helper sends the request to the same-origin Next.js route. If authenticati
 has expired, it may refresh the session once and retry once; it does not treat a
 permission failure or conflict as an authentication failure.
 
-Next.js verifies the access JWT, checks `link.create`, verifies the origin, and
-forwards the request. NestJS then verifies the token and permission independently.
-The DTO validates the JSON shape, and `LinksService` takes the tenant ID from the
-trusted authorization context rather than from browser input.
+Next.js verifies the access JWT, checks the named `link.create` action, verifies
+the origin, and forwards the request. NestJS then verifies the token and named
+action independently. The DTO validates the JSON shape, and `LinksService`
+resolves the signed grant to a tenant predicate rather than trusting browser
+input.
 
 Prisma creates the tenant-owned row, and the mapper converts the result into a
-`LinkResponse` with ISO timestamp strings. The response returns through the BFF,
-and the client mutation invalidates the stable Link query-key prefix so affected
-views can refresh.
+`LinkResponse` with ISO timestamp strings and backend-computed capabilities. The
+response returns through the BFF, and the client mutation invalidates the stable
+Link query-key prefix so affected views can refresh.
 
 The repeated checks are intentional defense in depth. The UI check improves
 presentation, the BFF protects the browser-facing boundary, the Nest guards
@@ -469,8 +474,8 @@ When extending the starter, preserve these decisions:
 
 1. Keep runtime-specific behavior in the application that owns the runtime.
 2. Share JSON-safe transport contracts rather than persistence models.
-3. Treat client-side authorization as presentation, not enforcement.
-4. Repeat tenant and ownership scope in the final database operation.
+3. Expose only coarse client permissions and backend-computed capabilities; treat both as presentation, not enforcement.
+4. Resolve signed grants and repeat tenant, ownership, and mutable predicates in the final database operation.
 5. Use DTOs for runtime validation and mappers for public serialization.
 6. Keep shared UI product-neutral and compose feature behavior in the app.
 7. Share infrastructure only while it has multiple intentional consumers.

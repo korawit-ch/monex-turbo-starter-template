@@ -83,7 +83,8 @@ export default async function Home() {
         {/* Intro */}
         <h1 className="mb-4 text-3xl font-bold">Turborepo + Prisma Demo</h1>
         <p className="text-primary-500 mb-8">
-          Fetching data from PostgreSQL via NestJS API and Prisma ORM.
+          Signed action grants are resolved into tenant-scoped Prisma queries;
+          the API returns resource capabilities for presentation.
         </p>
         <AuthorizationSummary />
         <LogoutButton />
@@ -159,6 +160,12 @@ export default async function Home() {
                   <p className="text-foreground/50 mt-2 text-xs">
                     ID: {link.id} •{' '}
                     {new Date(link.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="text-foreground/70 mt-2 text-xs">
+                    Backend capability — update:{' '}
+                    {link.capabilities.update.allowed ? 'allowed' : 'denied'};
+                    delete:{' '}
+                    {link.capabilities.delete.allowed ? 'allowed' : 'denied'}
                   </p>
                 </li>
               ))}

@@ -1,10 +1,15 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import type { CreateLinkRequest, UpdateLinkRequest } from '@repo/api-contract';
-import type { AuthorizationContext } from '@repo/authorization';
+import {
+  resourceScope,
+  type AuthorizationContext,
+  type Permission,
+} from '@repo/authorization';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -12,10 +17,19 @@ import { PrismaService } from '../prisma/prisma.service';
 export class LinksService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private scope(auth: AuthorizationContext, permission: Permission) {
+    const scope = resourceScope(auth, permission);
+    if (!scope?.tenantId) {
+      throw new ForbiddenException(`Missing resource scope: ${permission}`);
+    }
+    return { tenantId: scope.tenantId };
+  }
+
   async create(auth: AuthorizationContext, data: CreateLinkRequest) {
+    const scope = this.scope(auth, 'link.create');
     return this.prisma.client.link.create({
       data: {
-        tenantId: auth.tenantId,
+        ...scope,
         title: data.title,
         url: data.url,
         description: data.description,
@@ -25,7 +39,7 @@ export class LinksService {
 
   async findAll(auth: AuthorizationContext) {
     return this.prisma.client.link.findMany({
-      where: { tenantId: auth.tenantId },
+      where: this.scope(auth, 'link.read'),
       orderBy: {
         createdAt: 'desc',
       },
@@ -33,8 +47,16 @@ export class LinksService {
   }
 
   async findOne(auth: AuthorizationContext, id: number) {
+    return this.findOneForPermission(auth, id, 'link.read');
+  }
+
+  private async findOneForPermission(
+    auth: AuthorizationContext,
+    id: number,
+    permission: Permission,
+  ) {
     const link = await this.prisma.client.link.findFirst({
-      where: { id, tenantId: auth.tenantId },
+      where: { id, ...this.scope(auth, permission) },
     });
 
     if (!link) {
@@ -49,9 +71,10 @@ export class LinksService {
     id: number,
     data: UpdateLinkRequest,
   ) {
-    await this.findOne(auth, id);
+    await this.findOneForPermission(auth, id, 'link.update');
+    const scope = this.scope(auth, 'link.update');
     const result = await this.prisma.client.link.updateMany({
-      where: { id, tenantId: auth.tenantId },
+      where: { id, ...scope },
       data: {
         title: data.title,
         url: data.url,
@@ -63,13 +86,14 @@ export class LinksService {
         'The link changed before the operation completed',
       );
     }
-    return this.findOne(auth, id);
+    return this.findOneForPermission(auth, id, 'link.update');
   }
 
   async remove(auth: AuthorizationContext, id: number) {
-    const link = await this.findOne(auth, id);
+    const link = await this.findOneForPermission(auth, id, 'link.delete');
+    const scope = this.scope(auth, 'link.delete');
     const result = await this.prisma.client.link.deleteMany({
-      where: { id, tenantId: auth.tenantId },
+      where: { id, ...scope },
     });
     if (result.count !== 1) {
       throw new ConflictException(
