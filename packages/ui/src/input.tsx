@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */ /* better for readability */
 'use client';
 
-import { forwardRef, type ReactNode } from 'react';
+import { forwardRef, useId, type ReactNode } from 'react';
 
 import { cn } from './utils';
 
@@ -61,6 +61,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
+    // Fall back to a generated id so the label, field and helper text stay
+    // associated when the caller passes none.
+    const generatedId = useId();
+    const fieldId = inputProps.id ?? generatedId;
+    const helperId = `${fieldId}-helper`;
+
     // Determine if input has a value (for filled state styling)
     // For controlled inputs (React Hook Form), check value prop
     // For uncontrolled inputs, check defaultValue prop
@@ -105,10 +111,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn('w-full', className)}>
         {label && (
-          <label htmlFor={inputProps.id} className={labelStyles}>
+          <label htmlFor={fieldId} className={labelStyles}>
             {label}
             {required && (
-              <span className="text-error-500 ml-1" aria-label="required">
+              <span className="text-error-500 ml-1" aria-hidden="true">
                 *
               </span>
             )}
@@ -127,11 +133,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
           <input
             ref={ref}
+            id={fieldId}
+            required={required}
             disabled={disabled}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={
-              error || helperText ? `${inputProps.id}-helper` : undefined
-            }
+            aria-describedby={error || helperText ? helperId : undefined}
             className={cn(baseInputStyles, stateStyles)}
             {...inputProps}
           />
@@ -158,7 +164,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {(error || helperText) && (
           <p
-            id={`${inputProps.id}-helper`}
+            id={helperId}
             className={helperStyles}
             role={error ? 'alert' : undefined}
           >
