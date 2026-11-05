@@ -146,6 +146,8 @@
     "packages/authorization"
   ],
   "removeFiles": [
+    "apps/api/src/links/dto/create-link.dto.spec.ts",
+    "apps/api/src/links/dto/update-link.dto.spec.ts",
     "apps/web/app/(protected)/(home)/_components/links-demo.test.tsx",
     "apps/web/app/(protected)/layout.test.tsx",
     "apps/web/app/(protected)/layout.tsx",
