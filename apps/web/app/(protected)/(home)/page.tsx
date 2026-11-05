@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic';
 
 import Image from 'next/image';
-import type { StaticImageData } from 'next/image';
 import { ComponentType, SVGProps } from 'react';
 
 import turborepoLogo from '@repo/assets/brand/turborepo-dark.svg';
@@ -39,8 +38,6 @@ import {
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
-const turborepoLogoImage = turborepoLogo as StaticImageData;
-
 interface IconItem {
   name: string;
   component: IconComponent;
@@ -75,7 +72,7 @@ export default async function Home() {
       <main className="w-full max-w-3xl">
         {/* Logo */}
         <Image
-          src={turborepoLogoImage}
+          src={turborepoLogo}
           alt="Turborepo"
           width={160}
           height={34}

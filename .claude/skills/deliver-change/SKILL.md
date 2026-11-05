@@ -51,5 +51,17 @@ Follow the phases in order. Each one names where its rules live; read them there
 
 ## 8. Report
 
-- Fill the pull request template: what happened, the owning workspace and flow, risks, and the commands with their results.
+- The pull request body (`.github/PULL_REQUEST_TEMPLATE.md`) is the record of this workflow. Draft it while you work, not at the end: keep the draft in the conversation or a scratch file until the pull request exists, then open it with that body. Each phase has a section:
+
+  | Phase                | Section                                                                       |
+  | -------------------- | ----------------------------------------------------------------------------- |
+  | 1. Scope             | Plan → Scope                                                                  |
+  | 2. Mode              | Plan → Mode, with the reason                                                  |
+  | 3. Plan              | Plan → steps, open questions, decisions; Insight → Flow and Effects elsewhere |
+  | Any change of course | Deviations from the plan, one row each, at the moment it happens              |
+  | 4. Build             | Requirement → code → test                                                     |
+  | 5. Verify            | Checks (only what ran) and Not verified                                       |
+  | 6. Review            | Review: each finding and what was done                                        |
+  | 7. Context           | Checklist; After merge for anything someone must do later                     |
+
 - Commit or push only when the user asks; the repository guard asks before either.
