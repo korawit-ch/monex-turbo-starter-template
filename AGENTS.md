@@ -9,7 +9,7 @@
 - `@repo/api-contract` contains explicit transport descriptions and JSON-safe request/response types. It must remain free of fetch, React, Next.js, NestJS, Prisma, and database runtime imports. API DTO classes implement request contracts for Swagger, and controllers map Prisma records to response contracts; inspect producers and consumers together when changing contracts.
 - `@repo/ui` owns reusable React controls and form adapters; `@repo/design-system/shared-styles.css` owns styling tokens/utilities; `@repo/assets` owns cross-app raw visual files and SVGR-generated icon components. App feature behavior and app-only assets stay in the app.
 - Shared packages must not import from apps. Frontend code must not import `@repo/prisma` or `@prisma/client`, including type-only imports; expose JSON-safe data through `@repo/api-contract` instead.
-- `@repo/authorization` is framework-independent and owns only stable permission vocabulary, claim parsing, sanitized context, and pure evaluation. Dynamic business rules remain in API services.
+- `@repo/authorization` is framework-independent and owns stable permission vocabulary, typed grant/condition validation, sanitized contexts, pure evaluation, and plain database-scope resolution. The API owns role-to-grant construction and dynamic business rules.
 - `docs/engineering/README.md` is the human-facing company convention index. Keep it aligned when architecture, delivery policy, or supported scripts change materially.
 
 ## Tooling and generated output
@@ -22,7 +22,7 @@
 - `npm run app:duplicate -- --source <web|api> --name <name>` previews app duplication; add `--apply` to create it. The script copies the source's current shared/localized ownership state while excluding generated output and local environment files.
 - `npm run auth:remove` previews scoped authentication removal; `-- --apply` uses the versioned files under `scripts/auth-removal` to three-way merge shared integration files, restore replaced files, and delete verified auth-owned files. It requires a clean tree, preserves compatible later changes, and does not change database state.
 - `npm run template:finalize` previews removal of the Link vertical-slice example and one-time template migration tooling. Its `--apply` mode requires a clean tree, changes source/schema files, removes itself, and never changes database state.
-- ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Jest presets in `packages/jest-config`. The web app currently uses its own Jest config; API unit tests consume the shared Nest preset.
+- ESLint presets live in `packages/eslint-config`, TypeScript presets in `packages/typescript-config`, and shared Vitest presets in `packages/vitest-config` (`node` for framework-free packages, `nest` for the API with SWC for decorator metadata, `react` for web with jsdom). Tests import `describe`/`it`/`expect`/`vi` from `vitest`; globals are off.
 - Preserve existing ESM/CommonJS boundaries. `api-contract` uses ESM with `.js` import specifiers; API uses CommonJS compilation. Check consumers before changing package exports or compiler settings.
 - Commit messages require a scope, as defined in `commitlint.config.js`; Husky runs lint-staged and Turbo type checks on commit.
 
@@ -47,8 +47,24 @@
 
 - Discover affected workspace scripts before choosing checks. Typical sequence: shared builds, affected lint/tests, relevant type checks, then affected app builds.
 - Root commands: `npm run lint` (workspace lint plus Prettier), `npm run test`, `npm run test:e2e`, `npx turbo run check-types`, and `npm run build`.
-- `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo tests have no build dependencies, so prepare shared outputs first.
-- API e2e tests require PostgreSQL and initialize the real Prisma service. CI currently runs lint, formatting, type checks, and builds, but not tests.
+- `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo `test` and `test:e2e` depend on `^build`, so they build the shared packages they import first.
+- API e2e tests require PostgreSQL and initialize the real Prisma service. CI runs the agent guard tests, lint, formatting, type checks, unit tests, and builds, but not e2e tests.
 - For documentation-only changes, run Prettier on the changed Markdown files, check relative links/command names against the repository, and run `git diff --check`. Do not reformat unrelated files.
 - Report failed, skipped, and cached checks accurately. Passing compilation is not proof of database, authorization, or request behavior.
 - Keep instructions durable and scoped. Update the affected README/AGENTS when boundaries, contracts, environment handling, or verification change; put unresolved implementation gaps in READMEs rather than describing them as established guarantees.
+
+## AI workflow and extending the project
+
+- `AGENTS.md` is the only instruction format; Claude Code, Codex and Cursor read it directly. Do not add a `CLAUDE.md` or `CLAUDE.local.md`: Claude Code reads those instead of `AGENTS.md`. Layers, guards and recipes: [docs/engineering/ai-assisted-development.md](docs/engineering/ai-assisted-development.md).
+- Start every change with the `deliver-change` skill; it pins the scope, picks the mode by risk, and ends with a review by the read-only `reviewer` agent. Domain terms, decisions and open questions live in `docs/knowledge/`.
+- `.claude/hooks/guard-bash.mjs` denies destructive Git, Docker and Prisma commands and database changes on non-local hosts, and asks before commits, pushes and `--apply` runs. Its rules are data in `.claude/hooks/guard-rules.json`; change them together with `guard-bash.test.mjs` and run `npm run test:agent-hooks`.
+- Every file an agent edits must pass the same ESLint and Prettier rules CI applies. In Claude Code, `.claude/hooks/check-on-edit.mjs` runs `eslint --fix` (with the file's nearest workspace `eslint.config`) and `prettier --write` after each edit and hands remaining errors back to the agent. Other tools: run `npx eslint --fix --flag v10_config_lookup_from_file <files>` and `npx prettier --write <files>` on every file you changed before finishing. lint-staged runs the same at commit. `npm run test:agent-hooks` tests both hooks.
+- Exemplar: the Link vertical slice (schema, contract, API module, BFF, data access, UI). After `template:finalize` removes it, name the project's first real feature here instead.
+
+| Task                                        | Start reading                                                           | Invoke                                      |
+| ------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
+| Any code, schema, config or docs change     | The nearest `AGENTS.md` and its handbook page                           | `deliver-change` skill                      |
+| New resource, app or shared package         | "Extend the project" in the AI guide                                    | `extend-project` skill                      |
+| Review before a pull request                | The task and the diff range only                                        | `reviewer` agent                            |
+| Template scripts (auth, finalize, localize) | [Scripts guide](docs/engineering/scripts-and-template-customization.md) | Preview first; `--apply` after confirmation |
+| Instructions no longer match the code       | "Grow the AI context" in the AI guide                                   | `extend-project` skill                      |

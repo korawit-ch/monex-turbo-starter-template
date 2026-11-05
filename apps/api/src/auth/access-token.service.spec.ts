@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 
@@ -5,6 +6,16 @@ import { AccessTokenService } from './access-token.service';
 import { AuthConfig } from './auth.config';
 
 const secret = '0123456789abcdef0123456789abcdef';
+const readGrant = {
+  permission: 'link.read' as const,
+  conditions: [
+    {
+      operator: 'equals' as const,
+      subjectField: 'tenantId' as const,
+      resourceField: 'tenantId' as const,
+    },
+  ],
+};
 
 describe('AccessTokenService', () => {
   let service: AccessTokenService;
@@ -21,12 +32,11 @@ describe('AccessTokenService', () => {
     const token = service.issue({
       userId: 'user-1',
       tenantId: 'tenant-1',
-      permissions: ['link.read'],
+      grants: [readGrant],
     });
     expect(service.verify(token).auth).toEqual({
-      userId: 'user-1',
-      tenantId: 'tenant-1',
-      permissions: ['link.read'],
+      subject: { userId: 'user-1', tenantId: 'tenant-1' },
+      grants: [readGrant],
     });
   });
 
@@ -38,7 +48,7 @@ describe('AccessTokenService', () => {
     'rejects %s',
     (_name, signingSecret, issuer = 'test-api', audience = 'test-web') => {
       const token = jwt.sign(
-        { tenantId: 'tenant-1', permissions: ['link.read'] },
+        { attributes: { tenantId: 'tenant-1' }, grants: [readGrant] },
         signingSecret,
         {
           algorithm: 'HS256',
@@ -54,7 +64,7 @@ describe('AccessTokenService', () => {
 
   it('rejects expired and unknown-permission tokens', () => {
     const expired = jwt.sign(
-      { tenantId: 'tenant-1', permissions: ['link.read'] },
+      { attributes: { tenantId: 'tenant-1' }, grants: [readGrant] },
       secret,
       {
         algorithm: 'HS256',
@@ -65,7 +75,22 @@ describe('AccessTokenService', () => {
       },
     );
     const unknown = jwt.sign(
-      { tenantId: 'tenant-1', permissions: ['link.root'] },
+      {
+        attributes: { tenantId: 'tenant-1' },
+        // A valid condition, so only the permission allowlist can reject it.
+        grants: [
+          {
+            permission: 'link.root',
+            conditions: [
+              {
+                operator: 'equals',
+                subjectField: 'tenantId',
+                resourceField: 'tenantId',
+              },
+            ],
+          },
+        ],
+      },
       secret,
       {
         algorithm: 'HS256',

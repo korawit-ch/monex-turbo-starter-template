@@ -4,14 +4,16 @@ This handbook is the company-wide source of truth for routine engineering work i
 
 ## Read this first
 
-| Guide                                                                       | Use it when                                                                                                       |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [Architecture and modules](architecture-and-modules.md)                     | You need to understand the repository, runtime boundaries, or package ownership.                                  |
-| [Frontend conventions](frontend.md)                                         | You are adding routes, components, data access, forms, or assets.                                                 |
-| [Backend and API contracts](backend-and-api-contracts.md)                   | You are changing Prisma, NestJS, validation, Swagger, or a shared request/response.                               |
-| [Coding standards](coding-standards.md)                                     | You need naming, TypeScript, control-flow, rendering, testing, lint, or formatting rules.                         |
-| [Delivery workflow](delivery-workflow.md)                                   | You are creating a branch, commit, pull request, release, or hotfix.                                              |
-| [Scripts and template customization](scripts-and-template-customization.md) | You are running database, environment, duplication, localization, auth-removal, or template-finalization scripts. |
+| Guide                                                                       | Use it when                                                                                                        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [Project overview](overview.md)                                             | You need a descriptive introduction to the system, module strategy, security flow, and AI-friendly structure.      |
+| [Architecture and modules](architecture-and-modules.md)                     | You need to understand the repository, runtime boundaries, or package ownership.                                   |
+| [Frontend conventions](frontend.md)                                         | You are adding routes, components, data access, forms, or assets.                                                  |
+| [Backend and API contracts](backend-and-api-contracts.md)                   | You are changing Prisma, NestJS, validation, Swagger, or a shared request/response.                                |
+| [Coding standards](coding-standards.md)                                     | You need naming, TypeScript, control-flow, rendering, testing, lint, or formatting rules.                          |
+| [Delivery workflow](delivery-workflow.md)                                   | You are creating a branch, commit, pull request, release, or hotfix.                                               |
+| [Scripts and template customization](scripts-and-template-customization.md) | You are running database, environment, duplication, localization, auth-removal, or template-finalization scripts.  |
+| [AI-assisted development](ai-assisted-development.md)                       | You are working with coding agents, changing their guards or workflow, or growing the project beyond the template. |
 
 ## Decision order
 

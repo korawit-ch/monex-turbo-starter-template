@@ -9,8 +9,8 @@ import { useAuth } from '../../../../providers/auth-provider';
  * Demonstrates clientFetch pattern with automatic caching & refetching
  */
 export function LinksDemo() {
-  const { can } = useAuth();
-  const mayReadLinks = can('link.read');
+  const { hasPermission } = useAuth();
+  const mayReadLinks = hasPermission('link.read');
   const {
     data: links,
     isLoading,
@@ -79,6 +79,16 @@ export function LinksDemo() {
             >
               <span className="font-medium">{link.title}</span>
               <span className="text-foreground/50 ml-2">#{link.id}</span>
+              <div className="mt-2 flex gap-2 text-xs">
+                <span>
+                  Update:{' '}
+                  {link.capabilities.update.allowed ? 'allowed' : 'denied'}
+                </span>
+                <span>
+                  Delete:{' '}
+                  {link.capabilities.delete.allowed ? 'allowed' : 'denied'}
+                </span>
+              </div>
             </li>
           ))}
         </ul>

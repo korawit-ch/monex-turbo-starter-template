@@ -17,10 +17,10 @@ This Turborepo includes the following packages & apps:
 └── packages
     ├── @repo/api-contract        # Shared API request/response contracts
     ├── @repo/assets              # Shared raw assets and SVG icon components
-    ├── @repo/authorization       # Shared permission vocabulary and evaluator
+    ├── @repo/authorization       # Typed grants, claim validation, and scope resolution
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
-    ├── @repo/jest-config         # Jest configurations
+    ├── @repo/vitest-config       # Vitest presets
     ├── @repo/prisma              # Server-only Prisma schema, client, and DB types
     ├── @repo/typescript-config   # TypeScript configurations
     └── @repo/ui                  # React 19 component library with Tailwind
@@ -32,6 +32,7 @@ Applications and runtime packages use [TypeScript](https://www.typescriptlang.or
 
 The [Engineering Handbook](docs/engineering/README.md) is the entry point for company-wide conventions. It covers:
 
+- [the project overview, module strategy, security flow, and AI-friendly structure](docs/engineering/overview.md);
 - [architecture, folder structure, and module ownership](docs/engineering/architecture-and-modules.md);
 - [frontend components and data access](docs/engineering/frontend.md);
 - [Prisma, NestJS, Swagger, and shared API contracts](docs/engineering/backend-and-api-contracts.md);
@@ -48,8 +49,8 @@ Start there before introducing a new folder, package, shared abstraction, or del
 | Component                                                 | Version         | Port |
 | --------------------------------------------------------- | --------------- | ---- |
 | **Node.js**                                               | >=22.12         | -    |
-| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.0.7         | 3000 |
-| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3001 |
+| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.4.5         | 3000 |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.2.8         | 3001 |
 | [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
 | **Swagger** (`/api`)                                      | @nestjs/swagger | 3001 |
 
@@ -57,7 +58,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 
 | Library                                           | Version |
 | ------------------------------------------------- | ------- |
-| [**React**](https://react.dev/)                   | ^19.1.0 |
+| [**React**](https://react.dev/)                   | ^19.3.1 |
 | [**Prisma ORM**](https://www.prisma.io/)          | ^7.1.0  |
 | [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.5  |
 | [**TanStack Query**](https://tanstack.com/query)  | ^5.80.7 |
@@ -71,7 +72,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 | [**Turborepo**](https://turbo.build/repo)              | Monorepo build     |
 | [**ESLint**](https://eslint.org/)                      | Code linting       |
 | [**Prettier**](https://prettier.io)                    | Code formatting    |
-| [**Jest**](https://jestjs.io/)                         | Testing            |
+| [**Vitest**](https://vitest.dev/)                      | Testing            |
 | [**Docker Compose**](https://docs.docker.com/compose/) | Database container |
 | [**Husky**](https://typicode.github.io/husky/)         | Git hooks          |
 | [**Commitlint**](https://commitlint.js.org/)           | Commit messages    |
@@ -246,7 +247,7 @@ npm run build
 npm run dev
 ```
 
-**Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `jest-config`, `typescript-config`).
+**Note**: The `predev` script automatically creates symlinks from the root `.env` to each app and package (excluding config packages like `eslint-config`, `vitest-config`, `typescript-config`).
 
 #### Test
 
@@ -257,10 +258,10 @@ npm run test
 # You can launch e2e testes with `test:e2e`
 npm run test:e2e
 
-# See `@repo/jest-config` to customize the behavior.
+# See `@repo/vitest-config` to customize the behavior.
 ```
 
-Build shared packages before tests. API unit tests use the shared Nest Jest preset; web uses its own Jest configuration. API e2e tests need a reachable test database and do not start it automatically.
+`npm run test` builds the packages each test imports first. API unit tests use the shared `nest` Vitest preset, `@repo/authorization` the `node` preset and web the `react` preset. API e2e tests need a reachable test database and do not start it automatically.
 
 #### Type Check
 
@@ -367,10 +368,41 @@ export class CreateLinkDto implements CreateLinkRequest {
 ```
 
 Controllers map Prisma records to `LinkResponse`, converting database `Date`
-instances to ISO strings. This keeps the database model internal while
+instances to ISO strings and attaching backend-computed update/delete
+capabilities. This keeps the database model and grant conditions internal while
 `@repo/api-contract` remains the source of truth for the wire format.
 
-The global validation pipe rejects unknown or malformed input using class-validator decorators. Global JWT and permission guards protect link routes, and services scope Prisma operations to the authenticated tenant. Shared request contracts remain in `@repo/api-contract`; the complete security flow is documented in [Authentication and authorization](docs/authentication.md).
+The global validation pipe rejects unknown or malformed input using class-validator decorators. Global JWT and permission guards protect link routes, and services resolve the signed action grant into tenant-scoped Prisma operations. Shared request contracts remain in `@repo/api-contract`; the complete security flow is documented in [Authentication and authorization](docs/authentication.md).
+
+### Authorization grant model
+
+The API turns role permissions into a signed matrix of explicit action grants:
+
+```text
+named Link action + allowlisted tenant condition + trusted subject attributes
+```
+
+`ADMIN` receives read/create/update/delete; `MEMBER` receives read/create. Every
+grant compares the signed subject tenant with the Link tenant. Next and Nest use
+`hasPermission()` for coarse route admission, while `LinksService` uses
+`resourceScope()` to put the same tenant constraint into every authoritative
+Prisma read or write. `can()` evaluates trusted resource attributes when the API
+builds response capabilities. Unknown permissions, fields, operators, malformed
+conditions, and duplicate grants are rejected during JWT parsing.
+
+The browser receives only `{ userId, permissions }` plus per-Link capabilities;
+it never receives the signed subject scope or grant conditions. A capability is
+only a point-in-time presentation hint, so mutations always repeat BFF origin
+checks, Nest authentication/permission checks, and scoped database enforcement.
+
+Run `npm run db:seed` and sign in with the local default password
+`local-change-me` to compare:
+
+- `admin@example.com`: all actions and allowed update/delete capabilities.
+- `member@example.com`: read/create actions and denied update/delete capabilities.
+
+The credentials are local teaching defaults only. Override the seed variables
+and never deploy them. See the detailed [authentication and authorization guide](docs/authentication.md).
 
 ### Frontend
 
@@ -391,8 +423,9 @@ The Next.js apps display database results fetched from their respective NestJS A
   - **Shared by frontend and backend**
 
 - **@repo/authorization**: Shared authorization vocabulary and pure evaluator
-  - Validates decoded access-token claim types and permission names
-  - Produces a sanitized `AuthorizationContext`
+  - Validates decoded subject attributes, action grants, conditions, and registered claims
+  - Separates `hasPermission()`, `can()`, and `resourceScope()` responsibilities
+  - Produces server authorization and coarse client contexts
   - Contains no JWT library, cookies, framework, network, or database code
 
 - **@repo/design-system**: Shared styling foundation
@@ -598,7 +631,7 @@ The project uses a centralized `.env` file in the root directory:
 
 - **Automatic Setup**: `.env` is created from `.env.example` during `npm install`
 - **Automatic Distribution**: When running `npm run dev`, the root `.env` is distributed to all apps and packages via symlinks
-- **Excluded Packages**: Config packages (`eslint-config`, `jest-config`, `typescript-config`) don't receive `.env` files
+- **Excluded Packages**: Config packages (`eslint-config`, `vitest-config`, `typescript-config`) don't receive `.env` files
 - **Single Source of Truth**: All environment variables are managed in the root `.env` file
 
 #### Configuration details

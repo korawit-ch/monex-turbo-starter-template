@@ -28,7 +28,7 @@ Learn more about `NestJs` with following resources:
 
 `src/main.ts` creates the app, installs strict runtime validation, mounts Swagger outside production, and listens on `API_HOST`/`API_PORT` (loopback/3001 by default). `AppModule` imports global persistence, authentication, and link modules. The Prisma service connects on module initialization and disconnects on destruction.
 
-Global `JwtAuthGuard` verifies every non-public bearer JWT and writes the sanitized context to `request.user`. `PermissionGuard` evaluates typed route metadata through `@repo/authorization`. Link services then repeat tenant scope in Prisma queries and final mutations; Next.js authorization is only an earlier check.
+Global `JwtAuthGuard` verifies every non-public bearer JWT and writes the sanitized grant context to `request.user`. `PermissionGuard` checks typed route metadata with `hasPermission()`. Link services then resolve the action grant with `resourceScope()` and repeat tenant scope in Prisma queries and final mutations; response mappers compute resource capabilities with `can()`. Next.js authorization is only an earlier check.
 
 - `GET /`: API information.
 - `POST /auth/login`: validate credentials and create session/access cookies.
@@ -83,7 +83,7 @@ npm run test --workspace=api -- --runInBand
 npm run build --workspace=api
 ```
 
-Unit tests use the shared Nest Jest preset and mocked Prisma service. Focused tests cover JWT validation, encrypted session envelopes, session revocation predicates, authentication/permission guards, and tenant scope in final link mutations.
+Unit tests use the shared `nest` Vitest preset (SWC keeps decorator metadata for Nest's dependency injection) and a mocked Prisma service. Focused tests cover JWT validation, encrypted session envelopes, session revocation predicates, authentication/permission guards, and tenant scope in final link mutations.
 
 `npm run test:e2e --workspace=api -- --runInBand` initializes the real application/Prisma service and requires an explicitly configured test database. It creates a Nest application directly rather than invoking `main.ts`, so bootstrap-only middleware/pipes are not automatically tested. The current test lacks application teardown.
 

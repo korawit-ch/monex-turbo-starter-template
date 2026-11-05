@@ -87,33 +87,40 @@
 
   --font-prompt: 'Prompt', sans-serif;
 
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Page colors. The --color- prefix generates utilities such as
+   * text-foreground/70, bg-surface and border-border. */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
 
-  --surface: rgba(15, 23, 42, 0.05);
-  --border: rgba(15, 23, 42, 0.15);
+  --color-surface: rgba(15, 23, 42, 0.05);
+  --color-border: rgba(15, 23, 42, 0.15);
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+/* Global element defaults stay in the base layer so that utilities, which
+ * Tailwind emits in a later layer, can still override them (for example a
+ * link's text color or underline). */
+@layer base {
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-}
+  body {
+    color: var(--color-foreground);
+    background: var(--color-background);
+  }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 /* Custom Text Style Utilities - Using @utility for Tailwind v4

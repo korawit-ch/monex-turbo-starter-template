@@ -25,7 +25,11 @@ async function execute<TResponse, TBody>(
   }
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    // status lets callers such as the query retry policy tell 4xx from 5xx.
+    throw Object.assign(
+      new Error(`API Error: ${response.status} ${response.statusText}`),
+      { status: response.status },
+    );
   }
 
   const text = await response.text();

@@ -23,7 +23,7 @@
 | Mapper                         | `<entity>.mapper.ts`                                             | `order.mapper.ts`            |
 | Client data access             | `<feature>.client.ts`                                            | `orders.client.ts`           |
 | Server data access             | `<feature>.server.ts`                                            | `orders.server.ts`           |
-| Tests                          | adjacent `*.spec.ts` or `*.test.tsx`                             | `order.mapper.spec.ts`       |
+| Tests                          | adjacent `*.spec.ts` (API, packages) or `*.test.ts(x)` (web, UI) | `order.mapper.spec.ts`       |
 | Route-private components       | `_components/<name>.tsx`                                         | `_components/order-list.tsx` |
 
 Use domain language consistently across schema, contract, API, and UI. Do not use `data`, `item`, `manager`, `helper`, or `common` when a precise name exists.

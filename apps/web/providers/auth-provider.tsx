@@ -1,16 +1,14 @@
 'use client';
 
 import {
-  can as evaluate,
-  type AuthorizationContext,
-  type AuthorizationOptions,
+  type ClientAuthorizationContext,
   type Permission,
 } from '@repo/authorization';
 import { createContext, useContext, type ReactNode } from 'react';
 
 type AuthContextValue = {
-  auth: AuthorizationContext;
-  can: (permission: Permission, options?: AuthorizationOptions) => boolean;
+  auth: ClientAuthorizationContext;
+  hasPermission: (permission: Permission) => boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -19,14 +17,14 @@ export function AuthProvider({
   auth,
   children,
 }: {
-  auth: AuthorizationContext;
+  auth: ClientAuthorizationContext;
   children: ReactNode;
 }) {
   return (
     <AuthContext.Provider
       value={{
         auth,
-        can: (permission, options) => evaluate(auth, permission, options),
+        hasPermission: (permission) => auth.permissions.includes(permission),
       }}
     >
       {children}

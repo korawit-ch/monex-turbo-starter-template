@@ -36,6 +36,11 @@ export default function LoginPage() {
         onSubmit={(event) => void submit(event)}
       >
         <h1 className="text-2xl font-semibold">Sign in</h1>
+        <p className="text-foreground/70 text-sm">
+          Local demo: <code>admin@example.com</code> can perform every Link
+          action; <code>member@example.com</code> can read and create. Both use
+          <code> local-change-me</code> unless seed settings override them.
+        </p>
         <label className="block">
           <span>Email</span>
           <input

@@ -3,7 +3,7 @@ import {
   parseAccessTokenClaims,
   toAuthorizationContext,
   type AuthorizationContext,
-  type Permission,
+  type PermissionGrant,
 } from '@repo/authorization';
 import jwt from 'jsonwebtoken';
 
@@ -21,12 +21,12 @@ export class AccessTokenService {
   issue(input: {
     userId: string;
     tenantId: string;
-    permissions: Permission[];
+    grants: PermissionGrant[];
   }): string {
     return jwt.sign(
       {
-        tenantId: input.tenantId,
-        permissions: input.permissions,
+        attributes: { tenantId: input.tenantId },
+        grants: input.grants,
       },
       this.config.jwtSecret,
       {

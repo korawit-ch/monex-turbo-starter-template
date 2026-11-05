@@ -37,7 +37,7 @@ Compose uses the linked workspace `.env` after `npm run env:distribute`, or an e
 
 ## Connection
 
-With the root example configuration, the database is accessible at:
+With the root example configuration, the database is accessible from this machine only (the port binds to `127.0.0.1`) at:
 
 - **Host**: localhost
 - **Port**: ${DB_PORT:-5433}
@@ -63,9 +63,8 @@ Root shortcuts `db:up`, `db:down`, `db:logs`, and `db:ps` run Compose from this 
 
 ## Improvements
 
-- **IMPORTANT:** `scripts/db-start.sh` prints the password/full connection URL, parses env with shell word splitting, and retries readiness indefinitely even when startup fails. Replace those behaviors with explicit env-file loading, failure propagation, and a bounded readiness check.
 - **IMPORTANT:** Remove masked startup failures from the workspace scripts and keep database defaults aligned across Compose, setup helpers, and Prisma.
-- **IMPORTANT:** Keep root environment distribution from silently deleting workspace-specific `.env` files. Inspect existing files before running it.
+- **IMPORTANT:** Give each project its own Compose project name. The project name comes from this folder (`db`), so projects built from the template share the `db_postgres_data` volume and container name. Renaming it moves an existing project to a new, empty volume, so plan the data move before changing it.
 - **SUGGESTION:** Define a separate deployment configuration if PostgreSQL will run beyond local development; the current repository supplies no production backup/restore or application deployment workflow.
 
 See [local agent instructions](AGENTS.md).

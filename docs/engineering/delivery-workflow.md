@@ -40,7 +40,7 @@ Allowed types are `build`, `chore`, `docs`, `feat`, `fix`, `refactor`, `test`, a
 On commit:
 
 1. Husky runs `lint-staged`.
-2. ESLint fixes staged TypeScript/JavaScript where safe.
+2. ESLint fixes staged TypeScript/JavaScript where safe, linting each file with its nearest workspace `eslint.config` (the rules CI applies), and refuses the commit while errors remain.
 3. Prettier formats staged supported files.
 4. Turbo runs configured type checks.
 5. The `commit-msg` hook runs Commitlint.
@@ -69,18 +69,20 @@ Complete every section in `.github/PULL_REQUEST_TEMPLATE.md`. Proof of work must
 
 For non-visual changes, include command output or a concise test matrix. Never include credentials, tokens, customer data, or private infrastructure in screenshots or logs.
 
-Reviewers should be able to determine:
+The template doubles as the work record of the `deliver-change` workflow: authors and agents fill it while working, so the pull request shows how the change was planned as well as what it does. Reviewers should be able to determine:
 
-- what behavior changed;
-- why the chosen layer owns it;
-- request/data/side-effect flow;
-- risk and rollback implications;
-- exact checks performed;
+- what behavior changed, and which requirement or decision asked for it;
+- the mode chosen (quick, standard or full) and why, the scope, and the plan;
+- every deviation from that plan, with its reason and who decided;
+- why the chosen layer owns the change, its request/data/side-effect flow, and which consumers were checked;
+- which code and which test answer each requirement;
+- the exact checks that ran, the review findings and what was done with each, and what was not verified;
+- risk, rollback, and anything someone must do after merge;
 - visual evidence when applicable.
 
 ## CI
 
-Pull requests validate the title and run dependency installation, Prisma generation, package builds, lint, formatting, type checks, and builds. Unit/e2e coverage may still need to be run locally until explicitly added to CI.
+Pull requests validate the title (again whenever it is edited) and run dependency installation, the agent guard tests, Prisma generation, package builds, lint, formatting, type checks, unit tests, and builds. API e2e tests need PostgreSQL and run locally only.
 
 ## Release flow
 

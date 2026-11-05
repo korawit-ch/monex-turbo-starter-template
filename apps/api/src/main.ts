@@ -25,6 +25,9 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document);
   }
 
+  // Run onModuleDestroy hooks (PrismaService disconnects) on SIGTERM/SIGINT.
+  app.enableShutdownHooks();
+
   const port = process.env.API_PORT || 3001;
   const host = process.env.API_HOST || '127.0.0.1';
   await app.listen(port, host);

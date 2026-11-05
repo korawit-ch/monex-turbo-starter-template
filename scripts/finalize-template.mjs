@@ -2,7 +2,7 @@
 
 import console from 'node:console';
 import { execFileSync } from 'node:child_process';
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile, readdir, rm, rmdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +20,9 @@ if (process.argv.includes('--help')) {
   process.exit(0);
 }
 
-const removalPaths = [
+// The Link example. Folders take their tests with them; the tests of single
+// files are found by planTestRemoval() instead of being listed here.
+const exampleRemovalPaths = [
   'apps/api/src/links',
   'apps/web/app/api/links',
   'apps/web/app/(protected)/(home)/_components/links-demo.tsx',
@@ -28,6 +30,10 @@ const removalPaths = [
   'apps/web/data-access/links.client.ts',
   'apps/web/data-access/links.server.ts',
   'packages/api-contract/src/links.ts',
+];
+
+const removalPaths = [
+  ...exampleRemovalPaths,
   'scripts/auth-removal',
   'scripts/duplicate-app.mjs',
   'scripts/localize-prisma-in-api.mjs',
@@ -94,6 +100,118 @@ const prismaSeedPath = await findRequiredPath(
   'the Prisma seed',
 );
 
+const testFilePattern = /\.(spec|test|e2e-spec)\.(ts|tsx|js|mjs)$/;
+const sourceExtensionPattern = /\.(ts|tsx|js|mjs)$/;
+const scanSkippedDirectories = new Set([
+  '.next',
+  '.turbo',
+  'build',
+  'coverage',
+  'dist',
+  'node_modules',
+  'out',
+]);
+// Bare imports that resolve to a removed example file.
+const removedPackageImports = new Map([
+  ['@repo/api-contract/links', 'packages/api-contract/src/links'],
+]);
+
+async function listTestFiles(relativeDirectory) {
+  const files = [];
+  let entries;
+  try {
+    entries = await readdir(absolute(relativeDirectory), {
+      withFileTypes: true,
+    });
+  } catch (error) {
+    if (error.code === 'ENOENT') return files;
+    throw error;
+  }
+  for (const entry of entries) {
+    const relativePath = path.join(relativeDirectory, entry.name);
+    if (entry.isDirectory()) {
+      if (!scanSkippedDirectories.has(entry.name)) {
+        files.push(...(await listTestFiles(relativePath)));
+      }
+    } else if (entry.isFile() && testFilePattern.test(entry.name)) {
+      files.push(relativePath);
+    }
+  }
+  return files;
+}
+
+/** Repository paths (without extension) that a test file imports. */
+function importedModules(testPath, source) {
+  const modules = [];
+  const specifierPattern =
+    /(?:from\s+|import\s*\(\s*|vi\.mock\(\s*|require\(\s*)['"]([^'"]+)['"]/g;
+  for (const [, specifier] of source.matchAll(specifierPattern)) {
+    if (specifier.startsWith('.')) {
+      modules.push(
+        path
+          .join(path.dirname(testPath), specifier)
+          .replace(sourceExtensionPattern, ''),
+      );
+    } else if (removedPackageImports.has(specifier)) {
+      modules.push(removedPackageImports.get(specifier));
+    }
+  }
+  return modules;
+}
+
+/**
+ * Finds the tests that finalization must handle besides the removed folders:
+ * companion tests of a removed file (`<name>.spec|test.<ext>` beside it or in
+ * a sibling `__tests__` folder) are removed with it; any other test that
+ * imports a removed module blocks finalization, because it may cover more
+ * than the example and deleting it would silently drop that coverage.
+ */
+async function planTestRemoval() {
+  const removedDirectories = [];
+  const removedFiles = [];
+  for (const listedPath of exampleRemovalPaths) {
+    if (!(await exists(listedPath))) continue;
+    // Match the separators path.join produces (backslashes on Windows).
+    const relativePath = path.normalize(listedPath);
+    const entry = await readdir(absolute(relativePath)).catch(() => null);
+    if (entry) removedDirectories.push(relativePath);
+    else removedFiles.push(relativePath.replace(sourceExtensionPattern, ''));
+  }
+  const isInsideRemovedDirectory = (relativePath) =>
+    removedDirectories.some(
+      (directory) =>
+        relativePath === directory ||
+        relativePath.startsWith(`${directory}${path.sep}`),
+    );
+  const isRemovedModule = (modulePath) =>
+    removedFiles.includes(modulePath) || isInsideRemovedDirectory(modulePath);
+
+  const companions = [];
+  const blockers = [];
+  for (const testPath of [
+    ...(await listTestFiles('apps')),
+    ...(await listTestFiles('packages')),
+  ]) {
+    if (isInsideRemovedDirectory(testPath)) continue;
+    const testDirectory = path.dirname(testPath);
+    const subject = path.join(
+      path.basename(testDirectory) === '__tests__'
+        ? path.dirname(testDirectory)
+        : testDirectory,
+      path.basename(testPath).replace(testFilePattern, ''),
+    );
+    if (removedFiles.includes(subject)) {
+      companions.push(testPath);
+      continue;
+    }
+    const source = await readFile(absolute(testPath), 'utf8');
+    if (importedModules(testPath, source).some(isRemovedModule)) {
+      blockers.push(testPath);
+    }
+  }
+  return { companions: companions.sort(), blockers: blockers.sort() };
+}
+
 function git(args) {
   return execFileSync('git', args, {
     cwd: rootDir,
@@ -110,10 +228,16 @@ function requireCleanTree() {
   }
 }
 
+// Matches the Link type re-export whatever its members are (authentication
+// adds LinkCapability; the without-auth contract does not have it).
+const linksTypeExportPattern = /export type \{[^}]*\} from '\.\/links\.js';\n/;
+
 async function replaceRequired(relativePath, search, replacement) {
   const filePath = absolute(relativePath);
   const current = await readFile(filePath, 'utf8');
-  if (!current.includes(search)) {
+  const found =
+    search instanceof RegExp ? search.test(current) : current.includes(search);
+  if (!found) {
     throw new Error(`Expected content is missing from ${relativePath}.`);
   }
   await writeFile(filePath, current.replace(search, replacement));
@@ -155,8 +279,16 @@ async function validateFinalization() {
   ]);
   await requireText('packages/api-contract/src/index.ts', [
     "export { linksApi } from './links.js';",
-    "} from './links.js';",
   ]);
+  const contractIndex = await readFile(
+    absolute('packages/api-contract/src/index.ts'),
+    'utf8',
+  );
+  if (!linksTypeExportPattern.test(contractIndex)) {
+    throw new Error(
+      'Expected Link type exports are missing from packages/api-contract/src/index.ts.',
+    );
+  }
   await requireText('packages/api-contract/package.json', ['"./links"']);
   await requireText(prismaSchemaPath, ['model Link {']);
   await requireText(prismaSeedPath, ['const links = [', 'prisma.link.']);
@@ -274,7 +406,7 @@ async function applyFinalization() {
   );
   await replaceRequired(
     'packages/api-contract/src/index.ts',
-    "export type {\n  CreateLinkRequest,\n  LinkResponse,\n  UpdateLinkRequest,\n} from './links.js';\n",
+    linksTypeExportPattern,
     '',
   );
   await updateJson('packages/api-contract/package.json', (manifest) => {
@@ -311,6 +443,13 @@ async function applyFinalization() {
   for (const relativePath of removalPaths) {
     await rm(absolute(relativePath), { recursive: true, force: true });
   }
+  for (const relativePath of testPlan.companions) {
+    await rm(absolute(relativePath), { force: true });
+    // Drop a __tests__ folder the removal left empty.
+    if (path.basename(path.dirname(relativePath)) === '__tests__') {
+      await rmdir(absolute(path.dirname(relativePath))).catch(() => {});
+    }
+  }
   for (const relativePath of optionalRemovalPaths) {
     await rm(absolute(relativePath), { recursive: true, force: true });
   }
@@ -340,12 +479,27 @@ for (const relativePath of requiredPaths) {
     throw new Error(`Expected template path is missing: ${relativePath}`);
   }
 }
+// Check the tree before the preview too, so a dry run never reports
+// "safe" for a state that --apply would refuse.
+requireCleanTree();
 await validateFinalization();
+const testPlan = await planTestRemoval();
+if (testPlan.blockers.length > 0) {
+  throw new Error(
+    `These tests import Link example files that finalization removes:\n${testPlan.blockers.map((file) => `- ${file}`).join('\n')}\nMove their non-example cases elsewhere and delete them, then run finalization again.`,
+  );
+}
 
 if (!apply) {
   console.info('Dry run: the starter template can be finalized safely.');
   console.info('The script will:');
   console.info('- remove the Link API/BFF/data-access/UI example');
+  console.info(
+    `- remove the tests of the removed example files (${testPlan.companions.length} beside them, plus those inside removed folders)`,
+  );
+  for (const relativePath of testPlan.companions) {
+    console.info(`  - ${relativePath}`);
+  }
   console.info('- remove the Link Prisma model and seed records from source');
   console.info('- remove the Link API contract and exports');
   console.info('- remove one-time template migration scripts and snapshots');
@@ -354,7 +508,6 @@ if (!apply) {
   console.info('- leave PostgreSQL schema/data unchanged');
   console.info('Run with --apply to perform the cleanup.');
 } else {
-  requireCleanTree();
   await applyFinalization();
   console.info('Starter template finalization completed.');
   console.info(

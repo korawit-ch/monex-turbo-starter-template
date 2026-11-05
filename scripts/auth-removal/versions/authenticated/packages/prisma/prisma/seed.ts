@@ -14,7 +14,9 @@ async function main() {
     create: { id: 'demo-tenant', name: 'Demo Tenant' },
   });
 
-  const seedEmail = process.env.AUTH_SEED_EMAIL || 'admin@example.com';
+  const seedEmail = (
+    process.env.AUTH_SEED_EMAIL || 'admin@example.com'
+  ).toLowerCase();
   const seedPassword = process.env.AUTH_SEED_PASSWORD || 'local-change-me';
   await prisma.user.upsert({
     where: { email: seedEmail },
@@ -31,6 +33,30 @@ async function main() {
       passwordHash: hashPassword(seedPassword),
       tenantId: tenant.id,
       role: 'ADMIN',
+    },
+  });
+
+  const memberEmail = (
+    process.env.AUTH_SEED_MEMBER_EMAIL || 'member@example.com'
+  ).toLowerCase();
+  if (memberEmail === seedEmail) {
+    throw new Error('Demo admin and member seed emails must be different');
+  }
+  await prisma.user.upsert({
+    where: { email: memberEmail },
+    update: {
+      name: 'Demo Member',
+      passwordHash: hashPassword(seedPassword),
+      tenantId: tenant.id,
+      role: 'MEMBER',
+      disabledAt: null,
+    },
+    create: {
+      email: memberEmail,
+      name: 'Demo Member',
+      passwordHash: hashPassword(seedPassword),
+      tenantId: tenant.id,
+      role: 'MEMBER',
     },
   });
 

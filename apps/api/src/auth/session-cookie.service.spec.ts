@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
 
 import { AuthConfig } from './auth.config';
@@ -17,7 +18,13 @@ describe('SessionCookieService', () => {
     );
     expect(sealed).not.toContain('raw-session-token');
     expect(service.open(sealed).token).toBe('raw-session-token');
-    expect(() => service.open(`${sealed.slice(0, -1)}x`)).toThrow(
+
+    // Flip one bit of the ciphertext. Replacing the last base64url character
+    // instead can decode to identical bytes (it carries only 4 data bits),
+    // which made this assertion fail in about 7% of runs.
+    const tampered = Buffer.from(sealed, 'base64url');
+    tampered[tampered.length - 1] ^= 0x01;
+    expect(() => service.open(tampered.toString('base64url'))).toThrow(
       UnauthorizedException,
     );
   });
