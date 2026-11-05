@@ -1,0 +1,55 @@
+{
+  "$comment": "Command rules for guard-bash.mjs. decision is deny or ask; pattern is a case-insensitive JavaScript regular expression matched against the whitespace-collapsed Bash command. Add a case to guard-bash.test.mjs for every rule you add or change.",
+  "rules": [
+    {
+      "decision": "deny",
+      "pattern": "\\bgit\\b[^;&|]*\\bpush\\b[^;&|]*(--force\\b|--force-with-lease\\b|\\s-f\\b|\\s\\+\\S)",
+      "reason": "Force pushes rewrite shared history. Run it yourself if it is truly intended."
+    },
+    {
+      "decision": "deny",
+      "pattern": "\\bgit\\b[^;&|]*\\bpush\\b[^;&|]*[\\s:](main|develop)(\\s|$)",
+      "reason": "main and develop change only through pull requests (docs/engineering/delivery-workflow.md)."
+    },
+    {
+      "decision": "deny",
+      "pattern": "\\bgit\\b[^;&|]*\\b(reset\\s+--hard|clean\\s+-[a-z]*f)",
+      "reason": "Discards working changes that may not belong to this task. Inspect git status and remove specific paths instead."
+    },
+    {
+      "decision": "deny",
+      "pattern": "\\bgit\\b[^;&|]*\\badd\\s+(-A|--all|\\.)(\\s|$)",
+      "reason": "Stage the paths of this change explicitly so unrelated working changes stay out of the commit."
+    },
+    {
+      "decision": "deny",
+      "pattern": "--no-verify\\b",
+      "reason": "Husky runs lint-staged, type checks and commitlint. Fix the failing check instead of skipping it."
+    },
+    {
+      "decision": "deny",
+      "pattern": "\\bprisma\\b[^;&|]*\\bmigrate\\s+reset\\b|--force-reset\\b|--accept-data-loss\\b",
+      "reason": "Database resets and data-loss flags are never routine verification. Run them yourself after inspecting the target."
+    },
+    {
+      "decision": "deny",
+      "pattern": "\\bdocker(-compose|\\s+compose)\\b[^;&|]*\\bdown\\b[^;&|]*(\\s-v\\b|--volumes\\b)|\\bdocker\\s+(volume\\s+(rm|prune)|system\\s+prune)\\b",
+      "reason": "Removing Docker volumes destroys local database data. Stop containers without -v; remove volumes yourself if intended."
+    },
+    {
+      "decision": "ask",
+      "pattern": "\\bgit\\b[^;&|]*\\b(commit|push)\\b",
+      "reason": "Commits and pushes need the user's explicit request for this change."
+    },
+    {
+      "decision": "ask",
+      "pattern": "\\b(auth:remove|template:finalize|prisma:localize:api|assets:localize:web|app:duplicate|remove-auth\\.mjs|finalize-template\\.mjs|localize-prisma-in-api\\.mjs|localize-web-assets\\.mjs|duplicate-app\\.mjs)\\b[^;&|]*--apply\\b",
+      "reason": "Template mutation scripts change the architecture. Show the dry run to the user and apply only after their confirmation."
+    },
+    {
+      "decision": "ask",
+      "pattern": "\\b(env:distribute|distribute-env\\.js)\\b[^;&|]*--force\\b",
+      "reason": "--force replaces regular .env files in apps and packages. Back up or merge their values first."
+    }
+  ]
+}
