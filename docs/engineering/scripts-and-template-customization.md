@@ -197,7 +197,7 @@ npm run template:finalize -- --apply
 
 Use this only after the team has replaced the Link vertical-slice example or decided it is no longer needed. It removes the example API module, BFF routes, web link data access/demo, Link API contract, Link Prisma model/seed data, the guided setup assistant, and one-time template migration scripts. It also removes its own command. It keeps operational environment/database scripts and the engineering handbook.
 
-Both the preview and `--apply` require a clean working tree. The finalizer recognizes the unmodified starter example and intentionally stops if overlapping project work makes automatic removal ambiguous. Duplicated apps retain their copied examples and must be reviewed separately.
+Both the preview and `--apply` require a clean working tree. Tests go with the example: those inside the removed folders, and every test of a removed file (`<name>.spec.*`, `<name>.test.*` or `<name>.e2e-spec.*` beside it or in a sibling `__tests__/` folder), which the preview lists. Any other test that imports a removed module stops both the preview and `--apply` with its path, because it may test more than the example; move its other cases elsewhere first. The finalizer recognizes the unmodified starter example and intentionally stops if overlapping project work makes automatic removal ambiguous. Duplicated apps retain their copied examples and must be reviewed separately.
 
 The finalizer changes source/schema files but never changes a database. Create and review the required migration after applying it. Link-named authorization permissions remain as concrete auth examples until the first real domain permission replaces them; do not ship placeholder permission vocabulary unnoticed.
 
