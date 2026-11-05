@@ -76,7 +76,19 @@ describe('AccessTokenService', () => {
     const unknown = jwt.sign(
       {
         attributes: { tenantId: 'tenant-1' },
-        grants: [{ permission: 'link.root', conditions: [] }],
+        // A valid condition, so only the permission allowlist can reject it.
+        grants: [
+          {
+            permission: 'link.root',
+            conditions: [
+              {
+                operator: 'equals',
+                subjectField: 'tenantId',
+                resourceField: 'tenantId',
+              },
+            ],
+          },
+        ],
       },
       secret,
       {

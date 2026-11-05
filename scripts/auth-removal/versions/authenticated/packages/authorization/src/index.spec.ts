@@ -64,7 +64,11 @@ describe('authorization', () => {
   it.each([
     [
       'unknown permission',
-      { ...claims, grants: [{ permission: 'link.root', conditions: [] }] },
+      // A valid condition, so only the permission allowlist can reject it.
+      {
+        ...claims,
+        grants: [{ ...claims.grants[0], permission: 'link.root' }],
+      },
     ],
     [
       'empty conditions',

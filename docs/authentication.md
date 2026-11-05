@@ -153,7 +153,7 @@ Redirect destinations must resolve to the current origin. Absolute, protocol-rel
 ## Logout and revocation
 
 - `POST /api/auth/logout` conditionally revokes the row represented by the session cookie and clears both cookies. Repeating it is safe.
-- `POST /api/auth/logout-all` requires a valid access JWT, revokes every active session for `request.user.userId`, and clears both cookies.
+- `POST /api/auth/logout-all` requires a valid access JWT, revokes every active session for `request.user.subject.userId`, and clears both cookies.
 
 Session revocation blocks future renewal immediately. It does not invalidate already issued access JWTs. Those remain usable until expiry, so the maximum stale-access and stale-permission window is `AUTH_ACCESS_TTL_SECONDS` (600 seconds by default). Permission changes become visible on the next login or successful renewal.
 
@@ -171,6 +171,8 @@ Do not promise immediate JWT revocation. Add a token version, denylist, or per-r
 ## Network and deployment posture
 
 Nest defaults to `API_HOST=127.0.0.1`; only Next should be public. `API_INTERNAL_URL` is server-only and must never use a `NEXT_PUBLIC_` prefix. Swagger is disabled when `NODE_ENV=production`. PostgreSQL must remain private.
+
+Deploy Next and Nest from the same commit. Both sides parse the access-token claim shape, so a mixed deployment rejects every token the other side issues: the protected layout's renewal then issues another token the web cannot parse, and the browser ends in a redirect loop. Access cookies issued before a same-commit deployment recover on their own: they fail parsing, return `401`, and one renewal issues a token in the new shape from the stored session.
 
 Loopback binding does not work when Next and Nest run in separate containers. In that topology, bind Nest to the private container interface (often `0.0.0.0`) and restrict exposure with the container network, ingress, firewall, or security group. CORS is intentionally not used as a network boundary.
 
