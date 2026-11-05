@@ -30,6 +30,7 @@ Use [TBD] only when no task exists yet.
 - [ ] Relevant type checks/builds pass
 - [ ] Relevant unit/integration/e2e tests pass
 - [ ] Database migration or persistent-state impact was reviewed, if applicable
+- [ ] `AGENTS.md`, handbook and `docs/knowledge/` still describe the code, if boundaries, commands or decisions changed
 - [ ] No secrets, tokens, customer data, or private infrastructure appear in evidence
 
 Commands/results:

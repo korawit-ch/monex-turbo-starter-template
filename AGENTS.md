@@ -48,7 +48,22 @@
 - Discover affected workspace scripts before choosing checks. Typical sequence: shared builds, affected lint/tests, relevant type checks, then affected app builds.
 - Root commands: `npm run lint` (workspace lint plus Prettier), `npm run test`, `npm run test:e2e`, `npx turbo run check-types`, and `npm run build`.
 - `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo tests have no build dependencies, so prepare shared outputs first.
-- API e2e tests require PostgreSQL and initialize the real Prisma service. CI currently runs lint, formatting, type checks, and builds, but not tests.
+- API e2e tests require PostgreSQL and initialize the real Prisma service. CI currently runs the agent guard tests, lint, formatting, type checks, and builds, but not workspace tests.
 - For documentation-only changes, run Prettier on the changed Markdown files, check relative links/command names against the repository, and run `git diff --check`. Do not reformat unrelated files.
 - Report failed, skipped, and cached checks accurately. Passing compilation is not proof of database, authorization, or request behavior.
 - Keep instructions durable and scoped. Update the affected README/AGENTS when boundaries, contracts, environment handling, or verification change; put unresolved implementation gaps in READMEs rather than describing them as established guarantees.
+
+## AI workflow and extending the project
+
+- `AGENTS.md` is the only instruction format; Claude Code, Codex and Cursor read it directly. Do not add a `CLAUDE.md` or `CLAUDE.local.md`: Claude Code reads those instead of `AGENTS.md`. Layers, guards and recipes: [docs/engineering/ai-assisted-development.md](docs/engineering/ai-assisted-development.md).
+- Start every change with the `deliver-change` skill; it pins the scope, picks the mode by risk, and ends with a review by the read-only `reviewer` agent. Domain terms, decisions and open questions live in `docs/knowledge/`.
+- `.claude/hooks/guard-bash.mjs` denies destructive Git, Docker and Prisma commands and database changes on non-local hosts, and asks before commits, pushes and `--apply` runs. Its rules are data in `.claude/hooks/guard-rules.json`; change them together with `guard-bash.test.mjs` and run `npm run test:agent-guards`.
+- Exemplar: the Link vertical slice (schema, contract, API module, BFF, data access, UI). After `template:finalize` removes it, name the project's first real feature here instead.
+
+| Task                                        | Start reading                                                           | Invoke                                      |
+| ------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
+| Any code, schema, config or docs change     | The nearest `AGENTS.md` and its handbook page                           | `deliver-change` skill                      |
+| New resource, app or shared package         | "Extend the project" in the AI guide                                    | `extend-project` skill                      |
+| Review before a pull request                | The task and the diff range only                                        | `reviewer` agent                            |
+| Template scripts (auth, finalize, localize) | [Scripts guide](docs/engineering/scripts-and-template-customization.md) | Preview first; `--apply` after confirmation |
+| Instructions no longer match the code       | "Grow the AI context" in the AI guide                                   | `extend-project` skill                      |
