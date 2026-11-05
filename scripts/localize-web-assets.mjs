@@ -62,16 +62,18 @@ async function collectFiles(directory) {
   return files;
 }
 
+// A plain prefix check would also match sibling apps such as apps/api-admin.
+function isInside(directory, filePath) {
+  return filePath === directory || filePath.startsWith(directory + path.sep);
+}
+
 async function findExternalConsumers() {
   const consumers = [];
 
   for (const workspaceRoot of ['apps', 'packages']) {
     const directory = path.join(rootDir, workspaceRoot);
     for (const filePath of await collectFiles(directory)) {
-      if (
-        filePath.startsWith(webDir) ||
-        filePath.startsWith(assetsPackageDir)
-      ) {
+      if (isInside(webDir, filePath) || isInside(assetsPackageDir, filePath)) {
         continue;
       }
 

@@ -377,6 +377,7 @@ async function distributeEnvironment(rl, automatic) {
 }
 
 async function saveState() {
+  if (dryRun) return;
   const state = {
     version: 1,
     completedAt: new Date().toISOString(),

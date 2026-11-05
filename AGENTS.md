@@ -47,8 +47,8 @@
 
 - Discover affected workspace scripts before choosing checks. Typical sequence: shared builds, affected lint/tests, relevant type checks, then affected app builds.
 - Root commands: `npm run lint` (workspace lint plus Prettier), `npm run test`, `npm run test:e2e`, `npx turbo run check-types`, and `npm run build`.
-- `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo tests have no build dependencies, so prepare shared outputs first.
-- API e2e tests require PostgreSQL and initialize the real Prisma service. CI currently runs the agent guard tests, lint, formatting, type checks, and builds, but not workspace tests.
+- `check-types` exists only in web, UI, and assets; other TypeScript packages/API are checked by builds. Turbo `test` and `test:e2e` depend on `^build`, so they build the shared packages they import first.
+- API e2e tests require PostgreSQL and initialize the real Prisma service. CI runs the agent guard tests, lint, formatting, type checks, unit tests, and builds, but not e2e tests.
 - For documentation-only changes, run Prettier on the changed Markdown files, check relative links/command names against the repository, and run `git diff --check`. Do not reformat unrelated files.
 - Report failed, skipped, and cached checks accurately. Passing compilation is not proof of database, authorization, or request behavior.
 - Keep instructions durable and scoped. Update the affected README/AGENTS when boundaries, contracts, environment handling, or verification change; put unresolved implementation gaps in READMEs rather than describing them as established guarantees.

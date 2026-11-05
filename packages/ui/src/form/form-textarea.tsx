@@ -3,6 +3,7 @@
 import { forwardRef } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { Textarea, type TextareaProps } from '../textarea';
+import { mergeRefs } from './merge-refs';
 
 type FormTextareaProps = Omit<TextareaProps, 'error'> & {
   /**
@@ -35,27 +36,36 @@ type FormTextareaProps = Omit<TextareaProps, 'error'> & {
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   ({ name, error: customError, ...textareaProps }, ref) => {
     const formContext = useFormContext();
-    const {
-      control,
-      formState: { errors },
-    } = formContext || {};
 
-    // Get error from form state or custom error
-    const fieldError = errors[name];
-    const errorMessage =
-      customError || (fieldError?.message as string) || undefined;
-
-    // If no form context, render as regular Textarea
+    // Outside a FormProvider, behave as a plain Textarea.
     if (!formContext) {
-      return <Textarea ref={ref} error={errorMessage} {...textareaProps} />;
+      return <Textarea ref={ref} error={customError} {...textareaProps} />;
     }
 
+    // React Hook Form's field bindings are applied last so caller props cannot
+    // replace them; caller handlers and refs are composed instead. fieldState
+    // resolves nested names such as "address.street".
     return (
       <Controller
         name={name}
-        control={control}
-        render={({ field }) => (
-          <Textarea {...field} {...textareaProps} error={errorMessage} />
+        control={formContext.control}
+        render={({ field, fieldState }) => (
+          <Textarea
+            {...textareaProps}
+            name={field.name}
+            value={field.value ?? ''}
+            disabled={field.disabled ?? textareaProps.disabled}
+            ref={mergeRefs(field.ref, ref)}
+            onChange={(event) => {
+              textareaProps.onChange?.(event);
+              field.onChange(event);
+            }}
+            onBlur={(event) => {
+              textareaProps.onBlur?.(event);
+              field.onBlur();
+            }}
+            error={customError || fieldState.error?.message}
+          />
         )}
       />
     );

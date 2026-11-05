@@ -80,7 +80,7 @@ Reviewers should be able to determine:
 
 ## CI
 
-Pull requests validate the title and run dependency installation, the agent guard tests, Prisma generation, package builds, lint, formatting, type checks, and builds. Unit/e2e coverage may still need to be run locally until explicitly added to CI.
+Pull requests validate the title (again whenever it is edited) and run dependency installation, the agent guard tests, Prisma generation, package builds, lint, formatting, type checks, unit tests, and builds. API e2e tests need PostgreSQL and run locally only.
 
 ## Release flow
 

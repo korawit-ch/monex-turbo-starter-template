@@ -68,7 +68,7 @@ Use `@repo/design-system` tokens before adding local colors or spacing values. A
 
 - Keep the Zod schema and submission behavior in the feature.
 - Use `@repo/ui/form/*` adapters for consistent presentation.
-- Give every field a stable ID so labels, helper text, and errors remain associated.
+- `@repo/ui` fields generate an ID when none is passed, so labels, helper text, and errors stay associated. Pass an explicit `id` only when other markup must reference the field.
 - Server/API validation remains authoritative even when the browser validates first.
 
 ## Rendering conditions
