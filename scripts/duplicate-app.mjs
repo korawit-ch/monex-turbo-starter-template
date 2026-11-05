@@ -313,6 +313,12 @@ if (port !== undefined) {
 }
 
 const architecture = await describeArchitecture(sourceManifest);
+// Every app reads the same root .env, so values that must differ per app
+// have to come from the process environment when the copy starts.
+const sharedEnvironmentNote =
+  sourceKind === 'web'
+    ? `Note: apps/${targetName} reads the shared root .env. Start it with its own WEB_ORIGIN (for example WEB_ORIGIN=http://localhost:<port>), or its login and other mutating requests are rejected as cross-origin.`
+    : `Note: apps/${targetName} reads the shared root .env, whose API_PORT overrides the default port. Start it with its own API_PORT when both APIs run.`;
 if (!apply) {
   console.info(
     `Dry run: apps/${sourceKind} can be duplicated to apps/${targetName}.`,
@@ -325,6 +331,7 @@ if (!apply) {
   console.info(`- package name becomes ${targetName}`);
   if (port !== undefined)
     console.info(`- default development port becomes ${port}`);
+  console.info(sharedEnvironmentNote);
   console.info('Run the same command with --apply to create the app.');
 } else {
   await duplicateApp(sourceManifest, port);
@@ -332,4 +339,5 @@ if (!apply) {
   console.info(
     `Preserved source architecture: assets ${architecture.assets}; Prisma ${architecture.prisma}.`,
   );
+  console.info(sharedEnvironmentNote);
 }

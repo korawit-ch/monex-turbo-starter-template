@@ -340,6 +340,9 @@ for (const relativePath of requiredPaths) {
     throw new Error(`Expected template path is missing: ${relativePath}`);
   }
 }
+// Check the tree before the preview too, so a dry run never reports
+// "safe" for a state that --apply would refuse.
+requireCleanTree();
 await validateFinalization();
 
 if (!apply) {
@@ -354,7 +357,6 @@ if (!apply) {
   console.info('- leave PostgreSQL schema/data unchanged');
   console.info('Run with --apply to perform the cleanup.');
 } else {
-  requireCleanTree();
   await applyFinalization();
   console.info('Starter template finalization completed.');
   console.info(

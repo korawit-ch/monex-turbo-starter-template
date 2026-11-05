@@ -14,7 +14,6 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -119,6 +118,9 @@ async function walkFiles(root, ignoredNames = new Set()) {
         await visit(target);
       } else if (entry.isFile()) {
         files.push(target);
+      } else if (entry.isSymbolicLink() && entry.name === '.env') {
+        // Created by env:distribute; it moves with the tree and only the link is deleted.
+        continue;
       } else {
         throw new Error(
           `Unexpected non-file entry in auth-owned path: ${path.relative(rootDir, target)}`,
@@ -129,6 +131,55 @@ async function walkFiles(root, ignoredNames = new Set()) {
 
   await visit(root);
   return files.sort();
+}
+
+const consumerScanSkippedDirectories = new Set([
+  '.next',
+  '.turbo',
+  'coverage',
+  'dist',
+  'node_modules',
+]);
+const consumerScanExtensions = new Set([
+  '.cjs',
+  '.js',
+  '.json',
+  '.mjs',
+  '.ts',
+  '.tsx',
+]);
+
+/**
+ * Lists workspace files that still reference @repo/authorization after the
+ * planned transforms and removals, for example an app created later with
+ * app:duplicate. Removing the package would break them.
+ */
+async function findUnplannedAuthorizationConsumers(plannedPaths) {
+  const consumers = [];
+
+  async function visit(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        if (!consumerScanSkippedDirectories.has(entry.name)) {
+          await visit(target);
+        }
+      } else if (
+        entry.isFile() &&
+        consumerScanExtensions.has(path.extname(entry.name)) &&
+        !plannedPaths.has(target) &&
+        (await readFile(target, 'utf8')).includes('@repo/authorization')
+      ) {
+        consumers.push(path.relative(rootDir, target));
+      }
+    }
+  }
+
+  for (const workspaceRoot of ['apps', 'packages']) {
+    const directory = path.join(rootDir, workspaceRoot);
+    if (await exists(directory)) await visit(directory);
+  }
+  return consumers.sort();
 }
 
 async function planTreeRemoval(relativeRoot, ignoredNames) {
@@ -338,6 +389,19 @@ for (const relativeRoot of manifest.removeTrees) {
   removalFiles.push(...tree.files);
 }
 
+const unplannedConsumers = await findUnplannedAuthorizationConsumers(
+  new Set([
+    ...transformPlans.map((plan) => plan.source),
+    ...removalFiles,
+    ...removalTrees.flatMap((tree) => tree.files),
+  ]),
+);
+if (unplannedConsumers.length > 0) {
+  throw new Error(
+    `Cannot remove @repo/authorization while other files still use it:\n${unplannedConsumers.map((file) => `- ${file}`).join('\n')}\nRemove authentication from those workspaces first, or keep authentication.`,
+  );
+}
+
 if (!apply) {
   console.info('Dry run: authentication can be removed safely.');
   console.info(`- transform ${transformPlans.length} shared integration files`);
@@ -360,7 +424,13 @@ const affectedPaths = [
   path.join(rootDir, 'package-lock.json'),
 ];
 const backups = await captureFiles(affectedPaths);
-const quarantineDir = await mkdtemp(path.join(tmpdir(), 'monex-auth-removal-'));
+// Quarantine inside the repository so rename() never crosses file systems
+// (a separate /tmp mount fails with EXDEV and forces a rollback).
+const quarantineParent = path.join(rootDir, 'node_modules', '.cache');
+await mkdir(quarantineParent, { recursive: true });
+const quarantineDir = await mkdtemp(
+  path.join(quarantineParent, 'monex-auth-removal-'),
+);
 const quarantinedTrees = [];
 
 try {
