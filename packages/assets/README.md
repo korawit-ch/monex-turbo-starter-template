@@ -34,7 +34,7 @@ SVGs in `src/icons` are converted to React components with SVGR:
 import { ArrowRight } from '@repo/assets/icons';
 
 export function ContinueIcon() {
-  return <ArrowRight className="h-5 w-5 text-blue-500" />;
+  return <ArrowRight className="text-primary-600 h-5 w-5" />;
 }
 ```
 

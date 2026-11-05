@@ -12,6 +12,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:agent-guards": "node --test .claude/hooks/guard-bash.test.mjs",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint && prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
@@ -34,6 +35,7 @@
     "template:finalize": "node scripts/finalize-template.mjs",
     "env:setup": "node scripts/setup-env.js",
     "env:distribute": "node scripts/distribute-env.js",
+    "test:agent-hooks": "node --test \".claude/hooks/*.test.mjs\"",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -57,7 +59,7 @@
   ],
   "lint-staged": {
     "*.{ts,tsx,mjs}": [
-      "eslint --fix",
+      "eslint --fix --flag v10_config_lookup_from_file",
       "prettier --write"
     ],
     "*.{json,md,css,yml,yaml,js}": [

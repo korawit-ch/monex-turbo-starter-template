@@ -26,19 +26,19 @@ type GenericOnSubmit = (
  * });
  */
 export const useCustomForm = <TFormData extends Record<string, unknown>>({
-  defaultValues,
   schema,
-  mode,
-  reValidateMode,
+  mode = 'onChange',
+  reValidateMode = 'onChange',
+  ...formOptions
 }: {
   defaultValues?: DefaultValues<TFormData>;
   schema: z.ZodType<TFormData>;
 } & UseFormProps<TFormData>): UseFormReturn<TFormData> => {
   return useForm<TFormData>({
-    defaultValues,
+    ...formOptions,
     resolver: zodResolver(schema),
-    mode: mode || 'onChange',
-    reValidateMode: reValidateMode || 'onChange',
+    mode,
+    reValidateMode,
   });
 };
 
@@ -59,7 +59,10 @@ export function FormWrapper<TFormData extends Record<string, unknown>>({
 
   return (
     <FormProvider {...methods}>
+      {/* noValidate: the Zod schema validates, and fields still expose
+          required to assistive technology. */}
       <form
+        noValidate
         className={className}
         onSubmit={methods.handleSubmit(onSubmit as GenericOnSubmit)}
       >

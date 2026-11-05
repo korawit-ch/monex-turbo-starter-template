@@ -1,43 +1,42 @@
 #!/bin/bash
 
-# Start PostgreSQL database using Docker Compose
-# Load environment variables from root .env file
+# Start the local PostgreSQL container and wait until it accepts connections.
+# Compose reads the root .env itself, so the shell never parses its values and
+# the script never prints credentials.
+set -euo pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DB_DIR="$ROOT_DIR/apps/db"
+ENV_FILE="$ROOT_DIR/.env"
+READY_ATTEMPTS=30
 
-# Load .env file if it exists
-if [ -f "$ROOT_DIR/.env" ]; then
-  export $(grep -v '^#' "$ROOT_DIR/.env" | xargs)
+# Docker Compose v2 is "docker compose"; fall back to the v1 binary.
+if docker compose version >/dev/null 2>&1; then
+  compose=(docker compose)
+else
+  compose=(docker-compose)
+fi
+compose_args=(-f "$DB_DIR/docker-compose.yml")
+if [ -f "$ENV_FILE" ]; then
+  compose_args+=(--env-file "$ENV_FILE")
 fi
 
-# Set defaults if not set
-export DB_USER=${DB_USER:-postgres}
-export DB_PASSWORD=${DB_PASSWORD:-postgres}
-export DB_NAME=${DB_NAME:-monex-turbo-starter-template-db}
-export DB_PORT=${DB_PORT:-5433}
-export DB_CONTAINER_NAME=${DB_CONTAINER_NAME:-monex-turbo-starter-template-db}
-
 echo "Starting PostgreSQL database..."
-cd "$DB_DIR" && docker-compose up -d postgres
+"${compose[@]}" "${compose_args[@]}" up -d postgres
 
 echo "Waiting for database to be ready..."
-sleep 5
-
-# Check if database is ready
-until docker-compose -f "$DB_DIR/docker-compose.yml" exec -T postgres pg_isready -U "$DB_USER" > /dev/null 2>&1; do
-  echo "Waiting for database..."
+for ((attempt = 1; attempt <= READY_ATTEMPTS; attempt++)); do
+  if "${compose[@]}" "${compose_args[@]}" exec -T postgres \
+    sh -c 'pg_isready -U "$POSTGRES_USER"' >/dev/null 2>&1; then
+    address="$("${compose[@]}" "${compose_args[@]}" port postgres 5432)"
+    echo "✅ PostgreSQL database is ready on ${address}."
+    echo "Credentials and DATABASE_URL are in ${ENV_FILE}."
+    exit 0
+  fi
   sleep 2
 done
 
-echo "✅ PostgreSQL database is ready!"
-echo ""
-echo "Connection details:"
-echo "  Host: localhost"
-echo "  Port: $DB_PORT"
-echo "  Database: $DB_NAME"
-echo "  User: $DB_USER"
-echo "  Password: $DB_PASSWORD"
-echo ""
-echo "DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:$DB_PORT/$DB_NAME?schema=public"
-
+echo "❌ PostgreSQL was not ready after $((READY_ATTEMPTS * 2)) seconds." >&2
+echo "Inspect it with: npm run db:logs" >&2
+exit 1
