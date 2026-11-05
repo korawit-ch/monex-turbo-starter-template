@@ -110,10 +110,16 @@ function requireCleanTree() {
   }
 }
 
+// Matches the Link type re-export whatever its members are (authentication
+// adds LinkCapability; the without-auth contract does not have it).
+const linksTypeExportPattern = /export type \{[^}]*\} from '\.\/links\.js';\n/;
+
 async function replaceRequired(relativePath, search, replacement) {
   const filePath = absolute(relativePath);
   const current = await readFile(filePath, 'utf8');
-  if (!current.includes(search)) {
+  const found =
+    search instanceof RegExp ? search.test(current) : current.includes(search);
+  if (!found) {
     throw new Error(`Expected content is missing from ${relativePath}.`);
   }
   await writeFile(filePath, current.replace(search, replacement));
@@ -155,8 +161,16 @@ async function validateFinalization() {
   ]);
   await requireText('packages/api-contract/src/index.ts', [
     "export { linksApi } from './links.js';",
-    "} from './links.js';",
   ]);
+  const contractIndex = await readFile(
+    absolute('packages/api-contract/src/index.ts'),
+    'utf8',
+  );
+  if (!linksTypeExportPattern.test(contractIndex)) {
+    throw new Error(
+      'Expected Link type exports are missing from packages/api-contract/src/index.ts.',
+    );
+  }
   await requireText('packages/api-contract/package.json', ['"./links"']);
   await requireText(prismaSchemaPath, ['model Link {']);
   await requireText(prismaSeedPath, ['const links = [', 'prisma.link.']);
@@ -274,7 +288,7 @@ async function applyFinalization() {
   );
   await replaceRequired(
     'packages/api-contract/src/index.ts',
-    "export type {\n  CreateLinkRequest,\n  LinkResponse,\n  UpdateLinkRequest,\n} from './links.js';\n",
+    linksTypeExportPattern,
     '',
   );
   await updateJson('packages/api-contract/package.json', (manifest) => {
