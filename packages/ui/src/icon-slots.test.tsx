@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { Button } from '@repo/ui/button';
-import { Input } from '@repo/ui/input';
+import { Button } from './button';
+import { Input } from './input';
 
 describe('shared UI icon slots', () => {
   it('renders caller-provided button icons independently of the variant', () => {

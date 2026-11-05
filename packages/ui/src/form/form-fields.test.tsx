@@ -3,11 +3,11 @@ import { createRef } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { z } from 'zod';
 
-import { FormInput } from '@repo/ui/form/form-input';
-import { FormTextarea } from '@repo/ui/form/form-textarea';
-import { FormWrapper, useCustomForm } from '@repo/ui/form/form-wrapper';
-import { Input } from '@repo/ui/input';
-import { Textarea } from '@repo/ui/textarea';
+import { FormInput } from './form-input';
+import { FormTextarea } from './form-textarea';
+import { FormWrapper, useCustomForm } from './form-wrapper';
+import { Input } from '../input';
+import { Textarea } from '../textarea';
 
 describe('shared UI field accessibility', () => {
   it('associates label, field and helper text without a caller id', () => {
