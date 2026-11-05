@@ -6,17 +6,17 @@ The idea in one line: an agent is only as reliable as what it can read, what it 
 
 ## The layers
 
-| Layer                   | Where it lives                                                   | What it gives the agent                                                    |
-| ----------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Repository instructions | Root `AGENTS.md`                                                 | System boundaries, commands, Git and environment rules, task routing       |
-| Module instructions     | `AGENTS.md` in each app and package                              | The module's contract, invariants, traps and checks, loaded when needed    |
-| Path-scoped rules       | `.claude/rules/*.md` with `paths:` frontmatter                   | Cross-cutting rules for files that match a glob, such as all tests         |
-| Handbook                | `docs/engineering/`                                              | The intent behind each rule and the recipes for routine work               |
-| Knowledge base          | `docs/knowledge/`                                                | Domain terms, decisions and open questions of the project                  |
-| Guards                  | `.claude/settings.json`, `.claude/hooks/`                        | Commands that are denied or need the user's confirmation                   |
-| Workflow                | `.claude/skills/deliver-change`, `.claude/skills/extend-project` | Fixed phases with stop points, and the recipes for growing the project     |
-| Independent review      | `.claude/agents/reviewer.md`                                     | A read-only second opinion that never sees the implementer's reasoning     |
-| Checks                  | Root scripts, Husky hooks, CI                                    | The same commands locally and in CI, including `npm run test:agent-guards` |
+| Layer                   | Where it lives                                                   | What it gives the agent                                                                            |
+| ----------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Repository instructions | Root `AGENTS.md`                                                 | System boundaries, commands, Git and environment rules, task routing                               |
+| Module instructions     | `AGENTS.md` in each app and package                              | The module's contract, invariants, traps and checks, loaded when needed                            |
+| Path-scoped rules       | `.claude/rules/*.md` with `paths:` frontmatter                   | Cross-cutting rules for files that match a glob, such as all tests                                 |
+| Handbook                | `docs/engineering/`                                              | The intent behind each rule and the recipes for routine work                                       |
+| Knowledge base          | `docs/knowledge/`                                                | Domain terms, decisions and open questions of the project                                          |
+| Guards                  | `.claude/settings.json`, `.claude/hooks/`                        | Commands that are denied or need the user's confirmation, and lint and format checks on every edit |
+| Workflow                | `.claude/skills/deliver-change`, `.claude/skills/extend-project` | Fixed phases with stop points, and the recipes for growing the project                             |
+| Independent review      | `.claude/agents/reviewer.md`                                     | A read-only second opinion that never sees the implementer's reasoning                             |
+| Checks                  | Root scripts, Husky hooks, CI                                    | The same commands locally and in CI, including `npm run test:agent-hooks`                          |
 
 ## How instructions load
 
@@ -35,9 +35,19 @@ The idea in one line: an agent is only as reliable as what it can read, what it 
 
 The database host comes from a URL or `-h` flag in the command, then the `DATABASE_URL` environment variable, then the root `.env`. Loopback addresses, `host.docker.internal` and dotless Compose service names such as `postgres` count as local.
 
-The command rules are data in `.claude/hooks/guard-rules.json`. To add one, add an entry and a blocked and an allowed case in `.claude/hooks/guard-bash.test.mjs`, then run `npm run test:agent-guards`. CI runs the same tests.
+The command rules are data in `.claude/hooks/guard-rules.json`. To add one, add an entry and a blocked and an allowed case in `.claude/hooks/guard-bash.test.mjs`, then run `npm run test:agent-hooks`. CI runs the same tests.
 
 A guard reduces mistakes; it is not a sandbox. Patterns can be bypassed by unusual quoting, and the hook allows a command when its input is unreadable so that a broken guard cannot block all work. Other tools need their own configuration; the rules file is the list to copy from.
+
+### Format and lint on edit
+
+Agent-written code must pass the same ESLint and Prettier rules as CI, so lint failures surface while the agent still has the file open instead of in CI.
+
+- **On edit (Claude Code):** `.claude/hooks/check-on-edit.mjs` is a `PostToolUse` hook for `Edit`, `Write` and `MultiEdit`. It runs `eslint --fix` and `prettier --write` on the edited file. When ESLint errors remain, it blocks with the report, and the agent fixes them before continuing. It fails open when dependencies are missing or a tool itself crashes, and ignores files outside the repository and files Prettier ignores (including `.gitignore`).
+- **On commit (every tool):** lint-staged runs the same two commands on staged files.
+- **Same config as CI:** both use `--flag v10_config_lookup_from_file`, so each file is linted with its nearest workspace `eslint.config` (the web, API or package rules that `npm run lint` applies). Without the flag, ESLint uses the root config for every file, which skips the workspaces' type-aware rules: a web test with an `async` callback and no `await` passed the commit hook and failed `web` lint in CI that way.
+- **Other tools:** Codex, Cursor and similar tools don't run Claude Code hooks. The root `AGENTS.md` tells them to run both commands on the files they changed, and lint-staged catches the rest at commit.
+- **Tests:** `npm run test:agent-hooks` runs the tests of both hooks, and CI runs it.
 
 ## Workflow
 

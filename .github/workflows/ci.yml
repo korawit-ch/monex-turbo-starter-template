@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test agent guards
-        run: npm run test:agent-guards
+      - name: Test agent hooks
+        run: npm run test:agent-hooks
 
       - name: Generate Prisma Client
         # The root script follows Prisma when it is localized into apps/api.
