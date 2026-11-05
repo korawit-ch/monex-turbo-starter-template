@@ -38,7 +38,7 @@ describe('AuthService', () => {
   }
 
   it('stores only a hash of the raw session credential', async () => {
-    const { service, client, sessions } = setup();
+    const { service, client, sessions, accessTokens } = setup();
     await service.login(user.email, 'password');
     const createInput = client.authSession.create.mock.calls[0]?.[0] as {
       data: { tokenHash: string };
@@ -47,6 +47,22 @@ describe('AuthService', () => {
     expect(createInput.data.tokenHash).toBeDefined();
     expect(createInput.data.tokenHash).not.toBe(rawToken);
     expect(createInput.data.tokenHash).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(accessTokens.issue).toHaveBeenCalledWith({
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      grants: expect.arrayContaining([
+        {
+          permission: 'link.read',
+          conditions: [
+            {
+              operator: 'equals',
+              subjectField: 'tenantId',
+              resourceField: 'tenantId',
+            },
+          ],
+        },
+      ]),
+    });
   });
 
   it('rejects renewal when the database session is revoked or expired', async () => {

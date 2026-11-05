@@ -12,12 +12,12 @@ flowchart LR
   subgraph web["apps/web · Next.js"]
     Server["Server Components<br/>and serverFetch"]
     BFF["Same-origin BFF<br/>route handlers under /api"]
-    WebAuth["Access JWT verification<br/>and can() check"]
+    WebAuth["Access JWT verification<br/>and hasPermission()"]
   end
 
   subgraph shared["Framework-independent packages"]
     Contract["@repo/api-contract<br/>paths and JSON-safe types"]
-    Authorization["@repo/authorization<br/>claims, permissions, can()"]
+    Authorization["@repo/authorization<br/>typed grants and scope resolution"]
   end
 
   subgraph api["apps/api · NestJS"]
@@ -47,8 +47,8 @@ flowchart LR
   Contract -.->|"endpoint and wire types"| Query
   Contract -.->|"endpoint and wire types"| Server
   Contract -.->|"request and response contracts"| Controller
-  Authorization -.->|"claim parsing and permission policy"| WebAuth
-  Authorization -.->|"claim parsing and permission policy"| Guards
+  Authorization -.->|"claim parsing and coarse checks"| WebAuth
+  Authorization -.->|"grant evaluation and scope"| Guards
 ```
 
 Client-side calls enter Nest through the same-origin BFF. Server Components may call the internal API directly through `serverFetch()`, but they perform the same Next-side access-token verification and named-permission check first. Responses travel back along the same path.
@@ -283,20 +283,21 @@ sequenceDiagram
   participant DB as PostgreSQL
 
   Browser->>BFF: POST /api/links with JSON body
-  BFF->>NextAuth: Verify access cookie and can(link.create)
+  BFF->>NextAuth: Verify access cookie and hasPermission(link.create)
   NextAuth->>NextAuth: Require the configured WEB_ORIGIN
   NextAuth-->>BFF: Sanitized auth context and raw JWT
   BFF->>Guards: POST /links with Bearer JWT
-  Guards->>Guards: Verify JWT and can(link.create)
+  Guards->>Guards: Verify JWT and hasPermission(link.create)
   Guards->>Controller: Validated authorization context
   Controller->>Controller: Validate CreateLinkDto
   Controller->>Service: create(auth, request)
-  Service->>Prisma: link.create with auth.tenantId
+  Service->>Service: resourceScope(link.create)
+  Service->>Prisma: link.create with resolved tenantId
   Prisma->>DB: Parameterized INSERT
   DB-->>Prisma: Persisted Link record
   Prisma-->>Service: Prisma Link with Date values
   Service-->>Controller: Persisted Link
-  Controller->>Controller: Map to JSON-safe LinkResponse
+  Controller->>Controller: Map to LinkResponse with capabilities
   Controller-->>BFF: 201 JSON response
   BFF-->>Browser: Relay status and JSON body
 ```
@@ -370,7 +371,7 @@ Contains the schema, seed, Prisma CLI configuration, runtime client, and generat
 
 ### `@repo/authorization`
 
-Contains stable permission names, claim parsing, sanitized authorization context, and pure permission evaluation. JWT signing, cookies, Nest guards, and database ownership checks stay in applications.
+Contains stable permission names, allowlisted grant conditions, strict claim parsing, sanitized authorization contexts, pure resource evaluation, and framework-neutral scope resolution. JWT signing, role-to-grant construction, cookies, Nest guards, and database operations stay in applications.
 
 ### `@repo/design-system`
 

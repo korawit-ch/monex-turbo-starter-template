@@ -14,19 +14,20 @@ Browser
 
 Next.js is the browser-facing backend-for-frontend (BFF). NestJS remains the authoritative API security boundary: it verifies every protected request even though Next already performed an early check. PostgreSQL is reached only through Prisma in the API runtime.
 
-This starter implements credential login against a seeded user. It does **not** implement OAuth/OIDC, authorization-code callbacks, state, nonce, or PKCE. Add those as an identity-verification step before `AuthService` creates the application session; do not describe the current `/auth/login` endpoint as OAuth.
+This starter implements credential login against seeded users. It does **not** implement OAuth/OIDC, authorization-code callbacks, state, nonce, or PKCE. Add those as an identity-verification step before `AuthService` creates the application session; do not describe the current `/auth/login` endpoint as OAuth.
 
 ## Responsibilities and trust boundaries
 
-- `packages/authorization` owns the permission vocabulary, untrusted JWT-claim parsing, sanitized `AuthorizationContext`, and pure `can()` evaluator. It has no framework, network, cookie, React, or database dependency.
+- `packages/authorization` owns the permission vocabulary, typed grant language, untrusted JWT-claim parsing, sanitized `AuthorizationContext`, named-permission checks, pure resource evaluation, and grant-to-query-scope resolution. It has no framework, network, cookie, React, or database dependency.
 - `packages/api-contract` owns JSON request/response contracts, including login input. It never exports Prisma types or credentials.
 - `packages/prisma` owns `Tenant`, `User`, `AuthSession`, and tenant-owned `Link` persistence.
 - `apps/api/src/auth` owns password verification, session creation/revocation, cookie encryption, JWT signing/verification, and Nest guards.
 - `apps/web/lib/auth` owns server-only JWT verification and BFF forwarding. It shares the JWT verification secret in this HS256 starter.
-- `apps/web/providers/auth-provider.tsx` receives only a sanitized authorization context. It never receives either raw credential.
-- Link services enforce tenant scope in the final Prisma query. Browser-provided role, permissions, tenant, or ownership data is ignored.
+- `apps/api/src/auth/authorization-policy.ts` constructs the reviewed action-grant matrix. The shared evaluator never invents role policy.
+- `apps/web/providers/auth-provider.tsx` receives only user ID and coarse permission names. It never receives credentials, subject scope, or grant conditions.
+- Link services resolve signed grant conditions into the final Prisma query. Browser-provided role, grants, tenant, ownership, or capability data is ignored.
 
-Client-side `can()` calls improve the interface only. The Next BFF and Nest guards repeat named-permission checks, and Prisma repeats resource scope.
+The Next BFF and Nest guards use `hasPermission()` for coarse endpoint admission. `LinksService` uses `resourceScope()` for database enforcement, and response mappers use `can()` to compute resource capabilities. A capability is a presentation hint; a mutation repeats authorization.
 
 ## Data model
 
@@ -34,6 +35,8 @@ Client-side `can()` calls improve the interface only. The Next BFF and Nest guar
 
 - `ADMIN`: `link.read`, `link.create`, `link.update`, `link.delete`
 - `MEMBER`: `link.read`, `link.create`
+
+`permissionsForRole()` determines which actions a role receives. `buildPermissionGrants()` then attaches an explicit tenant-equality condition to every action. Missing policy fails closed rather than becoming an unrestricted grant.
 
 `AuthSession` stores a SHA-256 hash of a random 32-byte token, the owning user, expiry, creation time, and optional revocation time. The raw token exists only inside an AES-256-GCM encrypted/authenticated HttpOnly cookie. The cookie contains no identity or permission claims.
 
@@ -48,12 +51,17 @@ There is no migration history in this starter. `npm run db:push` applies this sc
 3. Nest validation rejects unknown fields, malformed email, and invalid password length.
 4. `AuthService` loads the user, rejects disabled users, and verifies the scrypt password hash with a timing-safe comparison.
 5. Nest generates a cryptographically random session token, stores only its SHA-256 hash, and sets the encrypted raw value in `auth_session`.
-6. Nest snapshots the current role permissions into a ten-minute HS256 JWT and sets it in `access_token`.
+6. Nest maps the role to actions, builds typed tenant-scoped grants, snapshots the matrix into a ten-minute HS256 JWT, and sets it in `access_token`.
 7. The BFF relays both `Set-Cookie` headers without returning either token in JSON.
 
 Both cookies are `HttpOnly`, `SameSite=Lax`, `Path=/`, explicitly aged, and `Secure` in production. Configure `AUTH_COOKIE_DOMAIN` only when a reviewed sibling-subdomain ingress requires it.
 
-The seed account defaults to `admin@example.com` / `local-change-me` for local development. Change both seed variables and never deploy these credentials.
+The seed creates two local demonstration accounts with the same configurable password:
+
+- `admin@example.com`: all four Link actions; update/delete capabilities are allowed.
+- `member@example.com`: read/create only; update/delete capabilities are denied.
+
+`AUTH_SEED_EMAIL` and `AUTH_SEED_MEMBER_EMAIL` override the addresses, and `AUTH_SEED_PASSWORD` overrides the shared local password (`local-change-me` by default). Never deploy these credentials.
 
 ## Access JWT
 
@@ -62,8 +70,17 @@ The JWT contains only the stable authorization snapshot:
 ```ts
 {
   sub: string;
-  tenantId: string;
-  permissions: Permission[];
+  attributes: {
+    tenantId: string;
+  };
+  grants: Array<{
+    permission: Permission;
+    conditions: Array<{
+      operator: 'equals';
+      subjectField: 'tenantId';
+      resourceField: 'tenantId';
+    }>;
+  }>;
   iat: number;
   exp: number;
   iss: string;
@@ -71,7 +88,7 @@ The JWT contains only the stable authorization snapshot:
 }
 ```
 
-Next and Nest both require HS256, signature validity, issuer, audience, expiry, subject, tenant, numeric timestamps, and a known permission array. Unknown permissions or malformed values produce `401 Unauthorized`.
+Next and Nest both require HS256, signature validity, issuer, audience, expiry, subject, numeric timestamps, trusted subject attributes, and a valid grant matrix. Unknown permissions, operators, fields, duplicate grants, duplicate resource-field conditions, or malformed values produce `401 Unauthorized`.
 
 The token is never written to local storage, session storage, client-readable cookies, React props, client context, logs, or JSON responses. Next server code retains the raw token only long enough to forward it as a bearer credential.
 
@@ -85,16 +102,45 @@ For a browser link request:
 
 1. `clientFetch()` calls same-origin `/api/links`.
 2. The route handler verifies the access cookie and parses its claims.
-3. The BFF calls shared `can()` for the named link permission.
+3. The BFF calls shared `hasPermission()` for the named Link action.
 4. Mutations require the exact configured `WEB_ORIGIN` as a CSRF boundary.
 5. The BFF forwards the original JWT in `Authorization: Bearer ...`; it does not forward browser cookies or client-supplied authorization attributes.
 6. Nest `JwtAuthGuard` independently verifies the JWT and writes the sanitized context to `request.user`.
-7. `PermissionGuard` evaluates `@RequirePermission(...)` using the shared evaluator.
-8. `LinksService` includes `auth.tenantId` in the Prisma query or mutation.
+7. `PermissionGuard` repeats `hasPermission()` for `@RequirePermission(...)`.
+8. `LinksService` calls `resourceScope()` for that action and spreads the resolved tenant predicate into the Prisma query or mutation.
+9. The response mapper calls `can()` with trusted Link attributes and returns compact update/delete capabilities.
 
 Server Components call the internal API directly through `serverFetch()`, but perform the same Next verification and named-permission check first.
 
-Dynamic business rules do not belong in `can()`. If links later gain workflow state, quotas, ownership, or time windows, load current values from PostgreSQL and enforce them in the domain service and final mutation predicate.
+## Authorization model
+
+The signed matrix separates three questions:
+
+1. `hasPermission(auth, 'link.update')`: does this token contain the named action grant?
+2. `can(auth, 'link.update', { tenantId })`: do the grant's stable conditions match this trusted resource?
+3. `resourceScope(auth, 'link.update')`: which plain filter values must the API put into the authoritative database operation?
+
+Every current Link grant contains:
+
+```ts
+{
+  operator: 'equals',
+  subjectField: 'tenantId',
+  resourceField: 'tenantId',
+}
+```
+
+Conditions within a grant use AND semantics. `can()` denies when the grant or a required resource attribute is absent. `resourceScope()` returns `null` when the action grant is absent. The service treats a missing or incomplete scope as `403`, even though the global guard should already have rejected the request. This keeps the domain service safe when invoked from another entry point.
+
+The condition language is intentionally allowlisted. Adding another field requires updating subject/resource types, runtime claim validation, the API policy builder, database enforcement, and tests. Adding a new operator also requires explicit in-memory and query-translation semantics. Never accept arbitrary field paths, executable expressions, or Prisma filters in a token or request.
+
+Dynamic business rules do not belong in the signed stable-grant evaluator. If links later gain workflow state, quotas, ownership, or time windows, load current values from PostgreSQL and repeat mutable predicates in the final update/delete operation.
+
+## Backend-computed capabilities
+
+`LinkResponse.capabilities` contains current update and delete decisions. The API mapper calculates them from the verified context and the Link's trusted `tenantId`. React renders those values; it does not receive tenant conditions or reconstruct policy. Capabilities can become stale, so the corresponding mutation still passes through the BFF, Nest guards, and scoped Prisma write.
+
+The protected layout deliberately converts the full server context into `{ userId, permissions }` before crossing the server/client boundary. This is enough for coarse navigation and demo text without exposing resource-scope details.
 
 ## Renewal
 

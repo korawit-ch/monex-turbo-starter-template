@@ -17,7 +17,7 @@ This Turborepo includes the following packages & apps:
 └── packages
     ├── @repo/api-contract        # Shared API request/response contracts
     ├── @repo/assets              # Shared raw assets and SVG icon components
-    ├── @repo/authorization       # Shared permission vocabulary and evaluator
+    ├── @repo/authorization       # Typed grants, claim validation, and scope resolution
     ├── @repo/design-system       # Tailwind 4 config, colors, global styles
     ├── @repo/eslint-config       # ESLint configurations (includes Prettier)
     ├── @repo/jest-config         # Jest configurations
@@ -368,10 +368,41 @@ export class CreateLinkDto implements CreateLinkRequest {
 ```
 
 Controllers map Prisma records to `LinkResponse`, converting database `Date`
-instances to ISO strings. This keeps the database model internal while
+instances to ISO strings and attaching backend-computed update/delete
+capabilities. This keeps the database model and grant conditions internal while
 `@repo/api-contract` remains the source of truth for the wire format.
 
-The global validation pipe rejects unknown or malformed input using class-validator decorators. Global JWT and permission guards protect link routes, and services scope Prisma operations to the authenticated tenant. Shared request contracts remain in `@repo/api-contract`; the complete security flow is documented in [Authentication and authorization](docs/authentication.md).
+The global validation pipe rejects unknown or malformed input using class-validator decorators. Global JWT and permission guards protect link routes, and services resolve the signed action grant into tenant-scoped Prisma operations. Shared request contracts remain in `@repo/api-contract`; the complete security flow is documented in [Authentication and authorization](docs/authentication.md).
+
+### Authorization grant model
+
+The API turns role permissions into a signed matrix of explicit action grants:
+
+```text
+named Link action + allowlisted tenant condition + trusted subject attributes
+```
+
+`ADMIN` receives read/create/update/delete; `MEMBER` receives read/create. Every
+grant compares the signed subject tenant with the Link tenant. Next and Nest use
+`hasPermission()` for coarse route admission, while `LinksService` uses
+`resourceScope()` to put the same tenant constraint into every authoritative
+Prisma read or write. `can()` evaluates trusted resource attributes when the API
+builds response capabilities. Unknown permissions, fields, operators, malformed
+conditions, and duplicate grants are rejected during JWT parsing.
+
+The browser receives only `{ userId, permissions }` plus per-Link capabilities;
+it never receives the signed subject scope or grant conditions. A capability is
+only a point-in-time presentation hint, so mutations always repeat BFF origin
+checks, Nest authentication/permission checks, and scoped database enforcement.
+
+Run `npm run db:seed` and sign in with the local default password
+`local-change-me` to compare:
+
+- `admin@example.com`: all actions and allowed update/delete capabilities.
+- `member@example.com`: read/create actions and denied update/delete capabilities.
+
+The credentials are local teaching defaults only. Override the seed variables
+and never deploy them. See the detailed [authentication and authorization guide](docs/authentication.md).
 
 ### Frontend
 
@@ -392,8 +423,9 @@ The Next.js apps display database results fetched from their respective NestJS A
   - **Shared by frontend and backend**
 
 - **@repo/authorization**: Shared authorization vocabulary and pure evaluator
-  - Validates decoded access-token claim types and permission names
-  - Produces a sanitized `AuthorizationContext`
+  - Validates decoded subject attributes, action grants, conditions, and registered claims
+  - Separates `hasPermission()`, `can()`, and `resourceScope()` responsibilities
+  - Produces server authorization and coarse client contexts
   - Contains no JWT library, cookies, framework, network, or database code
 
 - **@repo/design-system**: Shared styling foundation

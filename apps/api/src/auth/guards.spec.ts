@@ -20,12 +20,15 @@ describe('authentication and permission guards', () => {
       {
         verify: () => ({
           token: 'token',
-          auth: { userId: 'u', tenantId: 't', permissions: ['link.read'] },
+          auth: {
+            subject: { userId: 'u', tenantId: 't' },
+            grants: [{ permission: 'link.read', conditions: [] }],
+          },
         }),
       } as never,
     );
     expect(guard.canActivate(context(request))).toBe(true);
-    expect(request).toHaveProperty('user.tenantId', 't');
+    expect(request).toHaveProperty('user.subject.tenantId', 't');
   });
 
   it('rejects missing bearer authentication', () => {
@@ -45,7 +48,10 @@ describe('authentication and permission guards', () => {
     expect(() =>
       guard.canActivate(
         context({
-          user: { userId: 'u', tenantId: 't', permissions: ['link.read'] },
+          user: {
+            subject: { userId: 'u', tenantId: 't' },
+            grants: [{ permission: 'link.read', conditions: [] }],
+          },
         }),
       ),
     ).toThrow(ForbiddenException);

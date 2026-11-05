@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
-  can,
+  hasPermission,
   type AuthorizationContext,
   type Permission,
 } from '@repo/authorization';
@@ -28,7 +28,7 @@ export class PermissionGuard implements CanActivate {
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: AuthorizationContext }>();
-    if (!request.user || !can(request.user, permission)) {
+    if (!request.user || !hasPermission(request.user, permission)) {
       throw new ForbiddenException(`Missing permission: ${permission}`);
     }
     return true;

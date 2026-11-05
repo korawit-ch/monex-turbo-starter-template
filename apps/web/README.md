@@ -32,16 +32,16 @@ The repository has no configured application deployment workflow. A deployment m
 ## Structure and data flow
 
 - `app/layout.tsx` loads Prompt through `next/font/google`, shared UI CSS, app CSS, and providers.
-- `app/(protected)/layout.tsx` verifies the HttpOnly access JWT and passes only sanitized authorization context to `AuthProvider`.
+- `app/(protected)/layout.tsx` verifies the HttpOnly access JWT and passes only user ID and coarse action names to `AuthProvider`.
 - `app/(protected)/(home)/page.tsx` is a protected dynamic Server Component displaying links and template demonstrations.
 - `app/(protected)/(home)/_components/*` contains UI owned only by the home route; app-wide authentication components live under `components/auth`.
 - `app/api/auth/*` handles login, renewal, logout, and all-session logout; `app/api/links/*` is the protected browser BFF.
 - `data-access/links.server.ts` wraps `lib/fetch/server.ts` for server reads with `cache: 'no-store'`.
 - `data-access/links.client.ts` owns query keys, client reads, and mutation invalidation through `lib/fetch/client.ts`.
 - `lib/tanstack-query/provider.tsx` creates one query client per provider instance, with 60-second stale time and no focus refetching.
-- `providers/auth-provider.tsx` exposes sanitized identity/scope and shared `can()` for UX decisions; it never receives a token.
+- `providers/auth-provider.tsx` exposes sanitized identity and `hasPermission()` for coarse UX decisions; it never receives a token, tenant scope, or grant conditions.
 
-Both fetch helpers consume JSON-safe contracts from `@repo/api-contract`. Browser fetch uses same-origin BFF routes and renews once after 401; server fetch verifies the cookie and calls internal Nest with the bearer token. The BFF verifies named permissions, requires trusted mutation origin, and never forwards browser cookies to link endpoints. Nest verifies and scopes again. See [authentication architecture](../../docs/authentication.md).
+Both fetch helpers consume JSON-safe contracts from `@repo/api-contract`. Browser fetch uses same-origin BFF routes and renews once after 401; server fetch verifies the cookie and calls internal Nest with the bearer token. The BFF verifies named actions, requires trusted mutation origin, and never forwards browser cookies to link endpoints. Nest verifies again, resolves the signed grant to Prisma scope, and returns resource capabilities for rendering. See [authentication architecture](../../docs/authentication.md).
 
 Reuse `@repo/ui/button`, `input`, `textarea`, and `form/*`, composing their icon slots with named components from `@repo/assets/icons`. The UI package does not select icons itself. Raw files reused across applications come from explicit `@repo/assets` subpaths; the home page statically imports the shared Turborepo wordmark as an example. Web-only files remain in `public`. Feature-specific forms/schemas remain in this app. The contact form demo stores submitted data locally and logs it; it does not send data to the API.
 
@@ -73,7 +73,7 @@ The app uses its own Jest/jsdom/ts-jest setup. Tests cover the existing feature 
 
 - **IMPORTANT:** Add browser-level tests covering cookie relay, BFF 401/403 behavior, one-time renewal, logout, and backend outages.
 - **IMPORTANT:** Remove submitted personal data logging before adapting the demo to real forms. Form inputs also need explicit IDs with current shared components.
-- **IMPORTANT:** Configure production private networking and asymmetric JWT verification; do not treat client `can()` as enforcement.
+- **IMPORTANT:** Configure production private networking and asymmetric JWT verification; do not treat client permissions or response capabilities as enforcement.
 - **SUGGESTION:** Remove the artificial 800/600 ms query delays for real features; decide whether both server/client reads are necessary. Prefix invalidation of `linkKeys.all` already covers detail keys, so a second detail invalidation is redundant in the current update hook.
 
 See [local agent instructions](AGENTS.md) and [shared UI limitations](../../packages/ui/README.md#improvements).

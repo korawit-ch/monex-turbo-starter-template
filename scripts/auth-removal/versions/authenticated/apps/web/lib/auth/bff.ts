@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { can, type Permission } from '@repo/authorization';
+import { hasPermission, type Permission } from '@repo/authorization';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getApiInternalUrl, getWebOrigin } from './config';
@@ -31,7 +31,7 @@ export async function proxyProtectedRequest(
 ): Promise<NextResponse> {
   try {
     const verified = await getVerifiedAccess();
-    if (!can(verified.auth, permission)) {
+    if (!hasPermission(verified.auth, permission)) {
       return NextResponse.json(
         { message: `Missing permission: ${permission}` },
         { status: 403 },

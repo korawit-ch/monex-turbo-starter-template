@@ -28,7 +28,7 @@ export class LinksController {
     @Body() data: CreateLinkDto,
   ): Promise<LinkResponse> {
     const link = await this.linksService.create(auth, data);
-    return toLinkResponse(link);
+    return toLinkResponse(link, auth);
   }
 
   @Get()
@@ -37,7 +37,7 @@ export class LinksController {
     @CurrentAuth() auth: AuthorizationContext,
   ): Promise<LinkResponse[]> {
     const links = await this.linksService.findAll(auth);
-    return links.map(toLinkResponse);
+    return links.map((link) => toLinkResponse(link, auth));
   }
 
   @Get(':id')
@@ -47,7 +47,7 @@ export class LinksController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<LinkResponse> {
     const link = await this.linksService.findOne(auth, id);
-    return toLinkResponse(link);
+    return toLinkResponse(link, auth);
   }
 
   @Patch(':id')
@@ -58,7 +58,7 @@ export class LinksController {
     @Body() data: UpdateLinkDto,
   ): Promise<LinkResponse> {
     const link = await this.linksService.update(auth, id, data);
-    return toLinkResponse(link);
+    return toLinkResponse(link, auth);
   }
 
   @Delete(':id')
@@ -68,6 +68,6 @@ export class LinksController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<LinkResponse> {
     const link = await this.linksService.remove(auth, id);
-    return toLinkResponse(link);
+    return toLinkResponse(link, auth);
   }
 }

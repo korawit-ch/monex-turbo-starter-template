@@ -89,13 +89,14 @@ Swagger is generated in non-production environments at `/api`. A controller meth
 
 - Converts persistence values to the exact JSON-safe response contract.
 - Is the explicit boundary for renamed fields, hidden fields, enums, decimals, and dates.
+- May attach backend-computed resource capabilities from verified authorization context; the client must not reconstruct those decisions.
 - Should have focused unit tests.
 
 ### Service
 
 - Owns business rules and database interaction.
 - Receives sanitized authorization context, not raw JWT claims.
-- Includes tenant/owner predicates in reads and final writes.
+- Resolves stable action grants into tenant/owner predicates in reads and final writes.
 - Uses transactions when several writes must succeed together.
 - Defines retry, idempotency, uniqueness, and concurrency behavior for mutations.
 

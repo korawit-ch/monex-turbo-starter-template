@@ -7,6 +7,7 @@ import { AuthConfig } from './auth.config';
 import { permissionsForRole } from './auth.permissions';
 import { PasswordService } from './password.service';
 import { SessionCookieService } from './session-cookie.service';
+import { buildPermissionGrants } from './authorization-policy';
 
 type IssuedCredentials = {
   accessToken: string;
@@ -56,7 +57,7 @@ export class AuthService {
       accessToken: this.accessTokens.issue({
         userId: user.id,
         tenantId: user.tenantId,
-        permissions: permissionsForRole(user.role),
+        grants: buildPermissionGrants(permissionsForRole(user.role)),
       }),
       sessionCookie: this.sessions.seal(rawToken, sessionExpiresAt),
       sessionExpiresAt,
@@ -79,7 +80,7 @@ export class AuthService {
     return this.accessTokens.issue({
       userId: session.user.id,
       tenantId: session.user.tenantId,
-      permissions: permissionsForRole(session.user.role),
+      grants: buildPermissionGrants(permissionsForRole(session.user.role)),
     });
   }
 

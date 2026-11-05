@@ -1,5 +1,5 @@
 import type { ApiEndpoint } from '@repo/api-contract';
-import { can, type Permission } from '@repo/authorization';
+import { hasPermission, type Permission } from '@repo/authorization';
 import { getApiInternalUrl } from '../auth/config';
 import { getVerifiedAccess } from '../auth/server';
 
@@ -15,7 +15,7 @@ export async function serverFetch<TResponse, TBody = never>(
   const body = 'body' in endpoint ? endpoint.body : undefined;
 
   const verified = await getVerifiedAccess();
-  if (!can(verified.auth, permission)) {
+  if (!hasPermission(verified.auth, permission)) {
     throw new Error(`Missing permission: ${permission}`);
   }
 
