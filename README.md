@@ -49,8 +49,8 @@ Start there before introducing a new folder, package, shared abstraction, or del
 | Component                                                 | Version         | Port |
 | --------------------------------------------------------- | --------------- | ---- |
 | **Node.js**                                               | >=22.12         | -    |
-| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.0.7         | 3000 |
-| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.0.0         | 3001 |
+| [**Next.js Web**](https://nextjs.org/) (`apps/web`)       | ^16.4.5         | 3000 |
+| [**NestJS API**](https://nestjs.com/) (`apps/api`)        | ^11.2.8         | 3001 |
 | [**PostgreSQL**](https://www.postgresql.org/) (`apps/db`) | 16-alpine       | 5433 |
 | **Swagger** (`/api`)                                      | @nestjs/swagger | 3001 |
 
@@ -58,7 +58,7 @@ Start there before introducing a new folder, package, shared abstraction, or del
 
 | Library                                           | Version |
 | ------------------------------------------------- | ------- |
-| [**React**](https://react.dev/)                   | ^19.1.0 |
+| [**React**](https://react.dev/)                   | ^19.3.1 |
 | [**Prisma ORM**](https://www.prisma.io/)          | ^7.1.0  |
 | [**Tailwind CSS**](https://tailwindcss.com/)      | ^4.1.5  |
 | [**TanStack Query**](https://tanstack.com/query)  | ^5.80.7 |
